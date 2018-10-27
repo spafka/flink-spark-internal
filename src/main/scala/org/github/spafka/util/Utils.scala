@@ -21,12 +21,25 @@ object Utils {
     (result, math.max(NANOSECONDS.toMillis(endTime - startTime), 0))
   }
 
+  // call by name 函数,
+  def time[T](body: => T): (T) = {
+    val startTime = System.nanoTime()
+    val result = body
+    val endTime = System.nanoTime()
+
+    println(s"cust ${(endTime - startTime) / 1000 / 1000}")
+    result
+
+  }
+
+
   /** lock and unlock  */
   def lock[T](lock: Lock, body: => T) = {
-    try (lock.lock()) {
+    try {
+      lock.lock()
       body
     } finally {
-      lock.unlock();
+      lock.unlock()
     }
   }
 
