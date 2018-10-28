@@ -22,7 +22,7 @@ public class TestMutex {
         Tuple2<Object, Object> tuple2 = Utils.timeTakenMs(new AbstractFunction0<Object>() {
             @Override
             public Object apply() {
-                for (int i = 0; i < 30; i++) {
+                for (int i = 0; i < 5; i++) {
                     Thread t = new Thread(() -> {
                         for (int i12 = 0; i12 < addPerThread; i12++) {
                             increment4();//没有同步措施的a++；
