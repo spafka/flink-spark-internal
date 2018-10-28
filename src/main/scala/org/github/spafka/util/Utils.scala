@@ -1,11 +1,15 @@
 package org.github.spafka.util
 
+import java.lang.reflect.Field
 import java.net.{Inet4Address, InetAddress, NetworkInterface}
+import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit.NANOSECONDS
 import java.util.concurrent.locks.Lock
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder
 import grizzled.slf4j.Logger
 import org.apache.commons.lang3.SystemUtils
+import sun.misc.Unsafe
 
 import scala.collection.JavaConverters._
 
@@ -27,7 +31,17 @@ object Utils {
     val result = body
     val endTime = System.nanoTime()
 
-    println(s"cust ${(endTime - startTime) / 1000 / 1000}")
+    println(s"cost ${(endTime - startTime) / 1000 / 1000} ms")
+    result
+
+  }
+
+  def time[T](desc: String, body: => T): (T) = {
+    val startTime = System.nanoTime()
+    val result = body
+    val endTime = System.nanoTime()
+
+    println(s"$desc cost ${(endTime - startTime) / 1000 / 1000} ms")
     result
 
   }
@@ -86,5 +100,27 @@ object Utils {
     }
   }
 
+
+  def getUnSafe: Unsafe = {
+    var unsafe: Unsafe = null
+    try {
+      val filed = classOf[Unsafe].getDeclaredField("theUnsafe")
+
+      filed.setAccessible(true)
+      unsafe = filed.get(null).asInstanceOf[Unsafe]
+    } catch {
+      case e =>
+    }
+    unsafe
+  }
+
+  def setThreadName(t: Thread, name: String): Thread = {
+    t.setName(name)
+    t
+  }
+
+  def namedThreadFactory(prefix: String): ThreadFactory = {
+    new ThreadFactoryBuilder().setDaemon(true).setNameFormat(prefix + "-%d").build()
+  }
 
 }
