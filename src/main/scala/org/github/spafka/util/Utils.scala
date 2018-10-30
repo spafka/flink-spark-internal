@@ -1,6 +1,5 @@
 package org.github.spafka.util
 
-import java.lang.reflect.Field
 import java.net.{Inet4Address, InetAddress, NetworkInterface}
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit.NANOSECONDS
