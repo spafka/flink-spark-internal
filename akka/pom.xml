@@ -6,7 +6,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>akka-java8</artifactId>
+    <artifactId>akka</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -40,7 +40,18 @@
             <artifactId>akka-remote_${scala.binary.version}</artifactId>
             <version>${akka.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-contrib_${scala.binary.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.syncthemall/boilerpipe -->
+        <dependency>
+            <groupId>com.syncthemall</groupId>
+            <artifactId>boilerpipe</artifactId>
+            <version>1.2.2</version>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
