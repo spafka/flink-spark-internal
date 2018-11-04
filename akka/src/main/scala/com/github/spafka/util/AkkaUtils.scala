@@ -17,19 +17,11 @@ object RemoteAddressExtension extends ExtensionKey[RemoteAddressExtensionImpleme
 object AkkaUtils {
 
 
-
-  def createActorSystem(akkaConfig: Config): ActorSystem = {
-    // Initialize slf4j as logger of Akka's Netty instead of java.util.logging (FLINK-1650)
-    ActorSystem.create("flink", akkaConfig)
-  }
-
   def getAddress(system: ActorSystem): Address = {
     RemoteAddressExtension(system).address
   }
-
-
   @throws[Exception]
-  def startActorSystem(configuration: Map[String, String] ,confPath: String, logger: Logger): ActorSystem = {
+  def startActorSystem(confPath: String, logger: Logger): ActorSystem = {
     try {
       val config = ConfigFactory.load(confPath)
 

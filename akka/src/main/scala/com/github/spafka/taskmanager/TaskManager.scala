@@ -49,10 +49,8 @@ object TaskManager {
     val LOG = Logger(classOf[JobManager])
 
     val conf = Map("port" -> "6124")
-    val actorSystem = AkkaUtils
-      .startActorSystem(conf, "slave.conf",
+    val actorSystem = AkkaUtils.startActorSystem( "slave.conf",
         LOG.logger)
-
     // actorSelection 连接远程的actor
     val ref = actorSystem.actorSelection(s"akka.tcp://flink@127.0.0.1:6332/user/master")
 
@@ -72,7 +70,6 @@ object TaskManager {
       case Success(result) => println(s"$result")
       case Failure(exception) =>
     }
-
 
   }
 }

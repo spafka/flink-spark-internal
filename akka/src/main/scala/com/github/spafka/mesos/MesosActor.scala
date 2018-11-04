@@ -62,22 +62,27 @@ class MesosActor extends Actor {
 
   override def preStart(): Unit = {
 
+    // mesos schedler
     val scheduler = new SchedlerProxy(self)
+
     val frameworkInfo = Protos.FrameworkInfo.newBuilder.setHostname("localhost")
-    var credential = null
     val masterUrl = "zk://127.0.0.1:2181/mesos"
     val failoverTimeout = FiniteDuration.apply(1, TimeUnit.SECONDS)
     frameworkInfo.setFailoverTimeout(failoverTimeout.toSeconds)
     frameworkInfo.setName("spafka")
     frameworkInfo.setUser("*")
 
-
+    // mesos schedler
     val schedulerDriver = new MesosSchedulerDriver(scheduler, frameworkInfo.build, masterUrl, false)
     schedulerDriver.start()
 
+    // MESOS 连接信息FSM
     connectionMonitor = context.actorOf(Props(classOf[ConnectionMonitor]))
+    // MESOS Executor FSM
     launchCoordinator = context.actorOf(Props(classOf[LaunchCoordinator],self, schedulerDriver, createOptimizer()))
+    //
     taskRouter = context.actorOf(Tasks.createActorProps(classOf[Tasks], self, schedulerDriver, classOf[TaskMonitor]))
+    //
     reconciliationCoordinator = context.actorOf(Props(classOf[ReconciliationCoordinator],schedulerDriver))
 
     connectionMonitor ! new ConnectionMonitor.Start
@@ -109,13 +114,8 @@ object MesosActor {
   def main(args: Array[String]): Unit = {
 
     val LOG = Logger(getClass)
-
-    val actorSystem = AkkaUtils
-      .startActorSystem(null,
-        "master.conf",
-        LOG.logger)
+    val actorSystem = AkkaUtils.startActorSystem("master.conf", LOG.logger)
     val mesosActor: ActorRef = actorSystem.actorOf(Props(classOf[MesosActor]), "master")
-
 
     TimeUnit.SECONDS.sleep(100000)
 

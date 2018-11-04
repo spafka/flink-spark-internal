@@ -38,9 +38,7 @@ object JobManager {
 
     val conf = Map("port" -> "6123")
     val actorSystem = AkkaUtils
-      .startActorSystem(conf,
-        "master.conf",
-        LOG.logger)
+      .startActorSystem("master.conf", LOG.logger)
 
     val masterActor: ActorRef = actorSystem.actorOf(Props(classOf[JobManager], conf), "master")
 
