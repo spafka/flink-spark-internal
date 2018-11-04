@@ -1,19 +1,21 @@
-package com.github.spafka
+package com.github.spafka.taskmanager
 
-import akka.actor.SupervisorStrategy.{Escalate, Restart, Resume, Stop}
+import akka.actor.SupervisorStrategy.Escalate
 import akka.actor.{Actor, OneForOneStrategy}
 import akka.pattern.ask
 import akka.util.Timeout
+import com.github.spafka._
+import com.github.spafka.jobmanager.JobManager
+import com.github.spafka.message._
 import com.github.spafka.util.AkkaUtils
 import grizzled.slf4j.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, _}
 import scala.language.postfixOps
 import scala.util.{Failure, Success}
-import scala.concurrent.duration._
 
-class Slave extends Actor {
+class TaskManager extends Actor {
 
   // fixme add more executor
   override def receive: Receive = {
@@ -40,11 +42,11 @@ class Slave extends Actor {
 }
 
 
-object Slave {
+object TaskManager {
   def main(args: Array[String]): Unit = {
 
 
-    val LOG = Logger(classOf[Master])
+    val LOG = Logger(classOf[JobManager])
 
     val conf = Map("port" -> "6124")
     val actorSystem = AkkaUtils

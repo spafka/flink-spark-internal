@@ -1,16 +1,18 @@
-package com.github.spafka
+package com.github.spafka.jobmanager
 
 import java.net.InetAddress
 
 import akka.actor.{Actor, ActorRef, Props}
+import com.github.spafka.message.{AskMessage, RigistMessage, Task}
 import com.github.spafka.util.AkkaUtils
+import com.github.spafka.message.{AskMessage, Task,ReplyMessage}
 import grizzled.slf4j.Logger
 
-class Master(protected val map: Map[String, String]) extends Actor {
+class JobManager(protected val map: Map[String, String]) extends Actor {
 
 
   // fixme add more execute
-  val logger = Logger(classOf[Master])
+  val logger = Logger(classOf[JobManager])
 
   override def receive: Receive = {
     case e: RigistMessage => {
@@ -29,10 +31,10 @@ class Master(protected val map: Map[String, String]) extends Actor {
 }
 
 
-object Master {
+object JobManager {
   def main(args: Array[String]): Unit = {
 
-    val LOG = Logger(classOf[Master])
+    val LOG = Logger(classOf[JobManager])
 
     val conf = Map("port" -> "6123")
     val actorSystem = AkkaUtils
@@ -40,7 +42,7 @@ object Master {
         "master.conf",
         LOG.logger)
 
-    val masterActor: ActorRef = actorSystem.actorOf(Props(classOf[Master], conf), "master")
+    val masterActor: ActorRef = actorSystem.actorOf(Props(classOf[JobManager], conf), "master")
 
     println(masterActor.path)
 

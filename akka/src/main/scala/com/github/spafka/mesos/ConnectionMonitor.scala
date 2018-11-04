@@ -1,8 +1,8 @@
-package org.apache.flink.mesos.scheduler
+package com.github.spafka.mesos
 
 import akka.actor.{Actor, FSM, Props}
+import com.github.spafka.mesos.ConnectionMonitor._
 import grizzled.slf4j.Logger
-import org.apache.flink.mesos.scheduler.ConnectionMonitor._
 import org.apache.flink.mesos.scheduler.messages.{Disconnected, ReRegistered, Registered}
 
 import scala.concurrent.duration._
@@ -49,10 +49,10 @@ class ConnectionMonitor() extends Actor with FSM[FsmState, Unit] {
       LOG.warn("Disconnected from the Mesos master.  Reconnecting...")
       goto(ConnectingState)
   }
-
+  // FSM 状态改变
   onTransition {
     case previousState -> nextState =>
-      LOG.debug(s"State change ($previousState -> $nextState) with data ${nextStateData}")
+      LOG.info(s"State change ($previousState -> $nextState) with data ${nextStateData}")
   }
 
   initialize()
@@ -94,12 +94,10 @@ object ConnectionMonitor {
   // ------------------------------------------------------------------------
   //  Utils
   // ------------------------------------------------------------------------
-
   /**
     * Creates the properties for the ConnectionMonitor actor.
     *
     * @param actorClass  the connection monitor actor class
-    * @param flinkConfig the Flink configuration.
     * @tparam T the type of the connection monitor actor class
     * @return the Props to create the connection monitor
     */

@@ -1,4 +1,4 @@
-package com.github.spafka
+package com.github.spafka.message
 
 sealed class Message()
 
@@ -7,11 +7,9 @@ case class RigistMessage(host: String, map: Map[String, String]) extends Message
 case class BreakMessage() extends Message
 
 // TASK 相关
-// fixme
 abstract class TaskDesc() extends Serializable {
 
   def run = {
-
   }
 }
 

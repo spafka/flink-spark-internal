@@ -1,0 +1,123 @@
+package com.github.spafka.mesos
+
+import java.util
+import java.util.concurrent.TimeUnit
+
+import akka.actor.{Actor, ActorRef, Props}
+import com.github.spafka.jobmanager.JobManager
+import com.github.spafka.util.AkkaUtils
+import com.netflix.fenzo.functions.Action1
+import com.netflix.fenzo.{TaskScheduler, VirtualMachineLease}
+import grizzled.slf4j.Logger
+import org.apache.flink.mesos.scheduler.{TaskMonitor, TaskSchedulerBuilder, Tasks}
+import org.apache.flink.mesos.scheduler.messages.{Disconnected, ReRegistered, Registered}
+import org.apache.mesos.{MesosSchedulerDriver, Protos, Scheduler, SchedulerDriver}
+
+import scala.concurrent.duration.{Duration, FiniteDuration}
+
+
+class MesosActor extends Actor {
+
+  private var connectionMonitor: ActorRef = _
+
+  private var taskRouter: ActorRef = _
+
+  private var launchCoordinator: ActorRef = _
+
+  private var reconciliationCoordinator: ActorRef = _
+
+  private def registered(message: Registered): Unit = {
+    connectionMonitor ! message
+    taskRouter ! message
+    launchCoordinator ! message
+    reconciliationCoordinator ! message
+  }
+
+  private def reregistered(message: ReRegistered): Unit = {
+    connectionMonitor ! message
+    taskRouter ! message
+    launchCoordinator ! message
+    reconciliationCoordinator ! message
+  }
+
+  private def disconnected(message: Disconnected): Unit = {
+    connectionMonitor ! message
+    taskRouter ! message
+    launchCoordinator ! message
+    reconciliationCoordinator ! message
+  }
+
+  private def error(message: Error): Unit = {
+    connectionMonitor ! message
+    taskRouter ! message
+    launchCoordinator ! message
+    reconciliationCoordinator ! message
+  }
+
+  override def receive: Receive = {
+    case x: Registered => registered(x)
+    case x: ReRegistered => reregistered(x)
+    case x: Disconnected => disconnected(x)
+  }
+
+  override def preStart(): Unit = {
+
+    val scheduler = new SchedlerProxy(self)
+    val frameworkInfo = Protos.FrameworkInfo.newBuilder.setHostname("localhost")
+    var credential = null
+    val masterUrl = "zk://127.0.0.1:2181/mesos"
+    val failoverTimeout = FiniteDuration.apply(1, TimeUnit.SECONDS)
+    frameworkInfo.setFailoverTimeout(failoverTimeout.toSeconds)
+    frameworkInfo.setName("spafka")
+    frameworkInfo.setUser("*")
+
+
+    val schedulerDriver = new MesosSchedulerDriver(scheduler, frameworkInfo.build, masterUrl, false)
+    schedulerDriver.start()
+
+    connectionMonitor = context.actorOf(Props(classOf[ConnectionMonitor]))
+    launchCoordinator = context.actorOf(Props(classOf[LaunchCoordinator],self, schedulerDriver, createOptimizer()))
+    taskRouter = context.actorOf(Tasks.createActorProps(classOf[Tasks], self, schedulerDriver, classOf[TaskMonitor]))
+    reconciliationCoordinator = context.actorOf(Props(classOf[ReconciliationCoordinator],schedulerDriver))
+
+    connectionMonitor ! new ConnectionMonitor.Start
+  }
+
+  /**
+    * Creates the Fenzo optimizer (builder).
+    * The builder is an indirection to facilitate unit testing of the Launch Coordinator.
+    */
+  private def createOptimizer(): TaskSchedulerBuilder = {
+    return new TaskSchedulerBuilder() {
+      private  val builder = new TaskScheduler.Builder
+
+      override
+
+      def withLeaseRejectAction(action: Action1[VirtualMachineLease]): TaskSchedulerBuilder = {
+        builder.withLeaseRejectAction(action)
+        this
+      }
+
+      override def build: TaskScheduler = builder.build
+    }
+  }
+}
+
+object MesosActor {
+
+
+  def main(args: Array[String]): Unit = {
+
+    val LOG = Logger(getClass)
+
+    val actorSystem = AkkaUtils
+      .startActorSystem(null,
+        "master.conf",
+        LOG.logger)
+    val mesosActor: ActorRef = actorSystem.actorOf(Props(classOf[MesosActor]), "master")
+
+
+    TimeUnit.SECONDS.sleep(100000)
+
+  }
+}
