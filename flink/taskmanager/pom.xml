@@ -3,25 +3,24 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>flink-spark-internal</artifactId>
+        <artifactId>flink</artifactId>
         <groupId>com.github.spafka</groupId>
         <version>1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
-    <modules>
-        <module>rpc</module>
-        <module>jobmanager</module>
-        <module>taskmanager</module>
-        <module>mesos</module>
-    </modules>
 
-    <artifactId>flink</artifactId>
+    <artifactId>taskmanager</artifactId>
+
     <dependencies>
         <dependency>
             <groupId>com.github.spafka</groupId>
-            <artifactId>util</artifactId>
-            <version>${project.version}</version>
+            <artifactId>rpc</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.spafka</groupId>
+            <artifactId>jobmanager</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 

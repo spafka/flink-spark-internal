@@ -31,10 +31,10 @@
     <version>1.0</version>
     <modules>
         <module>util</module>
-        <module>akka</module>
         <module>calcite</module>
         <module>spark</module>
         <module>flink</module>
+        <module>mini-cluster</module>
     </modules>
     <properties>
         <disruptor.version>3.3.6</disruptor.version>
@@ -52,12 +52,18 @@
         <chill.version>0.7.4</chill.version>
         <junit.version>4.12</junit.version>
         <spark.version>2.3.2</spark.version>
+        <flink.version>1.6.2</flink.version>
         <version.servlet>2.5</version.servlet>
     </properties>
 
     <dependencies>
 
-
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.20</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.scala-lang.modules</groupId>
             <artifactId>scala-java8-compat_${scala.binary.version}</artifactId>
