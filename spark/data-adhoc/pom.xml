@@ -17,5 +17,10 @@
             <artifactId>spark-hive_${scala.binary.version}</artifactId>
             <version>${spark.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.spafka</groupId>
+            <artifactId>hbase-operator</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 </project>

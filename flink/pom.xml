@@ -15,6 +15,7 @@
         <module>taskmanager</module>
         <module>mesos</module>
         <module>test</module>
+        <module>example</module>
     </modules>
 
     <artifactId>flink</artifactId>

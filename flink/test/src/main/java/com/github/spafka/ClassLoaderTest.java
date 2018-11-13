@@ -26,14 +26,15 @@ public class ClassLoaderTest {
     public void TestUrlClassLoader() throws MalformedURLException {
 
         URLClassLoader loader = new URLClassLoader(new URL[]{new File("src/main/extlib/mysql-connector-java.jar").toURL()});
-        try {
 
-            Class<?> loadClass = loader.loadClass("com.mysql.jdbc.Driver");
+        Thread.currentThread().setContextClassLoader(loader);
+        try {
+            // forname使用的是caller class的classloader
+            Class<?> loadClass = Class.forName("com.mysql.jdbc.Driver", true, Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-            System.err.println("classLoader ant find class");
         }
 
-
     }
+
 }
