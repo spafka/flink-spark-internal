@@ -273,7 +273,6 @@
                     <jvmArgs>
                         <jvmArg>-Xms1024m</jvmArg>
                         <jvmArg>-Xmx1024m</jvmArg>
-                        <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
                     </jvmArgs>
                     <javacArgs>
                         <javacArg>-source</javacArg>
