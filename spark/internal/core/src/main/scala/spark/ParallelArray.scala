@@ -2,7 +2,9 @@ package spark
 
 import java.util.concurrent.atomic.AtomicLong
 
-class ParallelArraySplit[T: ClassManifest](
+import scala.reflect.ClassTag
+
+class ParallelArraySplit[T: ClassTag](
     val arrayId: Long, val slice: Int, values: Seq[T])
 extends Split {
   def iterator(): Iterator[T] = values.iterator
@@ -19,7 +21,7 @@ extends Split {
     "ParallelArraySplit(arrayId %d, slice %d)".format(arrayId, slice)
 }
 
-class ParallelArray[T: ClassManifest](
+class ParallelArray[T: ClassTag](
   sc: SparkContext, @transient data: Seq[T], numSlices: Int)
 extends RDD[T](sc)  {
   // TODO: Right now, each split sends along its full data, even if later down
@@ -44,7 +46,7 @@ private object ParallelArray {
   val nextId = new AtomicLong(0) // Creates IDs for ParallelArrays (on master)
   def newId() = nextId.getAndIncrement()
 
-  def slice[T: ClassManifest](seq: Seq[T], numSlices: Int): Seq[Seq[T]] = {
+  def slice[T: ClassTag](seq: Seq[T], numSlices: Int): Seq[Seq[T]] = {
     if (numSlices < 1)
       throw new IllegalArgumentException("Positive number of slices required")
     seq match {

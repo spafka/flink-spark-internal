@@ -1,14 +1,15 @@
 package spark
 
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 
 class SparkContext(master: String, frameworkName: String) extends Logging {
   Broadcast.initialize(true)
 
-  def parallelize[T: ClassManifest](seq: Seq[T], numSlices: Int) =
+  def parallelize[T: ClassTag](seq: Seq[T], numSlices: Int) =
     new ParallelArray[T](this, seq, numSlices)
 
-  def parallelize[T: ClassManifest](seq: Seq[T]): ParallelArray[T] =
+  def parallelize[T: ClassTag](seq: Seq[T]): ParallelArray[T] =
     parallelize(seq, scheduler.numCores)
 
   def accumulator[T](initialValue: T)(implicit param: AccumulatorParam[T]) =
@@ -46,11 +47,11 @@ class SparkContext(master: String, frameworkName: String) extends Logging {
     return Utils.serialize(props.toArray)
   }
 
-  def runTasks[T: ClassManifest](tasks: Array[() => T]): Array[T] = {
+  def runTasks[T: ClassTag](tasks: Array[() => T]): Array[T] = {
     runTaskObjects(tasks.map(f => new FunctionTask(f)))
   }
 
-  private[spark] def runTaskObjects[T: ClassManifest](tasks: Seq[Task[T]])
+  private[spark] def runTaskObjects[T: ClassTag](tasks: Seq[Task[T]])
       : Array[T] = {
     logInfo("Running " + tasks.length + " tasks in parallel")
     val start = System.nanoTime
