@@ -2,23 +2,15 @@ package spark
 
 import java.io._
 import java.net._
-import java.util.{UUID, PriorityQueue, Comparator}
+import java.util.concurrent.Executors
+import java.util.{PriorityQueue, UUID}
 
 import com.google.common.collect.MapMaker
-
-import java.util.concurrent.{Executors, ExecutorService}
-
-import scala.actors.Actor
-import scala.actors.Actor._
-
-import scala.collection.mutable.Map
-
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path, RawLocalFileSystem}
-
+import org.apache.hadoop.fs.{FileSystem, Path}
 import spark.compress.lzf.{LZFInputStream, LZFOutputStream}
 
-@serializable
+
 trait BroadcastRecipe {
   val uuid = UUID.randomUUID
 
@@ -31,9 +23,8 @@ trait BroadcastRecipe {
 
 // TODO: Should think about storing in HDFS in the future
 // TODO: Right, now no parallelization between multiple broadcasts
-@serializable
 class ChainedStreamingBroadcast[T] (@transient var value_ : T, local: Boolean) 
-extends BroadcastRecipe with Logging {
+extends BroadcastRecipe with Logging with Serializable{
   
   def value = value_
 

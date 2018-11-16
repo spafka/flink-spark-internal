@@ -1,7 +1,5 @@
 package spark
 
-import mesos.SlaveOffer
-
 import java.util.concurrent.atomic.AtomicLong
 
 class ParallelArraySplit[T: ClassManifest](
@@ -23,7 +21,7 @@ extends Split {
 
 class ParallelArray[T: ClassManifest](
   sc: SparkContext, @transient data: Seq[T], numSlices: Int)
-extends RDD[T](sc) {
+extends RDD[T](sc)  {
   // TODO: Right now, each split sends along its full data, even if later down
   // the RDD chain it gets cached. It might be worthwhile to write the data to
   // a file in the DFS and read it in the split instead.

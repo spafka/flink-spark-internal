@@ -1,3 +1,3 @@
 package spark
 
-abstract class Split {}
+abstract class Split extends Serializable {}

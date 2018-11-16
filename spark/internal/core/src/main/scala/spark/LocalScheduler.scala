@@ -2,8 +2,6 @@ package spark
 
 import java.util.concurrent._
 
-import scala.collection.mutable.Map
-
 /**
  * A simple Scheduler implementation that runs tasks locally in a thread pool.
  */
@@ -57,6 +55,10 @@ private class LocalScheduler(threads: Int) extends Scheduler with Logging {
   override def stop() {}
 
   override def numCores() = threads
+
+  def currentThread = {
+    Thread.currentThread()
+  }
 }
 
 

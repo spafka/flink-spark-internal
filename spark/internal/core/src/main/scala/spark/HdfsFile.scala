@@ -1,6 +1,5 @@
 package spark
 
-import mesos.SlaveOffer
 
 import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.io.Text
@@ -11,8 +10,7 @@ import org.apache.hadoop.mapred.TextInputFormat
 import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.mapred.Reporter
 
-@serializable class HdfsSplit(@transient s: InputSplit)
-extends Split { 
+class HdfsSplit(@transient s: InputSplit) extends Split {
   val inputSplit = new SerializableWritable[InputSplit](s)
   override def toString = inputSplit.toString
 }

@@ -66,4 +66,8 @@ private object Accumulators
       }
     }
   }
+
+  def currentThread={
+    Thread.currentThread()
+  }
 }

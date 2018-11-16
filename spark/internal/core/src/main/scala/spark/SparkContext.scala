@@ -1,10 +1,6 @@
 package spark
 
-import java.io._
-import java.util.UUID
-
 import scala.collection.mutable.ArrayBuffer
-import scala.actors.Actor._
 
 class SparkContext(master: String, frameworkName: String) extends Logging {
   Broadcast.initialize(true)
@@ -29,8 +25,8 @@ class SparkContext(master: String, frameworkName: String) extends Logging {
   private[spark] var scheduler: Scheduler = master match {
     case "local" => new LocalScheduler(1)
     case LOCAL_REGEX(threads) => new LocalScheduler(threads.toInt)
-    case _ => { System.loadLibrary("mesos");
-                new MesosScheduler(master, frameworkName, createExecArg()) }
+//    case _ => { System.loadLibrary("mesos");
+//                new MesosScheduler(master, frameworkName, createExecArg()) }
   }
 
   private val local = scheduler.isInstanceOf[LocalScheduler]  
