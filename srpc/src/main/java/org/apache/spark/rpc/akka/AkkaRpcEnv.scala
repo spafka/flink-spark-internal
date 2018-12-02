@@ -91,7 +91,7 @@ private[spark] class AkkaRpcEnv private[akka] (
     @volatile var endpointRef: AkkaRpcEndpointRef = null
     // Use defered function because the Actor needs to use `endpointRef`.
     // So `actorRef` should be created after assigning `endpointRef`.
-    val actorRef = () => actorSystem.actorOf(Props(new Actor with ActorLogReceive with Logging {
+    val actorRef: () => ActorRef = () => actorSystem.actorOf(Props(new Actor with ActorLogReceive with Logging {
 
       assert(endpointRef != null)
 
@@ -263,7 +263,7 @@ private[spark] class AkkaRpcEnvFactory extends RpcEnvFactory {
   def create(config: RpcEnvConfig): RpcEnv = {
     val (actorSystem, boundPort) = AkkaUtils.createActorSystem(
       config.name, config.host, config.port, config.conf, config.securityManager)
-    actorSystem.actorOf(Props(classOf[ErrorMonitor]), "ErrorMonitor")
+
     new AkkaRpcEnv(actorSystem, config.securityManager, config.conf, boundPort)
   }
 }

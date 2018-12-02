@@ -17,6 +17,8 @@ object SparkPi {
       val y = random * 2 - 1
       if (x * x + y * y < 1) count += 1
     }
+
+    val l = spark.textFile("pom.xml").count()
     println("Pi is roughly " + 4 * count.value / 100000.0)
   }
 }

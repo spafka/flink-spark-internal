@@ -90,14 +90,14 @@ private[spark] object AkkaUtils extends Logging {
       |akka.loggers = [""akka.event.slf4j.Slf4jLogger""]
       |akka.stdout-loglevel = "ERROR"
       |akka.jvm-exit-on-fatal-error = off
-      |akka.remote.transport-failure-detector.heartbeat-interval = $akkaHeartBeatIntervalS s
-      |akka.remote.transport-failure-detector.acceptable-heartbeat-pause = $akkaHeartBeatPausesS s
+      |akka.remote.transport-failure-detector.heartbeat-interval = $akkaHeartBeatIntervalS
+      |akka.remote.transport-failure-detector.acceptable-heartbeat-pause = $akkaHeartBeatPausesS
       |akka.actor.provider = "akka.remote.RemoteActorRefProvider"
       |akka.remote.netty.tcp.transport-class = "akka.remote.transport.netty.NettyTransport"
       |akka.remote.netty.tcp.hostname = "$host"
       |akka.remote.netty.tcp.port = $port
       |akka.remote.netty.tcp.tcp-nodelay = on
-      |akka.remote.netty.tcp.connection-timeout = $akkaTimeoutS s
+      |akka.remote.netty.tcp.connection-timeout = $akkaTimeoutS
       |akka.remote.netty.tcp.maximum-frame-size = ${akkaFrameSize}B
       |akka.remote.netty.tcp.execution-pool-size = $akkaThreads
       |akka.actor.default-dispatcher.throughput = $akkaBatchSize
