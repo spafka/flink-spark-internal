@@ -38,24 +38,26 @@ import org.apache.spark.util.ShutdownHookManager
 import scala.collection.mutable
 
 private[hbase] case class HBaseRegion(
-    override val index: Int,
-    start: Option[HBaseType] = None,
-    end: Option[HBaseType] = None,
-    server: Option[String] = None) extends Partition
+                                       override val index: Int,
+                                       start: Option[HBaseType] = None,
+                                       end: Option[HBaseType] = None,
+                                       server: Option[String] = None) extends Partition
 
 private[hbase] case class HBaseScanPartition(
-    override val index: Int,
-    regions: HBaseRegion,
-    scanRanges: Array[ScanRange[Array[Byte]]],
-    tf: SerializedTypedFilter) extends Partition
+                                              override val index: Int,
+                                              regions: HBaseRegion,
+                                              scanRanges: Array[ScanRange[Array[Byte]]],
+                                              tf: SerializedTypedFilter) extends Partition
 
 private[hbase] class HBaseTableScanRDD(
-    relation: HBaseRelation,
-    requiredColumns: Array[String],
-    filters: Array[Filter]) extends RDD[Row](relation.sqlContext.sparkContext, Nil) {
+                                        relation: HBaseRelation,
+                                        requiredColumns: Array[String],
+                                        filters: Array[Filter]) extends RDD[Row](relation.sqlContext.sparkContext, Nil) {
   val outputs = StructType(requiredColumns.map(relation.schema(_))).toAttributes
   val columnFields = relation.splitRowKeyColumns(requiredColumns)._2
+
   private def sparkConf = SparkEnv.get.conf
+
   val serializedToken = relation.serializedToken
 
   override def getPartitions: Array[Partition] = {
@@ -63,14 +65,14 @@ private[hbase] class HBaseTableScanRDD(
     var idx = 0
     val r = RegionResource(relation)
     logInfo(s"[SPARK-HBASE] There are ${r.size} regions")
-    val ps = r.flatMap { x=>
+    val ps = r.flatMap { x =>
       // HBase take maximum as empty byte array, change it here.
       val pScan = ScanRange(Some(Bound(x.start.get, true)),
         if (x.end.get.size == 0) None else Some(Bound(x.end.get, false)))
       val ranges = ScanRange.and(pScan, hbaseFilter.ranges)(hbase.ord)
       logInfo(s"[SPARK-HBASE] partition $idx size: ${ranges.size}")
       if (ranges.size > 0) {
-        if(log.isDebugEnabled) {
+        if (log.isDebugEnabled) {
           ranges.foreach(x => logDebug(x.toString))
         }
         val p = Some(HBaseScanPartition(idx, x, ranges,
@@ -156,8 +158,9 @@ private[hbase] class HBaseTableScanRDD(
     val iterator = new Iterator[Result] {
       var idx = 0
       var cur: Option[Result] = None
+
       override def hasNext: Boolean = {
-        while(idx < result.length && cur.isEmpty) {
+        while (idx < result.length && cur.isEmpty) {
           val tmp = result(idx)
           idx += 1
           if (!tmp.isEmpty) {
@@ -169,6 +172,7 @@ private[hbase] class HBaseTableScanRDD(
         }
         cur.isDefined
       }
+
       override def next(): Result = {
         hasNext
         val ret = cur.get
@@ -182,6 +186,7 @@ private[hbase] class HBaseTableScanRDD(
   private def toResultIterator(scanner: ScanResource): Iterator[Result] = {
     val iterator = new Iterator[Result] {
       var cur: Option[Result] = None
+
       override def hasNext: Boolean = {
         if (cur.isEmpty) {
           val r = scanner.next()
@@ -193,6 +198,7 @@ private[hbase] class HBaseTableScanRDD(
         }
         cur.isDefined
       }
+
       override def next(): Result = {
         hasNext
         val ret = cur.get
@@ -204,15 +210,15 @@ private[hbase] class HBaseTableScanRDD(
   }
 
   private def toRowIterator(
-      it: Iterator[Result]): Iterator[Row] = {
+                             it: Iterator[Result]): Iterator[Row] = {
 
     val iterator = new Iterator[Row] {
-      val start         = System.currentTimeMillis()
+      val start = System.currentTimeMillis()
       var rowCount: Int = 0
       val indexedFields = relation.getIndexedProjections(requiredColumns).map(_._1)
 
       override def hasNext: Boolean = {
-        if(it.hasNext) {
+        if (it.hasNext) {
           true
         }
         else {
@@ -236,7 +242,7 @@ private[hbase] class HBaseTableScanRDD(
     * This solution stand for fetching more than one version
     */
   private def toFlattenRowIterator(
-      it: Iterator[Result]): Iterator[Row] = {
+                                    it: Iterator[Result]): Iterator[Row] = {
 
     val iterator = new Iterator[Row] {
       val start = System.currentTimeMillis()
@@ -245,7 +251,7 @@ private[hbase] class HBaseTableScanRDD(
       val indexedFields = relation.getIndexedProjections(requiredColumns).map(_._1)
 
       override def hasNext: Boolean = {
-        if(!rows.isEmpty || it.hasNext) {
+        if (!rows.isEmpty || it.hasNext) {
           true
         }
         else {
@@ -263,10 +269,10 @@ private[hbase] class HBaseTableScanRDD(
 
       override def next(): Row = {
         rowCount += 1
-        if(rows.isEmpty) {
+        if (rows.isEmpty) {
           val r = it.next()
           rows = buildRows(indexedFields, r)
-          if(rows.isEmpty) {
+          if (rows.isEmpty) {
             // If 'requiredColumns' is empty, 'indexedFields' will be empty, which leads to empty 'rows'.
             // This happens when users' query doesn't require Spark/SHC to return any real data from HBase tables,
             // e.g. dataframe.count()
@@ -289,9 +295,9 @@ private[hbase] class HBaseTableScanRDD(
   }
 
   private def buildScan(
-      start: Option[HBaseType],
-      end: Option[HBaseType],
-      columns: Seq[Field], filter: Option[HFilter]): Scan = {
+                         start: Option[HBaseType],
+                         end: Option[HBaseType],
+                         columns: Seq[Field], filter: Option[HFilter]): Scan = {
     val scan = {
       (start, end) match {
         case (Some(lb), Some(ub)) => new Scan(lb, ub)
@@ -304,7 +310,7 @@ private[hbase] class HBaseTableScanRDD(
 
     // set fetch size
     // scan.setCaching(scannerFetchSize)
-    columns.foreach{ c =>
+    columns.foreach { c =>
       scan.addColumn(
         relation.catalog.shcTableCoder.toBytes(c.cf),
         relation.catalog.shcTableCoder.toBytes(c.col))
@@ -316,17 +322,17 @@ private[hbase] class HBaseTableScanRDD(
   }
 
   private def buildGets(
-      tbr: TableResource,
-      g: Array[ScanRange[Array[Byte]]],
-      columns: Seq[Field],
-      filter: Option[HFilter]): Iterator[Result] = {
+                         tbr: TableResource,
+                         g: Array[ScanRange[Array[Byte]]],
+                         columns: Seq[Field],
+                         filter: Option[HFilter]): Iterator[Result] = {
     val size = sparkConf.getInt(SparkHBaseConf.BulkGetSize, SparkHBaseConf.defaultBulkGetSize)
-    g.grouped(size).flatMap{ x =>
+    g.grouped(size).flatMap { x =>
       val gets = new ArrayList[Get]()
-      x.foreach{ y =>
+      x.foreach { y =>
         val g = new Get(y.start.get.point)
         handleTimeSemantics(g)
-        columns.foreach{ c =>
+        columns.foreach { c =>
           g.addColumn(
             relation.catalog.shcTableCoder.toBytes(c.cf),
             relation.catalog.shcTableCoder.toBytes(c.col))
@@ -339,6 +345,7 @@ private[hbase] class HBaseTableScanRDD(
       toResultIterator(tmp)
     }
   }
+
   lazy val rddResources = RDDResources(new mutable.HashSet[Resource]())
 
   private def close() {
@@ -347,15 +354,16 @@ private[hbase] class HBaseTableScanRDD(
 
   override def compute(split: Partition, context: TaskContext): Iterator[Row] = {
     SHCCredentialsManager.processShcToken(serializedToken)
-    val ord = hbase.ord//implicitly[Ordering[HBaseType]]
+    val ord = hbase.ord
+    //implicitly[Ordering[HBaseType]]
     val partition = split.asInstanceOf[HBaseScanPartition]
     // remove the inclusive upperbound
     val scanRanges = partition.scanRanges.flatMap(ScanRange.split(_)(ord))
-    val (g, s) = scanRanges.partition{x =>
+    val (g, s) = scanRanges.partition { x =>
       x.start.isDefined && x.end.isDefined && ScanRange.compare(x.start, x.end, ord) == 0
     }
     logInfo(s"[SPARK-HBASE] ${g.length} gets, ${s.length} scans")
-    context.addTaskCompletionListener(context => close())
+    context.addTaskCompletionListener[Unit](context => close())
     val tableResource = TableResource(relation)
     val filter = TypedFilter.fromSerializedTypedFilter(partition.tf).filter
     val gIt: Iterator[Result] = {
@@ -375,12 +383,12 @@ private[hbase] class HBaseTableScanRDD(
       scanner
     }.map(toResultIterator(_))
 
-    val rIt = sIts.fold(Iterator.empty: Iterator[Result]){ case (x, y) =>
+    val rIt = sIts.fold(Iterator.empty: Iterator[Result]) { case (x, y) =>
       x ++ y
     } ++ gIt
 
     ShutdownHookManager.addShutdownHook { () => HBaseConnectionCache.close() }
-    if(relation.mergeToLatest) {
+    if (relation.mergeToLatest) {
       toRowIterator(rIt)
     } else {
       toFlattenRowIterator(rIt)
@@ -389,12 +397,12 @@ private[hbase] class HBaseTableScanRDD(
 
   private def handleTimeSemantics(query: Query): Unit = {
     // Set timestamp related values if present
-    (query, relation.timestamp, relation.minStamp, relation.maxStamp)  match {
+    (query, relation.timestamp, relation.minStamp, relation.maxStamp) match {
       case (q: Scan, Some(ts), None, None) => q.setTimeStamp(ts)
       case (q: Get, Some(ts), None, None) => q.setTimeStamp(ts)
 
-      case (q:Scan, None, Some(minStamp), Some(maxStamp)) => q.setTimeRange(minStamp, maxStamp)
-      case (q:Get, None, Some(minStamp), Some(maxStamp)) => q.setTimeRange(minStamp, maxStamp)
+      case (q: Scan, None, Some(minStamp), Some(maxStamp)) => q.setTimeRange(minStamp, maxStamp)
+      case (q: Get, None, Some(minStamp), Some(maxStamp)) => q.setTimeRange(minStamp, maxStamp)
 
       case (q, None, None, None) =>
 
@@ -414,9 +422,11 @@ case class RDDResources(set: mutable.HashSet[Resource]) {
   def addResource(s: Resource) {
     set += s
   }
+
   def release() {
     set.foreach(release(_))
   }
+
   def release(rs: Resource) {
     try {
       rs.release()

@@ -322,7 +322,6 @@ public class DFSUtil {
      */
     public static String bytes2String(byte[] bytes, int offset, int length) {
         return new String(bytes, offset, length, StandardCharsets.UTF_8);
-        return null;
     }
 
     /**

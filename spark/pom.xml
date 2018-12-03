@@ -18,11 +18,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <scala.binary.version>2.11</scala.binary.version>
         <spark.version>2.4.0</spark.version>
         <hadoop.version>2.6.2</hadoop.version>
         <hbase.version>1.1.2</hbase.version>
-        <scala.spark.version>2.11.12</scala.spark.version>
     </properties>
 
     <dependencies>
@@ -40,17 +38,17 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-            <version>${scala.spark.version}</version>
+            <version>${scala.version}</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
-            <version>${scala.spark.version}</version>
+            <version>${scala.version}</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-reflect</artifactId>
-            <version>${scala.spark.version}</version>
+            <version>${scala.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
