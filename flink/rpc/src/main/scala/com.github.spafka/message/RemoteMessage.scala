@@ -1,9 +1,16 @@
 package com.github.spafka.message
 
+/**
+  *
+  * Flink rpcMessage
+  * @Author github.com/spafka
+  * @Date 2019/1/6
+  */
 sealed class Message()
 
 // 注册信息相关
 case class RigistMessage(host: String, map: Map[String, String]) extends Message
+
 case class BreakMessage() extends Message
 
 // TASK 相关
@@ -27,5 +34,6 @@ case class Task(tdd: TaskDesc) {
 }
 
 case class AskMessage() extends Message
+
 case class ReplyMessage() extends Message
 

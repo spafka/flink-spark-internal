@@ -37,16 +37,16 @@ import org.apache.spark.rpc._
 import org.apache.spark.util.{ActorLogReceive, AkkaUtils, ThreadUtils}
 
 /**
- * A RpcEnv implementation based on Akka.
- *
- * TODO Once we remove all usages of Akka in other place, we can move this file to a new project and
- * remove Akka from the dependencies.
- */
-private[spark] class AkkaRpcEnv private[akka] (
-    val actorSystem: ActorSystem,
-    val securityManager: SecurityManager,
-    conf: SparkConf,
-    boundPort: Int)
+  * A RpcEnv implementation based on Akka.
+  *
+  * TODO Once we remove all usages of Akka in other place, we can move this file to a new project and
+  * remove Akka from the dependencies.
+  */
+private[spark] class AkkaRpcEnv private[akka](
+                                               val actorSystem: ActorSystem,
+                                               val securityManager: SecurityManager,
+                                               conf: SparkConf,
+                                               boundPort: Int)
   extends RpcEnv(conf) with Logging {
 
   private val defaultAddress: RpcAddress = {
@@ -59,14 +59,14 @@ private[spark] class AkkaRpcEnv private[akka] (
   override val address: RpcAddress = defaultAddress
 
   /**
-   * A lookup table to search a [[RpcEndpointRef]] for a [[RpcEndpoint]]. We need it to make
-   * [[RpcEndpoint.self]] work.
-   */
+    * A lookup table to search a [[RpcEndpointRef]] for a [[RpcEndpoint]]. We need it to make
+    * [[RpcEndpoint.self]] work.
+    */
   private val endpointToRef = new ConcurrentHashMap[RpcEndpoint, RpcEndpointRef]()
 
   /**
-   * Need this map to remove `RpcEndpoint` from `endpointToRef` via a `RpcEndpointRef`
-   */
+    * Need this map to remove `RpcEndpoint` from `endpointToRef` via a `RpcEndpointRef`
+    */
   private val refToEndpoint = new ConcurrentHashMap[RpcEndpointRef, RpcEndpoint]()
 
 
@@ -83,8 +83,8 @@ private[spark] class AkkaRpcEnv private[akka] (
   }
 
   /**
-   * Retrieve the [[RpcEndpointRef]] of `endpoint`.
-   */
+    * Retrieve the [[RpcEndpointRef]] of `endpoint`.
+    */
   override def endpointRef(endpoint: RpcEndpoint): RpcEndpointRef = endpointToRef.get(endpoint)
 
   override def setupEndpoint(name: String, endpoint: RpcEndpoint): RpcEndpointRef = {
@@ -120,7 +120,7 @@ private[spark] class AkkaRpcEnv private[akka] (
           }
 
         case e: AssociationEvent =>
-          // TODO ignore?
+        // TODO ignore?
 
         case m: AkkaMessage =>
           logDebug(s"Received RPC message: $m")
@@ -146,7 +146,7 @@ private[spark] class AkkaRpcEnv private[akka] (
         }
       }
 
-      }), name = name)
+    }), name = name)
     endpointRef = new AkkaRpcEndpointRef(defaultAddress, actorRef, conf, initInConstructor = false)
     registerEndpoint(endpoint, endpointRef)
     // Now actorRef can be created safely
@@ -191,9 +191,9 @@ private[spark] class AkkaRpcEnv private[akka] (
   }
 
   /**
-   * Run `action` safely to avoid to crash the thread. If any non-fatal exception happens, it will
-   * call `endpoint.onError`. If `endpoint.onError` throws any non-fatal exception, just log it.
-   */
+    * Run `action` safely to avoid to crash the thread. If any non-fatal exception happens, it will
+    * call `endpoint.onError`. If `endpoint.onError` throws any non-fatal exception, just log it.
+    */
   private def safelyCall(endpoint: RpcEndpoint)(action: => Unit): Unit = {
     try {
       action
@@ -269,8 +269,8 @@ private[spark] class AkkaRpcEnvFactory extends RpcEnvFactory {
 }
 
 /**
- * Monitor errors reported by Akka and log them.
- */
+  * Monitor errors reported by Akka and log them.
+  */
 private[akka] class ErrorMonitor extends Actor with ActorLogReceive with Logging {
 
   override def preStart(): Unit = {
@@ -283,16 +283,16 @@ private[akka] class ErrorMonitor extends Actor with ActorLogReceive with Logging
 }
 
 private[akka] class AkkaRpcEndpointRef(
-    @transient private val defaultAddress: RpcAddress,
-    @transient private val _actorRef: () => ActorRef,
-    conf: SparkConf,
-    initInConstructor: Boolean)
+                                        @transient private val defaultAddress: RpcAddress,
+                                        @transient private val _actorRef: () => ActorRef,
+                                        conf: SparkConf,
+                                        initInConstructor: Boolean)
   extends RpcEndpointRef(conf) with Logging {
 
   def this(
-      defaultAddress: RpcAddress,
-      _actorRef: ActorRef,
-      conf: SparkConf) = {
+            defaultAddress: RpcAddress,
+            _actorRef: ActorRef,
+            conf: SparkConf) = {
     this(defaultAddress, () => _actorRef, conf, true)
   }
 
@@ -324,7 +324,7 @@ private[akka] class AkkaRpcEndpointRef(
   override def ask[T: ClassTag](message: Any, timeout: RpcTimeout): Future[T] = {
     actorRef.ask(AkkaMessage(message, true))(timeout.duration).flatMap {
       // The function will run in the calling thread, so it should be short and never block.
-      case msg @ AkkaMessage(message, reply) =>
+      case msg@AkkaMessage(message, reply) =>
         if (reply) {
           logError(s"Receive $msg but the sender cannot reply")
           Future.failed(new SparkException(s"Receive $msg but the sender cannot reply"))
@@ -334,7 +334,7 @@ private[akka] class AkkaRpcEndpointRef(
       case AkkaFailure(e) =>
         Future.failed(e)
     }(ThreadUtils.sameThread).mapTo[T].
-    recover(timeout.addMessageIfTimeout)(ThreadUtils.sameThread)
+      recover(timeout.addMessageIfTimeout)(ThreadUtils.sameThread)
   }
 
   override def toString: String = s"${getClass.getSimpleName}($actorRef)"
@@ -348,13 +348,14 @@ private[akka] class AkkaRpcEndpointRef(
 }
 
 /**
- * A wrapper to `message` so that the receiver knows if the sender expects a reply.
- * @param message
- * @param needReply if the sender expects a reply message
- */
+  * A wrapper to `message` so that the receiver knows if the sender expects a reply.
+  *
+  * @param message
+  * @param needReply if the sender expects a reply message
+  */
 private[akka] case class AkkaMessage(message: Any, needReply: Boolean)
 
 /**
- * A reply with the failure error from the receiver to the sender
- */
+  * A reply with the failure error from the receiver to the sender
+  */
 private[akka] case class AkkaFailure(e: Throwable)
