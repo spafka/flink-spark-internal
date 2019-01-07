@@ -24,10 +24,8 @@ import scala.language.implicitConversions
 
 import org.apache.hadoop.hbase.TableName
 import org.apache.hadoop.hbase.client._
-
 // Resource and ReferencedResources are defined for extensibility,
 // e.g., consolidate scan and bulkGet in the future work.
-
 // User has to invoke release explicitly to release the resource,
 // and potentially parent resources
 trait Resource {
@@ -51,8 +49,11 @@ case class GetResource(tbr: TableResource, rs: Array[Result]) extends Resource {
 // It will not be released until the counter reaches 0
 trait ReferencedResource {
   var count: Int = 0
+
   def init(): Unit
+
   def destroy(): Unit
+
   def acquire() = synchronized {
     try {
       count += 1
@@ -60,8 +61,7 @@ trait ReferencedResource {
         init()
       }
     } catch {
-      case e: Throwable =>
-        release()
+      case e: Throwable => release()
         throw e
     }
   }
@@ -79,8 +79,7 @@ trait ReferencedResource {
       try {
         func
       } catch {
-        case e: Throwable =>
-          release()
+        case e: Throwable => release()
           throw e
       }
     }
@@ -110,13 +109,7 @@ case class RegionResource(relation: HBaseRelation) extends ReferencedResource {
 
   val regions = releaseOnException {
     val keys = rl.getStartEndKeys
-    keys.getFirst.zip(keys.getSecond)
-      .zipWithIndex
-      .map(x =>
-      HBaseRegion(x._2,
-        Some(x._1._1),
-        Some(x._1._2),
-        Some(rl.getRegionLocation(x._1._1).getHostname)))
+    keys.getFirst.zip(keys.getSecond).zipWithIndex.map(x => HBaseRegion(x._2, Some(x._1._1), Some(x._1._2), Some(rl.getRegionLocation(x._1._1).getHostname)))
   }
 }
 
@@ -141,15 +134,15 @@ case class TableResource(relation: HBaseRelation) extends ReferencedResource {
   }
 
   def get(list: java.util.List[org.apache.hadoop.hbase.client.Get]) = releaseOnException {
-      GetResource(this, table.get(list))
+    GetResource(this, table.get(list))
   }
 
   def getScanner(scan: Scan): ScanResource = releaseOnException {
-      ScanResource(this, table.getScanner(scan))
+    ScanResource(this, table.getScanner(scan))
   }
 }
 
-object HBaseResources{
+object HBaseResources {
   implicit def ScanResToScan(sr: ScanResource): ResultScanner = {
     sr.rs
   }

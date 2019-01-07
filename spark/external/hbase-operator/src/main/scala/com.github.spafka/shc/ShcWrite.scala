@@ -6,11 +6,7 @@ object ShcWrite {
     import org.apache.spark.sql.SparkSession
     import org.apache.spark.sql.execution.datasources.hbase.HBaseTableCatalog
 
-    val spark = SparkSession
-      .builder()
-      .appName("WriteHBase")
-      .master("local[*]")
-      .getOrCreate()
+    val spark = SparkSession.builder().appName("WriteHBase").master("local[*]").getOrCreate()
     val sc = spark.sparkContext
 
     import spark.implicits._
@@ -20,11 +16,7 @@ object ShcWrite {
       val data = (1 to 10000).map(y => errorr.apply((x * 10000 + y).toString))
 
       // 写数据
-      sc.parallelize(data).toDF
-        .write
-        .options(Map(HBaseTableCatalog.tableCatalog -> Catalog.errcrSchema, HBaseTableCatalog.newTable -> "5"))
-        .format("org.apache.spark.sql.execution.datasources.hbase")
-        .save()
+      sc.parallelize(data).toDF.write.options(Map(HBaseTableCatalog.tableCatalog -> Catalog.errcrSchema, HBaseTableCatalog.newTable -> "5")).format("org.apache.spark.sql.execution.datasources.hbase").save()
 
       Thread.sleep(10000)
     })

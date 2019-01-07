@@ -36,15 +36,11 @@ import org.apache.spark.SparkEnv
 import org.apache.spark.sql.execution.datasources.hbase.SHCCredentialsManager._
 
 final class SHCCredentialsManager private() extends Logging {
-  private class TokenInfo(
-    val expireTime: Long,
-    val issueTime: Long,
-    val refreshTime: Long,
-    val conf: Configuration,
-    val token: Token[_ <: TokenIdentifier],
-    val serializedToken: Array[Byte])
+
+  private class TokenInfo(val expireTime: Long, val issueTime: Long, val refreshTime: Long, val conf: Configuration, val token: Token[_ <: TokenIdentifier], val serializedToken: Array[Byte])
 
   private def sparkConf = SparkEnv.get.conf
+
   private val expireTimeFraction = sparkConf.getDouble(SparkHBaseConf.expireTimeFraction, 0.95)
   private val refreshTimeFraction = sparkConf.getDouble(SparkHBaseConf.refreshTimeFraction, 0.6)
   private val refreshDurationMins = sparkConf.getInt(SparkHBaseConf.refreshDurationMins, 10)
@@ -55,42 +51,36 @@ final class SHCCredentialsManager private() extends Logging {
   private val nextRefresh = TimeUnit.MINUTES.toMillis(refreshDurationMins)
 
   private val credentialsManagerEnabled = {
-    val isEnabled = sparkConf.getBoolean(SparkHBaseConf.credentialsManagerEnabled, false) &&
-      UserGroupInformation.isSecurityEnabled
+    val isEnabled = sparkConf.getBoolean(SparkHBaseConf.credentialsManagerEnabled, false) && UserGroupInformation.isSecurityEnabled
     logInfo(s"SHCCredentialsManager was${if (isEnabled) "" else " not"} enabled.")
     isEnabled
   }
 
-  val tokenUpdateExecutor = Executors.newSingleThreadScheduledExecutor(
-    ThreadUtils.namedThreadFactory("HBase Tokens Refresh Thread"))
+  val tokenUpdateExecutor = Executors.newSingleThreadScheduledExecutor(ThreadUtils.namedThreadFactory("HBase Tokens Refresh Thread"))
 
   // If SHCCredentialsManager is enabled, start an executor to update tokens
   if (credentialsManagerEnabled) {
     val tokenUpdateRunnable = new Runnable {
       override def run(): Unit = Utils.logUncaughtExceptions(updateTokensIfRequired())
     }
-    tokenUpdateExecutor.scheduleAtFixedRate(
-      tokenUpdateRunnable, nextRefresh, nextRefresh, TimeUnit.MILLISECONDS)
+    tokenUpdateExecutor.scheduleAtFixedRate(tokenUpdateRunnable, nextRefresh, nextRefresh, TimeUnit.MILLISECONDS)
   }
 
   private val (principal, keytab) = if (credentialsManagerEnabled) {
     val p = sparkConf.get(SparkHBaseConf.principal, sparkConf.get("spark.yarn.principal", null))
     val k = sparkConf.get(SparkHBaseConf.keytab, sparkConf.get("spark.yarn.keytab", null))
-    require(p != null, s"neither ${SparkHBaseConf.principal} nor spark.yarn.principal " +
-      s"is configured, this should be configured to make token renewal work")
-    require(k != null, s"neither ${SparkHBaseConf.keytab} nor spark.yarn.keytab " +
-      s"is configured, this should be configured to make token renewal work")
+    require(p != null, s"neither ${SparkHBaseConf.principal} nor spark.yarn.principal " + s"is configured, this should be configured to make token renewal work")
+    require(k != null, s"neither ${SparkHBaseConf.keytab} nor spark.yarn.keytab " + s"is configured, this should be configured to make token renewal work")
     (p, k)
   } else {
     (null, null)
   }
 
   /**
-   * Get HBase Token from specified cluster name.
-   */
+    * Get HBase Token from specified cluster name.
+    */
   def getTokenForCluster(conf: Configuration): Array[Byte] = {
-    if (!isCredentialsRequired(conf))
-      return null
+    if (!isCredentialsRequired(conf)) return null
 
     // var token: Token[_ <: TokenIdentifier] = null
     var serializedToken: Array[Byte] = null
@@ -126,30 +116,25 @@ final class SHCCredentialsManager private() extends Logging {
       // token = tokenInfo.token
       serializedToken = tokenInfo.serializedToken
 
-      logInfo(s"getTokenForCluster: Obtained new token with expiration time" +
-        s" ${new Date(tokenInfo.expireTime)} and refresh time ${new Date(tokenInfo.refreshTime)} " +
-        s"for cluster $identifier")
+      logInfo(s"getTokenForCluster: Obtained new token with expiration time" + s" ${new Date(tokenInfo.expireTime)} and refresh time ${new Date(tokenInfo.refreshTime)} " + s"for cluster $identifier")
     }
 
     serializedToken
   }
 
   private def isTokenInfoExpired(tokenInfo: TokenInfo): Boolean = {
-    System.currentTimeMillis() >=
-      ((tokenInfo.expireTime - tokenInfo.issueTime) * expireTimeFraction + tokenInfo.issueTime).toLong
+    System.currentTimeMillis() >= ((tokenInfo.expireTime - tokenInfo.issueTime) * expireTimeFraction + tokenInfo.issueTime).toLong
   }
 
   private def getRefreshTime(issueTime: Long, expireTime: Long): Long = {
-    require(expireTime > issueTime,
-      s"Token expire time $expireTime is smaller than issue time $issueTime")
+    require(expireTime > issueTime, s"Token expire time $expireTime is smaller than issue time $issueTime")
 
     // the expected expire time would be 60% of real expire time, to avoid long running task
     // failure.
     ((expireTime - issueTime) * refreshTimeFraction + issueTime).toLong
   }
 
-  private def isCredentialsRequired(conf: Configuration): Boolean =
-    credentialsManagerEnabled && conf.get("hbase.security.authentication") == "kerberos"
+  private def isCredentialsRequired(conf: Configuration): Boolean = credentialsManagerEnabled && conf.get("hbase.security.authentication") == "kerberos"
 
   private def updateTokensIfRequired(): Unit = {
     val currTime = System.currentTimeMillis()
@@ -163,18 +148,16 @@ final class SHCCredentialsManager private() extends Logging {
       logInfo("Refresh Thread: No tokens require update")
     } else {
       // Update all the expect to be expired tokens
-      val updatedTokens = tokensToUpdate.map { case (cluster, tokenInfo) =>
-        val token = {
-          try {
-            val tok = getNewToken(tokenInfo.conf)
-            logInfo(s"Refresh Thread: Successfully obtained token for cluster $cluster")
-            tok
-          } catch {
-            case NonFatal(ex) =>
-              logWarning(s"Refresh Thread: Unable to fetch tokens from HBase cluster $cluster", ex)
-              null
-          }
+      val updatedTokens = tokensToUpdate.map { case (cluster, tokenInfo) => val token = {
+        try {
+          val tok = getNewToken(tokenInfo.conf)
+          logInfo(s"Refresh Thread: Successfully obtained token for cluster $cluster")
+          tok
+        } catch {
+          case NonFatal(ex) => logWarning(s"Refresh Thread: Unable to fetch tokens from HBase cluster $cluster", ex)
+            null
         }
+      }
         (cluster, token)
       }.filter(null != _._2)
 
@@ -202,18 +185,14 @@ final class SHCCredentialsManager private() extends Logging {
   }
 
   private def clusterIdentifier(conf: Configuration): String = {
-    require(conf.get("zookeeper.znode.parent") != null &&
-      conf.get("hbase.zookeeper.quorum") != null &&
-      conf.get("hbase.zookeeper.property.clientPort") != null)
+    require(conf.get("zookeeper.znode.parent") != null && conf.get("hbase.zookeeper.quorum") != null && conf.get("hbase.zookeeper.property.clientPort") != null)
 
-    conf.get("zookeeper.znode.parent") + "#" +
-      conf.get("hbase.zookeeper.quorum") + "#" +
-      conf.get("hbase.zookeeper.property.clientPort")
+    conf.get("zookeeper.znode.parent") + "#" + conf.get("hbase.zookeeper.quorum") + "#" + conf.get("hbase.zookeeper.property.clientPort")
   }
 }
 
 object SHCCredentialsManager extends Logging {
-  lazy val manager = new  SHCCredentialsManager
+  lazy val manager = new SHCCredentialsManager
 
   def processShcToken(serializedToken: Array[Byte]): Unit = {
     if (null != serializedToken) {
@@ -221,8 +200,9 @@ object SHCCredentialsManager extends Logging {
       val credentials = new Credentials()
       credentials.addToken(tok.getService, tok)
 
-      logInfo(s"Obtained token with expiration date ${new Date(tok.decodeIdentifier()
-        .asInstanceOf[AuthenticationTokenIdentifier].getExpirationDate)}")
+      logInfo(s"Obtained token with expiration date ${
+        new Date(tok.decodeIdentifier().asInstanceOf[AuthenticationTokenIdentifier].getExpirationDate)
+      }")
 
       UserGroupInformation.getCurrentUser.addCredentials(credentials)
     }

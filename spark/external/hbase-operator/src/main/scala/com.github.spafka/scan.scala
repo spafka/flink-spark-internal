@@ -19,12 +19,8 @@ object scan {
   def main(args: Array[String]): Unit = {
 
     //2018-07-17T00:00:00 2018-07-18T00:00:00 _GPS
-
     if (args.length < 3) {
-      System.err.print("Error input,plz input 3 param +\n" +
-        "startDate[YYYY-MM-DD'T'HH-mm-ss]\n" +
-        "endDate[YYYY-MM-DD'T'HH-mm-ss]\n" +
-        "tableName[_GPS]")
+      System.err.print("Error input,plz input 3 param +\n" + "startDate[YYYY-MM-DD'T'HH-mm-ss]\n" + "endDate[YYYY-MM-DD'T'HH-mm-ss]\n" + "tableName[_GPS]")
 
       System.exit(0)
     }
@@ -43,10 +39,8 @@ object scan {
     scan.setFilter(new PrefixFilter(Bytes.toBytes(new StringBuffer("0b15200196").reverse().toString)))
 
 
-    scan.setTimeRange(LocalDateTime.parse(args(0)).toInstant(ZoneOffset.of("+8")).toEpochMilli(),
-      LocalDateTime.parse(args(1)).toInstant(ZoneOffset.of("+8")).toEpochMilli())
-    scan.setBatch(10000)
-    // 一次scan 返回的数据长度 适用于Mr，默认为1 需建立多次io连接
+    scan.setTimeRange(LocalDateTime.parse(args(0)).toInstant(ZoneOffset.of("+8")).toEpochMilli(), LocalDateTime.parse(args(1)).toInstant(ZoneOffset.of("+8")).toEpochMilli())
+    scan.setBatch(10000) // 一次scan 返回的数据长度 适用于Mr，默认为1 需建立多次io连接
     scan.setCaching(10000)
     scan.setMaxResultSize(10000)
     scan.setCacheBlocks(false)
@@ -54,9 +48,7 @@ object scan {
 
 
     // 直接读取hadoop file文件,设定读取得文件格式
-    val hBaseRDD: RDD[(ImmutableBytesWritable, Result)] = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat],
-      classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
-      classOf[org.apache.hadoop.hbase.client.Result])
+    val hBaseRDD: RDD[(ImmutableBytesWritable, Result)] = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat], classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable], classOf[org.apache.hadoop.hbase.client.Result])
 
     hBaseRDD.foreach { case (_, result) => {
 
@@ -64,7 +56,6 @@ object scan {
       val cells: java.util.List[Cell] = result.listCells()
       val cellss = cells.asScala
       cellss.foreach(x => {
-
         val bytes = x.getQualifier()
 
         println((Bytes.toString(result.getRow), Bytes.toString(x.getQualifier), Bytes.toString(x.getValue)))

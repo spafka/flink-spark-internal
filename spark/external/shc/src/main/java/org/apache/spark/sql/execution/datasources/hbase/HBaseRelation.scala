@@ -43,23 +43,16 @@ import org.apache.spark.sql.execution.datasources.hbase.types.SHCDataTypeFactory
 import org.apache.spark.util.Utils
 
 /**
- * val people = sqlContext.read.format("hbase").load("people")
- */
-private[sql] class DefaultSource extends RelationProvider with CreatableRelationProvider {//with DataSourceRegister {
-
+  * val people = sqlContext.read.format("hbase").load("people")
+  */
+private[sql] class DefaultSource extends RelationProvider with CreatableRelationProvider {
+  //with DataSourceRegister {
   //override def shortName(): String = "hbase"
-
-  override def createRelation(
-      sqlContext: SQLContext,
-      parameters: Map[String, String]): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = {
     HBaseRelation(parameters, None)(sqlContext)
   }
 
-  override def createRelation(
-    sqlContext: SQLContext,
-    mode: SaveMode,
-    parameters: Map[String, String],
-    data: DataFrame): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext, mode: SaveMode, parameters: Map[String, String], data: DataFrame): BaseRelation = {
     val relation = HBaseRelation(parameters, Some(data.schema))(sqlContext)
     relation.createTableIfNotExist()
     relation.insert(data, false)
@@ -67,14 +60,9 @@ private[sql] class DefaultSource extends RelationProvider with CreatableRelation
   }
 }
 
-case class InvalidRegionNumberException(message: String = "", cause: Throwable = null)
-              extends Exception(message, cause) 
+case class InvalidRegionNumberException(message: String = "", cause: Throwable = null) extends Exception(message, cause)
 
-case class HBaseRelation(
-    parameters: Map[String, String],
-    userSpecifiedschema: Option[StructType]
-  )(@transient val sqlContext: SQLContext)
-  extends BaseRelation with PrunedFilteredScan with InsertableRelation with Logging {
+case class HBaseRelation(parameters: Map[String, String], userSpecifiedschema: Option[StructType])(@transient val sqlContext: SQLContext) extends BaseRelation with PrunedFilteredScan with InsertableRelation with Logging {
 
   val timestamp = parameters.get(HBaseRelation.TIMESTAMP).map(_.toLong)
   val minStamp = parameters.get(HBaseRelation.MIN_STAMP).map(_.toLong)
@@ -91,16 +79,16 @@ case class HBaseRelation(
       if (testConf) {
         SparkHBaseConf.conf
       } else {
-        val hBaseConfiguration = parameters.get(HBaseRelation.HBASE_CONFIGURATION).map(
-          parse(_).extract[Map[String, String]])
+        val hBaseConfiguration = parameters.get(HBaseRelation.HBASE_CONFIGURATION).map(parse(_).extract[Map[String, String]])
 
         val cFile = parameters.get(HBaseRelation.HBASE_CONFIGFILE)
         val hBaseConfigFile = {
           var confMap: Map[String, String] = Map.empty
           if (cFile.isDefined) {
             val xmlFile = XML.loadFile(cFile.get)
-            (xmlFile \\ "property").foreach(
-              x => { confMap += ((x \ "name").text -> (x \ "value").text) })
+            (xmlFile \\ "property").foreach(x => {
+              confMap += ((x \ "name").text -> (x \ "value").text)
+            })
           }
           confMap
         }
@@ -110,8 +98,7 @@ case class HBaseRelation(
         hBaseConfigFile.foreach(e => conf.set(e._1, e._2))
         conf
       }
-    }
-    // task is already broadcast; since hConf is per HBaseRelation (currently), broadcast'ing
+    } // task is already broadcast; since hConf is per HBaseRelation (currently), broadcast'ing
     // it again does not help - it actually hurts. When we add support for
     // caching hConf across HBaseRelation, we can revisit broadcast'ing it (with a caching
     // mechanism in place)
@@ -132,25 +119,21 @@ case class HBaseRelation(
       true
     } catch {
       case e: NamespaceNotFoundException => false
-      case NonFatal(e) =>
-        logError("Unexpected error", e)
+      case NonFatal(e) => logError("Unexpected error", e)
         false
     }
     if (!isNameSpaceExist) {
       admin.createNamespace(NamespaceDescriptor.create(catalog.namespace).build)
     }
-    val tName = TableName.valueOf(s"${catalog.namespace}:${catalog.name}")
-    // The names of tables which are created by the Examples has prefix "shcExample"
-    if (admin.isTableAvailable(tName)
-      && tName.toString.startsWith(s"${catalog.namespace}:shcExample")){
+    val tName = TableName.valueOf(s"${catalog.namespace}:${catalog.name}") // The names of tables which are created by the Examples has prefix "shcExample"
+    if (admin.isTableAvailable(tName) && tName.toString.startsWith(s"${catalog.namespace}:shcExample")) {
       admin.disableTable(tName)
       admin.deleteTable(tName)
     }
 
     if (!admin.isTableAvailable(tName)) {
       if (catalog.numReg <= 3) {
-        throw new InvalidRegionNumberException("Creating a new table should " +
-          "specify the number of regions which must be greater than 3.")
+        throw new InvalidRegionNumberException("Creating a new table should " + "specify the number of regions which must be greater than 3.")
       }
       val tableDesc = new HTableDescriptor(tName)
       cfs.foreach { x =>
@@ -164,7 +147,7 @@ case class HBaseRelation(
       val splitKeys = Bytes.split(startKey, endKey, catalog.numReg - 3)
       admin.createTable(tableDesc, splitKeys)
       val r = connection.getRegionLocator(tName).getAllRegionLocations
-      while(r == null || r.size() == 0) {
+      while (r == null || r.size() == 0) {
         logDebug(s"region not allocated")
         Thread.sleep(1000)
       }
@@ -176,54 +159,43 @@ case class HBaseRelation(
   }
 
   private def convertToPut(rkFields: Seq[Field])(row: Row) = {
-    val rkIdxedFields: Seq[(Int, Field)] = rkFields.map{ case x =>
-      (schema.fieldIndex(x.colName), x)
+    val rkIdxedFields: Seq[(Int, Field)] = rkFields.map { case x => (schema.fieldIndex(x.colName), x)
     }
-    val colsIdxedFields = schema
-      .fieldNames
-      .partition( x => rkFields.map(_.colName).contains(x))
-      ._2.map(x => (schema.fieldIndex(x), catalog.getField(x)))
+    val colsIdxedFields = schema.fieldNames.partition(x => rkFields.map(_.colName).contains(x))._2.map(x => (schema.fieldIndex(x), catalog.getField(x)))
 
     val coder = catalog.shcTableCoder
     // construct bytes for row key
-    val rBytes =
-      if (isComposite()) {
-        val rowBytes = coder.encodeCompositeRowKey(rkIdxedFields, row)
+    val rBytes = if (isComposite()) {
+      val rowBytes = coder.encodeCompositeRowKey(rkIdxedFields, row)
 
-        val rLen = rowBytes.foldLeft(0) { case (x, y) =>
-          x + y.length
-        }
-        val rBytes = new Array[Byte](rLen)
-        var offset = 0
-        rowBytes.foreach { x =>
-          System.arraycopy(x, 0, rBytes, offset, x.length)
-          offset += x.length
-        }
-        rBytes
-      } else {
-        val rBytes = rkIdxedFields.map { case (x, y) =>
-          SHCDataTypeFactory.create(y).toBytes(row(x))
-        }
-        rBytes(0)
+      val rLen = rowBytes.foldLeft(0) { case (x, y) => x + y.length
       }
+      val rBytes = new Array[Byte](rLen)
+      var offset = 0
+      rowBytes.foreach { x =>
+        System.arraycopy(x, 0, rBytes, offset, x.length)
+        offset += x.length
+      }
+      rBytes
+    } else {
+      val rBytes = rkIdxedFields.map { case (x, y) => SHCDataTypeFactory.create(y).toBytes(row(x))
+      }
+      rBytes(0)
+    }
     val put = timestamp.fold(new Put(rBytes))(new Put(rBytes, _))
-    colsIdxedFields.foreach { case (x, y) =>
-      val value = row(x)
-      if(value != null) {
-        put.addColumn(
-          coder.toBytes(y.cf),
-          coder.toBytes(y.col),
-          SHCDataTypeFactory.create(y).toBytes(value))
+    colsIdxedFields.foreach { case (x, y) => val value = row(x)
+      if (value != null) {
+        put.addColumn(coder.toBytes(y.cf), coder.toBytes(y.col), SHCDataTypeFactory.create(y).toBytes(value))
       }
     }
     (new ImmutableBytesWritable, put)
   }
 
   /**
-   *
-   * @param data DataFrame to write to hbase
-   * @param overwrite Overwrite existing values
-   */
+    *
+    * @param data      DataFrame to write to hbase
+    * @param overwrite Overwrite existing values
+    */
   override def insert(data: DataFrame, overwrite: Boolean): Unit = {
     hbaseConf.set(TableOutputFormat.OUTPUT_TABLE, s"${catalog.namespace}:${catalog.name}")
     val job = Job.getInstance(hbaseConf)
@@ -238,7 +210,6 @@ case class HBaseRelation(
 
     val rkFields = catalog.getRowKey
     val rdd = data.rdd //df.queryExecution.toRdd
-
     rdd.mapPartitions(iter => {
       SHCCredentialsManager.processShcToken(serializedToken)
       iter.map(convertToPut(rkFields))
@@ -265,6 +236,7 @@ case class HBaseRelation(
   def isComposite(): Boolean = {
     catalog.getRowKey.size > 1
   }
+
   def isColumn(c: String): Boolean = {
     !catalog.getRowKey.map(_.colName).contains(c)
   }
@@ -283,6 +255,7 @@ case class HBaseRelation(
   def getIndexedProjections(requiredColumns: Array[String]): Seq[(Field, Int)] = {
     requiredColumns.map(catalog.sMap.getField(_)).zipWithIndex
   }
+
   // Retrieve all columns we will return in the scanner
   def splitRowKeyColumns(requiredColumns: Array[String]): (Seq[Field], Seq[Field]) = {
     val (l, r) = requiredColumns.map(catalog.sMap.getField(_)).partition(_.cf == HBaseTableCatalog.rowKey)

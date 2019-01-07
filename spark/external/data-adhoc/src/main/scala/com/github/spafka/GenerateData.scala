@@ -7,18 +7,13 @@ object GenerateData {
 
   def main(args: Array[String]): Unit = {
 
-    val spark = SparkSession
-      .builder()
-      .appName("thrift")
-      .master("local[*]")
-      .enableHiveSupport()
-      .getOrCreate()
+    val spark = SparkSession.builder().appName("thrift").master("local[*]").enableHiveSupport().getOrCreate()
 
-    val a=1<<25
+    val a = 1 << 25
     import spark.implicits._
     import spark.sql
-//    val ds: Dataset[errorr] = spark.range(1, a ).map(x => errorr.apply(x.toString)).as[errorr]
-//    ds.write.parquet("d100")
+    //    val ds: Dataset[errorr] = spark.range(1, a ).map(x => errorr.apply(x.toString)).as[errorr]
+    //    ds.write.parquet("d100")
     spark.read.parquet("d100").as[errorr].createOrReplaceTempView("d100")
     sql("select col1,count(*)  as c from d100 group by col1 order by  c desc").show()
 

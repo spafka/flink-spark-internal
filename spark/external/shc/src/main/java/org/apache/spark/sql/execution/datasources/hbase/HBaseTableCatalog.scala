@@ -33,12 +33,7 @@ import scala.collection.mutable
 
 case class CatalogVersion(major: Int, minor: Int) extends Comparable[CatalogVersion] {
   override def compareTo(o: CatalogVersion): Int = {
-    if (major > o.major)
-      1
-    else if (major == o.major)
-      minor - o.minor
-    else
-      -1
+    if (major > o.major) 1 else if (major == o.major) minor - o.minor else -1
   }
 
   override def toString: String = major + "." + minor
@@ -48,8 +43,7 @@ object CatalogVersion {
   def apply(s: String): CatalogVersion = {
     // Valid versions: "1.3", "1"
     // Invalid versions: ".3"
-    if (!s.matches("^[0-9]{1,9}(\\.[0-9]{1,9})?$"))
-      throw new IllegalArgumentException("Invalid version: " + s)
+    if (!s.matches("^[0-9]{1,9}(\\.[0-9]{1,9})?$")) throw new IllegalArgumentException("Invalid version: " + s)
 
     val arr: Array[String] = s.split("\\.")
 
@@ -60,25 +54,18 @@ object CatalogVersion {
       if (arr(1) != null && !arr(1).isEmpty) // minor version number is optional
         n = Integer.parseInt(arr(1))
     } catch {
-      case e: NumberFormatException =>
-        throw new IllegalArgumentException("Invalid version: " + s)
+      case e: NumberFormatException => throw new IllegalArgumentException("Invalid version: " + s)
     }
     CatalogVersion(m, n)
   }
 }
 
 // The definition of each column cell, which may be composite type
-case class Field(
-    colName: String,
-    cf: String,
-    col: String,
-    fCoder: String,
-    sType: Option[String] = None,
-    avroSchema: Option[String] = None,
-    len: Int = -1) extends Logging {
+case class Field(colName: String, cf: String, col: String, fCoder: String, sType: Option[String] = None, avroSchema: Option[String] = None, len: Int = -1) extends Logging {
 
   val isRowKey = cf == HBaseTableCatalog.rowKey
   var start: Int = _
+
   def schema: Option[Schema] = avroSchema.map { x =>
     logDebug(s"avro: $x")
     val p = new Schema.Parser
@@ -93,15 +80,11 @@ case class Field(
   }
 
   // converter from catalyst to avro
-  lazy val catalystToAvro: (Any) => Any ={
+  lazy val catalystToAvro: (Any) => Any = {
     SchemaConverters.createConverterToAvro(dt, colName, "recordNamespace")
   }
 
-  val dt =
-    if (avroSchema.isDefined)
-      schema.map{ x => SchemaConverters.toSqlType(x).dataType }.get
-    else
-      sType.map(CatalystSqlParser.parseDataType(_)).get
+  val dt = if (avroSchema.isDefined) schema.map { x => SchemaConverters.toSqlType(x).dataType }.get else sType.map(CatalystSqlParser.parseDataType(_)).get
 
   val length: Int = {
     if (len == -1) {
@@ -122,8 +105,7 @@ case class Field(
   }
 
   override def equals(other: Any): Boolean = other match {
-    case that: Field =>
-      colName == that.colName && cf == that.cf && col == that.col
+    case that: Field => colName == that.colName && cf == that.cf && col == that.col
     case _ => false
   }
 }
@@ -134,13 +116,13 @@ case class RowKey(k: String) {
   val keys = k.split(":")
   var fields: Seq[Field] = _
   var varLength = false
+
   def length = {
-    val tmp = fields.foldLeft(0) { case (x, y) =>
-      val yLen = if (y.length == -1) {
-        MaxLength
-      } else {
-        y.length
-      }
+    val tmp = fields.foldLeft(0) { case (x, y) => val yLen = if (y.length == -1) {
+      MaxLength
+    } else {
+      y.length
+    }
       x + yLen
     }
     tmp
@@ -149,8 +131,7 @@ case class RowKey(k: String) {
 
 // The map between the column presented to Spark and the HBase field
 case class SchemaMap(map: mutable.LinkedHashMap[String, Field]) {
-  def toFields = map.map { case (name, field) =>
-    StructField(name, field.dt)
+  def toFields = map.map { case (name, field) => StructField(name, field.dt)
   }.toSeq
 
   def fields = map.values
@@ -159,18 +140,15 @@ case class SchemaMap(map: mutable.LinkedHashMap[String, Field]) {
 }
 
 // The definition of HBase and Relation relation schema
-case class HBaseTableCatalog(
-    val namespace: String,
-    val name: String,
-    row: RowKey,
-    sMap: SchemaMap,
-    tCoder: String,
-    coderSet: Set[String],
-    val numReg: Int) extends Logging {
+case class HBaseTableCatalog(val namespace: String, val name: String, row: RowKey, sMap: SchemaMap, tCoder: String, coderSet: Set[String], val numReg: Int) extends Logging {
   def toDataType = StructType(sMap.toFields)
+
   def getField(name: String) = sMap.getField(name)
+
   def getRowKey: Seq[Field] = row.fields
-  def getPrimaryKey= row.keys(0)
+
+  def getPrimaryKey = row.keys(0)
+
   def getColumnFamilies = {
     sMap.fields.map(_.cf).filter(_ != HBaseTableCatalog.rowKey).toSeq.distinct
   }
@@ -191,32 +169,27 @@ case class HBaseTableCatalog(
           start += f.length
         }
       } else {
-        throw new Exception("PrimitiveType: only the last dimension of RowKey is allowed to have " +
-          "varied length. You may want to add 'length' to the dimensions which have " +
-          "varied length or use dimensions which are scala/java primitive data " +
-          "types of fixed length.")
+        throw new Exception("PrimitiveType: only the last dimension of RowKey is allowed to have " + "varied length. You may want to add 'length' to the dimensions which have " + "varied length or use dimensions which are scala/java primitive data " + "types of fixed length.")
       }
     }
   }
+
   initRowKey()
 
   def validateCatalogDef() = {
     if (!shcTableCoder.isRowKeySupported()) {
-      throw new UnsupportedOperationException(s"$tCoder does not support row key, and can not be " +
-        s"the table coder.")
+      throw new UnsupportedOperationException(s"$tCoder does not support row key, and can not be " + s"the table coder.")
     }
 
-    if (coderSet.size > 1){
+    if (coderSet.size > 1) {
       // Only Avro can be used with anther coder
-      if (!coderSet.contains(SparkHBaseConf.Avro))
-        throw new UnsupportedOperationException("Two different coders can not be " +
-          "used to encode/decode the same Hbase table")
+      if (!coderSet.contains(SparkHBaseConf.Avro)) throw new UnsupportedOperationException("Two different coders can not be " + "used to encode/decode the same Hbase table")
     }
 
     // If the row key of the table is composite, check if the coder supports composite key
-    if (row.fields.size > 1 && !shcTableCoder.isCompositeKeySupported)
-      throw new UnsupportedOperationException(s"$tCoder: Composite key is not supported")
+    if (row.fields.size > 1 && !shcTableCoder.isCompositeKeySupported) throw new UnsupportedOperationException(s"$tCoder: Composite key is not supported")
   }
+
   validateCatalogDef()
 }
 
@@ -247,13 +220,14 @@ object HBaseTableCatalog {
   val tableCoder = "tableCoder"
   // The version number of catalog
   val cVersion = "version"
+
   /**
-   * User provide table schema definition
-   * {"tablename":"name", "rowkey":"key1:key2",
-   * "columns":{"col1":{"cf":"cf1", "col":"col1", "type":"type1"},
-   * "col2":{"cf":"cf2", "col":"col2", "type":"type2"}}}
-   *  Note that any col in the rowKey, there has to be one corresponding col defined in columns
-   */
+    * User provide table schema definition
+    * {"tablename":"name", "rowkey":"key1:key2",
+    * "columns":{"col1":{"cf":"cf1", "col":"col1", "type":"type1"},
+    * "col2":{"cf":"cf2", "col":"col2", "type":"type2"}}}
+    * Note that any col in the rowKey, there has to be one corresponding col defined in columns
+    */
   def apply(parameters: Map[String, String]): HBaseTableCatalog = {
     val jString = parameters(tableCatalog)
     val jObj = parse(jString).asInstanceOf[JObject]
@@ -272,22 +246,19 @@ object HBaseTableCatalog {
       } else {
         val tc = tableMeta.get(tableCoder)
         if (tc.isEmpty) {
-          throw new CatalogDefinitionException("Please specify 'tableCoder' in your catalog " +
-            "if the catalog version is equal or later than 2.0")
+          throw new CatalogDefinitionException("Please specify 'tableCoder' in your catalog " + "if the catalog version is equal or later than 2.0")
         }
         tc.get.asInstanceOf[String]
       }
     }
     val schemaMap = mutable.LinkedHashMap.empty[String, Field]
     var coderSet = Set(tCoder)
-    getColsPreservingOrder(jObj).foreach { case (name, column)=>
-      val len = column.get(length).map(_.toInt).getOrElse(-1)
+    getColsPreservingOrder(jObj).foreach { case (name, column) => val len = column.get(length).map(_.toInt).getOrElse(-1)
       val sAvro = column.get(avro).map(parameters(_))
       val fc = if (sAvro.isDefined) SparkHBaseConf.Avro else column.getOrElse(fCoder, tCoder)
       coderSet += fc
-      val f = Field(name, column.getOrElse(cf, rowKey), column.get(col).get,
-        fc, column.get(`type`), sAvro, len)
-      schemaMap.+= ((name, f))
+      val f = Field(name, column.getOrElse(cf, rowKey), column.get(col).get, fc, column.get(`type`), sAvro, len)
+      schemaMap.+=((name, f))
     }
     val numReg = parameters.get(newTable).map(x => x.toInt).getOrElse(0)
     val rKey = RowKey(map.get(rowKey).get.asInstanceOf[String])
@@ -296,41 +267,26 @@ object HBaseTableCatalog {
   }
 
   /**
-   * Retrieve the columns mapping from the JObject parsed from the catalog string,
-   * and preserve the order of the columns specification. Note that we have to use
-   * the AST level api of json4s, because if we cast the parsed object to a scala
-   * map directly, it would lose the ordering info during the casting.
-   */
+    * Retrieve the columns mapping from the JObject parsed from the catalog string,
+    * and preserve the order of the columns specification. Note that we have to use
+    * the AST level api of json4s, because if we cast the parsed object to a scala
+    * map directly, it would lose the ordering info during the casting.
+    */
   def getColsPreservingOrder(jObj: JObject): Seq[(String, Map[String, String])] = {
     val jCols = jObj.obj.find(_._1 == columns).get._2.asInstanceOf[JObject]
-    jCols.obj.map { case (name, jvalue) =>
-      (name, jvalue.values.asInstanceOf[Map[String, String]])
+    jCols.obj.map { case (name, jvalue) => (name, jvalue.values.asInstanceOf[Map[String, String]])
     }
   }
 
   def main(args: Array[String]) {
     val complex = s"""MAP<int, struct<varchar:string>>"""
     val schema =
-      s"""{"namespace": "example.avro",
-         |   "type": "record", "name": "User",
-         |    "fields": [ {"name": "name", "type": "string"},
-         |      {"name": "favorite_number",  "type": ["int", "null"]},
-         |        {"name": "favorite_color", "type": ["string", "null"]} ] }""".stripMargin
+      s"""{"namespace": "example.avro",|   "type": "record", "name": "User",|    "fields": [ {"name": "name", "type": "string"},|      {"name": "favorite_number",  "type": ["int", "null"]},|        {"name": "favorite_color", "type": ["string", "null"]} ] }""".stripMargin
 
-    val catalog = s"""{
-            |"table":{"namespace":"default", "name":"htable"},
-            |"rowkey":"key1:key2",
-            |"columns":{
-              |"col1":{"cf":"rowkey", "col":"key1", "type":"string"},
-              |"col2":{"cf":"rowkey", "col":"key2", "type":"double"},
-              |"col3":{"cf":"cf1", "col":"col1", "avro":"schema1"},
-              |"col4":{"cf":"cf1", "col":"col2", "type":"binary"},
-              |"col5":{"cf":"cf1", "col":"col3", "type":"double"},
-              |"col6":{"cf":"cf1", "col":"col4", "type":"$complex"}
-            |}
-          |}""".stripMargin
+    val catalog =
+      s"""{|"table":{"namespace":"default", "name":"htable"},|"rowkey":"key1:key2",|"columns":{|"col1":{"cf":"rowkey", "col":"key1", "type":"string"},|"col2":{"cf":"rowkey", "col":"key2", "type":"double"},|"col3":{"cf":"cf1", "col":"col1", "avro":"schema1"},|"col4":{"cf":"cf1", "col":"col2", "type":"binary"},|"col5":{"cf":"cf1", "col":"col3", "type":"double"},|"col6":{"cf":"cf1", "col":"col4", "type":"$complex"}|}|}""".stripMargin
 
-    val parameters = Map("schema1"->schema, tableCatalog->catalog)
+    val parameters = Map("schema1" -> schema, tableCatalog -> catalog)
     val t = HBaseTableCatalog(parameters)
     val d = t.toDataType
     println(d)

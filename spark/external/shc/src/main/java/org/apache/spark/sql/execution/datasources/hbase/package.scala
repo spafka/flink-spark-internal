@@ -23,7 +23,7 @@ import org.apache.hadoop.hbase.util.Bytes
 package object hbase {
   type HBaseType = Array[Byte]
   //Do not use BinaryType.ordering
-  implicit val order: Ordering[HBaseType] =  ord
+  implicit val order: Ordering[HBaseType] = ord
 
 
   val ord: Ordering[HBaseType] = new Ordering[HBaseType] {

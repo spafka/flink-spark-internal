@@ -3,6 +3,7 @@ package com.github.spafka.message
 /**
   *
   * Flink rpcMessage
+  *
   * @Author github.com/spafka
   * @Date 2019/1/6
   */

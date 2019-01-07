@@ -24,10 +24,7 @@ object bulkread {
 
 
     if (args.length < 3) {
-      System.err.print("Error input,plz input 3 param +\n" +
-        "startDate[YYYY-MM-DD'T'HH-mm-ss]\n" +
-        "endDate[YYYY-MM-DD'T'HH-mm-ss]\n" +
-        "tableName[_GPS]")
+      System.err.print("Error input,plz input 3 param +\n" + "startDate[YYYY-MM-DD'T'HH-mm-ss]\n" + "endDate[YYYY-MM-DD'T'HH-mm-ss]\n" + "tableName[_GPS]")
 
       System.exit(0)
     }
@@ -44,10 +41,8 @@ object bulkread {
 
     val scan = new Scan()
 
-    scan.setTimeRange(LocalDateTime.parse(args(0)).toInstant(ZoneOffset.of("+8")).toEpochMilli(),
-      LocalDateTime.parse(args(1)).toInstant(ZoneOffset.of("+8")).toEpochMilli())
-    scan.setBatch(10000)
-    // 一次scan 返回的数据长度 适用于Mr，默认为1 需建立多次io连接
+    scan.setTimeRange(LocalDateTime.parse(args(0)).toInstant(ZoneOffset.of("+8")).toEpochMilli(), LocalDateTime.parse(args(1)).toInstant(ZoneOffset.of("+8")).toEpochMilli())
+    scan.setBatch(10000) // 一次scan 返回的数据长度 适用于Mr，默认为1 需建立多次io连接
     scan.setCaching(10000)
     scan.setMaxResultSize(10000)
     scan.setCacheBlocks(false)
@@ -55,9 +50,7 @@ object bulkread {
 
 
     // 直接读取hadoop file文件,设定读取得文件格式
-    val hBaseRDD: RDD[(ImmutableBytesWritable, Result)] = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat],
-      classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
-      classOf[org.apache.hadoop.hbase.client.Result])
+    val hBaseRDD: RDD[(ImmutableBytesWritable, Result)] = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat], classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable], classOf[org.apache.hadoop.hbase.client.Result])
 
     // 存的格式
     sc.hadoopConfiguration.set(TableOutputFormat.OUTPUT_TABLE, tablename)
@@ -67,7 +60,6 @@ object bulkread {
     job.setOutputFormatClass(classOf[TableOutputFormat[ImmutableBytesWritable]])
 
     val rdd: RDD[(ImmutableBytesWritable, Put)] = hBaseRDD.map(x => {
-
       val oldKey = Bytes.toString(x._1.get())
 
       val strings = oldKey.split(":")

@@ -25,10 +25,7 @@ object delete {
 
 
     if (args.length < 2) {
-      System.err.print("Error input,plz input 3 param +|" +
-        "startDate[YYYY-MM-DD'T'HH-mm-ss]|" +
-        "endDate[YYYY-MM-DD'T'HH-mm-ss]|" +
-        "tableName[_GPS]")
+      System.err.print("Error input,plz input 3 param +|" + "startDate[YYYY-MM-DD'T'HH-mm-ss]|" + "endDate[YYYY-MM-DD'T'HH-mm-ss]|" + "tableName[_GPS]")
 
       System.exit(0)
     }
@@ -49,8 +46,7 @@ object delete {
 
       conf.set("fs.hdfs.impl", classOf[DistributedFileSystem].getName)
       conf.set("fs.file.impl", classOf[LocalFileSystem].getName)
-      scan.setTimeRange(LocalDateTime.parse(args(0)).toInstant(ZoneOffset.of("+8")).toEpochMilli(),
-        LocalDateTime.parse(args(1)).toInstant(ZoneOffset.of("+8")).toEpochMilli())
+      scan.setTimeRange(LocalDateTime.parse(args(0)).toInstant(ZoneOffset.of("+8")).toEpochMilli(), LocalDateTime.parse(args(1)).toInstant(ZoneOffset.of("+8")).toEpochMilli())
       scan.setBatch(10000)
       scan.setMaxResultSize(10000)
       scan.setCacheBlocks(false)
@@ -61,17 +57,13 @@ object delete {
       job.setOutputValueClass(classOf[Result])
       job.setOutputFormatClass(classOf[TableOutputFormat[ImmutableBytesWritable]])
 
-      val hBaseRDD: RDD[(ImmutableBytesWritable, Result)] = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat],
-        classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
-        classOf[org.apache.hadoop.hbase.client.Result])
+      val hBaseRDD: RDD[(ImmutableBytesWritable, Result)] = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat], classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable], classOf[org.apache.hadoop.hbase.client.Result])
 
       hBaseRDD.foreachPartition(x => {
-
         val conf = HBaseConfiguration.create()
         val table = new HTable(conf, tablename)
 
         //  println(s"process table=${tablename}")
-
         var deletes: util.List[Delete] = null
         var count: Long = 0L
         deletes = new util.ArrayList[Delete]()
@@ -97,13 +89,10 @@ object delete {
         table.delete(deletes)
         print(count)
 
-      }
-
-      )
+      })
 
       Thread.sleep(60000)
-    }
-    )
+    })
     sc.stop()
 
 

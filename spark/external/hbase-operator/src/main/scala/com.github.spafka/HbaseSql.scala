@@ -21,11 +21,7 @@ object HbaseSql {
 
     val sparkConf = new SparkConf().setAppName("bulkload").setMaster("local[*]")
 
-    val spark = SparkSession
-      .builder
-      .appName("Spark Hbase")
-      .master("local[*]")
-      .getOrCreate()
+    val spark = SparkSession.builder.appName("Spark Hbase").master("local[*]").getOrCreate()
     val sc = spark.sparkContext
     val tablename = "_GPS"
 
@@ -37,23 +33,19 @@ object HbaseSql {
     sc.hadoopConfiguration.set(TableOutputFormat.OUTPUT_TABLE, tablename)
     val scan = new Scan()
 
-    scan.setTimeRange(LocalDateTime.parse(args(0)).toInstant(ZoneOffset.of("+8")).toEpochMilli(),
-      LocalDateTime.parse(args(1)).toInstant(ZoneOffset.of("+8")).toEpochMilli())
+    scan.setTimeRange(LocalDateTime.parse(args(0)).toInstant(ZoneOffset.of("+8")).toEpochMilli(), LocalDateTime.parse(args(1)).toInstant(ZoneOffset.of("+8")).toEpochMilli())
     scan.setBatch(10000)
     scan.setMaxResultSize(10000)
     scan.setCacheBlocks(false)
     conf.set(TableInputFormat.SCAN, Base64.encodeBytes(ProtobufUtil.toScan(scan).toByteArray()))
-    val hBaseRDD: RDD[(ImmutableBytesWritable, Result)] = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat],
-      classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
-      classOf[org.apache.hadoop.hbase.client.Result])
-    val hbfrdd = hBaseRDD.map {
-      case (_, result) => {
-        import org.apache.hadoop.hbase.util.Bytes
-        val lat: String = Bytes.toString(result.getValue(Bytes.toBytes("info"), Bytes.toBytes("lat")))
-        val lng: String = Bytes.toString(result.getValue(Bytes.toBytes("info"), Bytes.toBytes("lng")))
-        val gpsok: String = Bytes.toString(result.getValue(Bytes.toBytes("info"), Bytes.toBytes("gpsok")))
-        (lat, lng, gpsok)
-      }
+    val hBaseRDD: RDD[(ImmutableBytesWritable, Result)] = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat], classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable], classOf[org.apache.hadoop.hbase.client.Result])
+    val hbfrdd = hBaseRDD.map { case (_, result) => {
+      import org.apache.hadoop.hbase.util.Bytes
+      val lat: String = Bytes.toString(result.getValue(Bytes.toBytes("info"), Bytes.toBytes("lat")))
+      val lng: String = Bytes.toString(result.getValue(Bytes.toBytes("info"), Bytes.toBytes("lng")))
+      val gpsok: String = Bytes.toString(result.getValue(Bytes.toBytes("info"), Bytes.toBytes("gpsok")))
+      (lat, lng, gpsok)
+    }
     }
 
     import spark.implicits._

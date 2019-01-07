@@ -29,15 +29,14 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.execution.datasources.hbase._
 import org.apache.spark.sql.types._
 
-class Phoenix(f:Option[Field] = None) extends SHCDataType {
+class Phoenix(f: Option[Field] = None) extends SHCDataType {
   private var schema: RowKeySchema = null
 
   def fromBytes(src: HBaseType): Any = {
     if (f.isDefined) {
       mapToPhoenixTypeInstance(f.get.dt).toObject(src)
     } else {
-      throw new UnsupportedOperationException(
-        "Phoenix coder: without field metadata, 'fromBytes' conversion can not be supported")
+      throw new UnsupportedOperationException("Phoenix coder: without field metadata, 'fromBytes' conversion can not be supported")
     }
   }
 
@@ -67,8 +66,7 @@ class Phoenix(f:Option[Field] = None) extends SHCDataType {
     var ret = Map.empty[Field, Any]
     for (i <- 0 until schema.getFieldCount) {
       if (schema.next(ptr, i, maxOffest) != null) {
-        val value = mapToPhoenixTypeInstance(keyFields(i).dt)
-          .toObject(ptr, schema.getField(i).getDataType, SortOrder.getDefault)
+        val value = mapToPhoenixTypeInstance(keyFields(i).dt).toObject(ptr, schema.getField(i).getDataType, SortOrder.getDefault)
         ret += ((keyFields(i), value))
       }
     }
@@ -76,18 +74,15 @@ class Phoenix(f:Option[Field] = None) extends SHCDataType {
   }
 
   override def encodeCompositeRowKey(rkIdxedFields: Seq[(Int, Field)], row: Row): Seq[Array[Byte]] = {
-    rkIdxedFields.map { case (x, y) =>
-      var ret = toBytes(row(x))
-      // the last dimension of composite key does not need SEPARATOR
-      if (y.length == -1 && x < rkIdxedFields.size - 1)
-        ret ++= QueryConstants.SEPARATOR_BYTE_ARRAY
+    rkIdxedFields.map { case (x, y) => var ret = toBytes(row(x)) // the last dimension of composite key does not need SEPARATOR
+      if (y.length == -1 && x < rkIdxedFields.size - 1) ret ++= QueryConstants.SEPARATOR_BYTE_ARRAY
       ret
     }
   }
 
   private def buildSchema(keyFields: Seq[Field]): RowKeySchema = {
     val builder: RowKeySchemaBuilder = new RowKeySchemaBuilder(keyFields.length)
-    keyFields.foreach{ x =>
+    keyFields.foreach { x =>
       builder.addField(buildPDatum(x.dt), false, SortOrder.getDefault)
     }
     builder.build
@@ -110,9 +105,13 @@ class Phoenix(f:Option[Field] = None) extends SHCDataType {
 
   private def buildPDatum(input: DataType): PDatum = new PDatum {
     override def getScale: Integer = null
+
     override def isNullable: Boolean = false
+
     override def getDataType: PDataType[_] = mapToPhoenixTypeInstance(input)
+
     override def getMaxLength: Integer = null
+
     override def getSortOrder: SortOrder = SortOrder.getDefault
   }
 }

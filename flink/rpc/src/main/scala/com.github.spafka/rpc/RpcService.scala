@@ -8,9 +8,9 @@ import scala.concurrent.Promise
   *
   * @Author github.com/spafka
   * @Date 2019/1/6
-  * 真正需要执行的rpc服务
+  *       真正需要执行的rpc服务
   */
-trait RpcService[T <: RpcGateWay with RpcServer] {
+trait RpcService {
 
   // actual address
   def getAddress: String
@@ -27,7 +27,7 @@ trait RpcService[T <: RpcGateWay with RpcServer] {
   def preStop
 
   // before rpc we muse conncect it
-  def connect(adress: String): Promise[T]
+  def connect[T <: RpcGateWay](adress: String): Promise[T]
 
   def execute(runnable: Runnable): Unit
 

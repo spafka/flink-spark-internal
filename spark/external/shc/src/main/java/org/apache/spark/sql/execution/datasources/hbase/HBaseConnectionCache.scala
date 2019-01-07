@@ -86,7 +86,7 @@ private[spark] object HBaseConnectionCache extends Logging {
   private[hbase] def resetCache(resetStats: Boolean = false): Unit = {
     connectionMap.synchronized {
       if (closed.get()) return
-      connectionMap.values.foreach(conn => IOUtils.closeQuietly(conn) )
+      connectionMap.values.foreach(conn => IOUtils.closeQuietly(conn))
       connectionMap.clear()
       if (resetStats) cacheStat.reset()
     }
@@ -109,19 +109,18 @@ private[spark] object HBaseConnectionCache extends Logging {
     val tsNow: Long = System.currentTimeMillis()
     val connTimeout = timeout.get()
     connectionMap.synchronized {
-      connectionMap.retain {
-        (key, conn) => {
-          if(conn.refCount < 0) {
-            logError("Bug to be fixed: negative refCount")
-          }
-
-          if(forceClean || ((conn.refCount <= 0) && (tsNow - conn.timestamp > connTimeout))) {
-            IOUtils.closeQuietly(conn.connection)
-            false
-          } else {
-            true
-          }
+      connectionMap.retain { (key, conn) => {
+        if (conn.refCount < 0) {
+          logError("Bug to be fixed: negative refCount")
         }
+
+        if (forceClean || ((conn.refCount <= 0) && (tsNow - conn.timestamp > connTimeout))) {
+          IOUtils.closeQuietly(conn.connection)
+          false
+        } else {
+          true
+        }
+      }
       }
     }
   }
@@ -140,11 +139,10 @@ private[spark] object HBaseConnectionCache extends Logging {
     }
   }
 
-  def getConnection(conf: Configuration): SmartConnection =
-    getConnection(new HBaseConnectionKey(conf), ConnectionFactory.createConnection(conf))
+  def getConnection(conf: Configuration): SmartConnection = getConnection(new HBaseConnectionKey(conf), ConnectionFactory.createConnection(conf))
 
   // For testing purpose only
-  def setTimeout(to: Long) : Unit = {
+  def setTimeout(to: Long): Unit = {
     connectionMap.synchronized {
       if (closed.get()) return
       timeout.set(to)
@@ -153,17 +151,19 @@ private[spark] object HBaseConnectionCache extends Logging {
   }
 }
 
-private[hbase] class SmartConnection (
-    val connection: Connection, var refCount: Int = 0, var timestamp: Long = 0) extends Closeable {
+private[hbase] class SmartConnection(val connection: Connection, var refCount: Int = 0, var timestamp: Long = 0) extends Closeable {
   def getTable(tableName: TableName): Table = connection.getTable(tableName)
+
   def getRegionLocator(tableName: TableName): RegionLocator = connection.getRegionLocator(tableName)
+
   def isClosed: Boolean = connection.isClosed
+
   def getAdmin: Admin = connection.getAdmin
+
   def close() = {
     HBaseConnectionCache.connectionMap.synchronized {
       refCount -= 1
-      if(refCount <= 0)
-        timestamp = System.currentTimeMillis()
+      if (refCount <= 0) timestamp = System.currentTimeMillis()
     }
   }
 }
@@ -177,6 +177,7 @@ private[hbase] class SmartConnection (
   *
   */
 class HBaseConnectionKey(c: Configuration) extends Logging {
+
   import HBaseConnectionKey.CONNECTION_PROPERTIES
 
   val (username, properties) = {
@@ -190,15 +191,11 @@ class HBaseConnectionKey(c: Configuration) extends Logging {
           if (currentUser != null) {
             user = currentUser.getName
           }
-        }
-        catch {
-          case e: IOException =>
-            logWarning("Error obtaining current user, skipping username in HBaseConnectionKey", e)
+        } catch {
+          case e: IOException => logWarning("Error obtaining current user, skipping username in HBaseConnectionKey", e)
         }
 
-        CONNECTION_PROPERTIES.flatMap(key =>
-          Option(c.get(key)).map(value => key -> value)
-        ).toMap
+        CONNECTION_PROPERTIES.flatMap(key => Option(c.get(key)).map(value => key -> value)).toMap
       } else {
         Map[String, String]()
       }
@@ -211,50 +208,35 @@ class HBaseConnectionKey(c: Configuration) extends Logging {
   }
 
   override def equals(other: Any): Boolean = other match {
-    case that: HBaseConnectionKey =>
-        username == that.username &&
-          CONNECTION_PROPERTIES.forall(key => this.properties.get(key) == that.properties.get(key))
+    case that: HBaseConnectionKey => username == that.username && CONNECTION_PROPERTIES.forall(key => this.properties.get(key) == that.properties.get(key))
     case _ => false
   }
 
   override def hashCode(): Int = {
     val userHashCode = if (null != username) username.hashCode else 0
-    CONNECTION_PROPERTIES.flatMap(k => properties.get(k)).
-      foldLeft(userHashCode)((a, b) => 31 * a + (if (null != b) b.hashCode else 0))
+    CONNECTION_PROPERTIES.flatMap(k => properties.get(k)).foldLeft(userHashCode)((a, b) => 31 * a + (if (null != b) b.hashCode else 0))
   }
 }
 
 private[hbase] object HBaseConnectionKey {
-  private val CONNECTION_PROPERTIES: Array[String] = Array[String](
-    HConstants.ZOOKEEPER_QUORUM,
-    HConstants.ZOOKEEPER_ZNODE_PARENT,
-    HConstants.ZOOKEEPER_CLIENT_PORT,
-    HConstants.ZOOKEEPER_RECOVERABLE_WAITTIME,
-    HConstants.HBASE_CLIENT_PAUSE,
-    HConstants.HBASE_CLIENT_RETRIES_NUMBER,
-    HConstants.HBASE_RPC_TIMEOUT_KEY,
-    HConstants.HBASE_META_SCANNER_CACHING,
-    HConstants.HBASE_CLIENT_INSTANCE_ID,
-    HConstants.RPC_CODEC_CONF_KEY,
-    HConstants.USE_META_REPLICAS,
-    RpcControllerFactory.CUSTOM_CONTROLLER_CONF_KEY)
+  private val CONNECTION_PROPERTIES: Array[String] = Array[String](HConstants.ZOOKEEPER_QUORUM, HConstants.ZOOKEEPER_ZNODE_PARENT, HConstants.ZOOKEEPER_CLIENT_PORT, HConstants.ZOOKEEPER_RECOVERABLE_WAITTIME, HConstants.HBASE_CLIENT_PAUSE, HConstants.HBASE_CLIENT_RETRIES_NUMBER, HConstants.HBASE_RPC_TIMEOUT_KEY, HConstants.HBASE_META_SCANNER_CACHING, HConstants.HBASE_CLIENT_INSTANCE_ID, HConstants.RPC_CODEC_CONF_KEY, HConstants.USE_META_REPLICAS, RpcControllerFactory.CUSTOM_CONTROLLER_CONF_KEY)
 
 }
 
 
 /**
- * To log the state of [[HBaseConnectionCache]]
- *
- * numTotalRequests: number of total connection requests to the cache
- * numActualConnectionsCreated: number of actual HBase connections the cache ever created
- * numActiveConnections: number of current alive HBase connections the cache is holding
- */
-class HBaseConnectionCacheStat(private var _numTotalRequests: Long,
-    private var _numActualConnectionsCreated: Long,
-    private var _numActiveConnections: Long) {
+  * To log the state of [[HBaseConnectionCache]]
+  *
+  * numTotalRequests: number of total connection requests to the cache
+  * numActualConnectionsCreated: number of actual HBase connections the cache ever created
+  * numActiveConnections: number of current alive HBase connections the cache is holding
+  */
+class HBaseConnectionCacheStat(private var _numTotalRequests: Long, private var _numActualConnectionsCreated: Long, private var _numActiveConnections: Long) {
 
   def numTotalRequests: Long = _numTotalRequests
+
   def numActualConnectionsCreated: Long = _numActualConnectionsCreated
+
   def numActiveConnections: Long = _numActiveConnections
 
 
@@ -270,8 +252,7 @@ class HBaseConnectionCacheStat(private var _numTotalRequests: Long,
     this._numActiveConnections = numActiveConnections
   }
 
-  private[hbase] def copy(): HBaseConnectionCacheStat =
-    HBaseConnectionCacheStat(numTotalRequests, numActualConnectionsCreated, numActiveConnections)
+  private[hbase] def copy(): HBaseConnectionCacheStat = HBaseConnectionCacheStat(numTotalRequests, numActualConnectionsCreated, numActiveConnections)
 
   // inplace update to reset - for tests
   private[hbase] def reset(): Unit = {
@@ -282,12 +263,8 @@ class HBaseConnectionCacheStat(private var _numTotalRequests: Long,
 }
 
 object HBaseConnectionCacheStat {
-  def apply(numTotalRequests: Long,
-      numActualConnectionsCreated: Long,
-      numActiveConnections: Long): HBaseConnectionCacheStat =
-    new HBaseConnectionCacheStat(numTotalRequests, numActualConnectionsCreated, numActiveConnections)
+  def apply(numTotalRequests: Long, numActualConnectionsCreated: Long, numActiveConnections: Long): HBaseConnectionCacheStat = new HBaseConnectionCacheStat(numTotalRequests, numActualConnectionsCreated, numActiveConnections)
 
-  def unapply(stat: HBaseConnectionCacheStat): Option[(Long, Long, Long)] =
-    Some((stat.numTotalRequests, stat.numActualConnectionsCreated, stat.numActiveConnections))
+  def unapply(stat: HBaseConnectionCacheStat): Option[(Long, Long, Long)] = Some((stat.numTotalRequests, stat.numActualConnectionsCreated, stat.numActiveConnections))
 
 }

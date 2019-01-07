@@ -22,7 +22,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 import org.apache.spark.sql.execution.datasources.hbase._
 
-class PrimitiveType(f:Option[Field] = None) extends SHCDataType {
+class PrimitiveType(f: Option[Field] = None) extends SHCDataType {
 
   def fromBytes(src: HBaseType): Any = {
     if (f.isDefined) {
@@ -39,9 +39,7 @@ class PrimitiveType(f:Option[Field] = None) extends SHCDataType {
         case _ => throw new UnsupportedOperationException(s"unsupported data type ${f.get.dt}")
       }
     } else {
-      throw new UnsupportedOperationException(
-        "PrimitiveType coder: without field metadata, " +
-          "'fromBytes' conversion can not be supported")
+      throw new UnsupportedOperationException("PrimitiveType coder: without field metadata, " + "'fromBytes' conversion can not be supported")
     }
   }
 
@@ -57,8 +55,7 @@ class PrimitiveType(f:Option[Field] = None) extends SHCDataType {
       case data: Short => Bytes.toBytes(data)
       case data: UTF8String => data.getBytes
       case data: String => Bytes.toBytes(data)
-      case _ => throw new
-          UnsupportedOperationException(s"PrimitiveType coder: unsupported data type $input")
+      case _ => throw new UnsupportedOperationException(s"PrimitiveType coder: unsupported data type $input")
     }
   }
 
@@ -71,8 +68,7 @@ class PrimitiveType(f:Option[Field] = None) extends SHCDataType {
       val idx = state._1
       val parsed = state._2
       if (field.length != -1) {
-        val value = fromBytes(field, row, idx, field.length)
-        // Return the new index and appended value
+        val value = fromBytes(field, row, idx, field.length) // Return the new index and appended value
         (idx + field.length, parsed ++ Seq((field, value)))
       } else {
         // This is the last dimension.
@@ -92,18 +88,15 @@ class PrimitiveType(f:Option[Field] = None) extends SHCDataType {
       case LongType => Bytes.toLong(src, offset)
       case ShortType => Bytes.toShort(src, offset)
       case StringType => toUTF8String(src, length, offset)
-      case BinaryType =>
-        val newArray = new Array[Byte](length)
+      case BinaryType => val newArray = new Array[Byte](length)
         System.arraycopy(src, offset, newArray, 0, length)
         newArray
-      case _ => throw new
-        UnsupportedOperationException(s"PrimitiveType coder: unsupported data type ${field.dt}")
+      case _ => throw new UnsupportedOperationException(s"PrimitiveType coder: unsupported data type ${field.dt}")
     }
   }
 
-  override def encodeCompositeRowKey(rkIdxedFields:Seq[(Int, Field)], row: Row): Seq[Array[Byte]] = {
-    rkIdxedFields.map { case (x, y) =>
-      SHCDataTypeFactory.create(y).toBytes(row(x))
+  override def encodeCompositeRowKey(rkIdxedFields: Seq[(Int, Field)], row: Row): Seq[Array[Byte]] = {
+    rkIdxedFields.map { case (x, y) => SHCDataTypeFactory.create(y).toBytes(row(x))
     }
   }
 

@@ -6,10 +6,9 @@ package com.github.spafka.rpc
   * @Date 2019/1/6
   *
   */
-private[rpc] trait RpcEndpoint[T] extends RpcGateWay {
+private[rpc] trait RpcEndpoint extends RpcGateWay {
 
-  @scala.beans.BeanProperty
-  var rpcServer: RpcService[T] = _
+  @scala.beans.BeanProperty var rpcServer: RpcService = _
 
   // lifecycle wirh rpcServer
   def start
@@ -21,6 +20,4 @@ private[rpc] trait RpcEndpoint[T] extends RpcGateWay {
   def preStop
 
   // lifecycle end
-
-
 }

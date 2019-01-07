@@ -1,5 +1,5 @@
 package com.github.spafka.rpc
 
-trait RpcServer {
+private[rpc] trait RpcServer {
 
 }

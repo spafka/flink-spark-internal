@@ -21,9 +21,7 @@ object count {
 
 
     if (args.length < 2) {
-      System.err.print("Error input,plz input 3 param +\n" +
-        "startDate[YYYY-MM-DD'T'HH-mm-ss]\n" +
-        "endDate[YYYY-MM-DD'T'HH-mm-ss]\n")
+      System.err.print("Error input,plz input 3 param +\n" + "startDate[YYYY-MM-DD'T'HH-mm-ss]\n" + "endDate[YYYY-MM-DD'T'HH-mm-ss]\n")
       System.exit(0)
     }
 
@@ -42,8 +40,7 @@ object count {
       sc.hadoopConfiguration.set(TableOutputFormat.OUTPUT_TABLE, tablename)
       val scan = new Scan()
 
-      scan.setTimeRange(LocalDateTime.parse(args(0)).toInstant(ZoneOffset.of("+8")).toEpochMilli(),
-        LocalDateTime.parse(args(1)).toInstant(ZoneOffset.of("+8")).toEpochMilli())
+      scan.setTimeRange(LocalDateTime.parse(args(0)).toInstant(ZoneOffset.of("+8")).toEpochMilli(), LocalDateTime.parse(args(1)).toInstant(ZoneOffset.of("+8")).toEpochMilli())
       scan.setBatch(10000)
       scan.setMaxResultSize(10000)
       scan.setCacheBlocks(false)
@@ -54,9 +51,7 @@ object count {
       job.setOutputValueClass(classOf[Result])
       job.setOutputFormatClass(classOf[TableOutputFormat[ImmutableBytesWritable]])
 
-      val hBaseRDD: RDD[(ImmutableBytesWritable, Result)] = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat],
-        classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
-        classOf[org.apache.hadoop.hbase.client.Result])
+      val hBaseRDD: RDD[(ImmutableBytesWritable, Result)] = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat], classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable], classOf[org.apache.hadoop.hbase.client.Result])
 
       println(s"$zz=${hBaseRDD.count()}")
     })
