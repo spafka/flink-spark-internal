@@ -3,7 +3,7 @@ package com.github.spafka.util
 import java.io.IOException
 import java.net.BindException
 
-import akka.actor.{ActorSystem, Address, ExtendedActorSystem, Extension, ExtensionKey}
+import akka.actor.{ActorRef, ActorSystem, Address, ExtendedActorSystem, Extension, ExtensionKey}
 import com.github.spafka.Constans
 import com.typesafe.config.ConfigFactory
 import org.apache.flink.annotation.VisibleForTesting
@@ -21,6 +21,11 @@ object AkkaUtils {
 
   def getAddress(system: ActorSystem): Address = {
     RemoteAddressExtension(system).address
+  }
+
+  def getAkkaURL(system: ActorSystem, actor: ActorRef): String = {
+    val address = getAddress(system)
+    actor.path.toStringWithAddress(address)
   }
 
   @throws[Exception] def startActorSystem(confPath: String, logger: Logger): ActorSystem = {

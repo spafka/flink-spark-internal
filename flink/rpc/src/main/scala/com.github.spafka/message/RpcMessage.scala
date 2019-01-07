@@ -19,11 +19,11 @@ trait RpcInvocation {
 
 @SerialVersionUID(9187962608946082519L) case class RemoteRpcInvocation(var methodName: String, val parameterTypes: Array[Class[_]], var args: Array[AnyRef]) extends Serializable {
 
-  private[messages] def getMethodName = methodName
+  private def getMethodName = methodName
 
-  private[messages] def getParameterTypes = parameterTypes
+  private def getParameterTypes = parameterTypes
 
-  private[messages] def getArgs = args
+  private def getArgs = args
 
 }
 

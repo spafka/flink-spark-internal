@@ -1,16 +1,20 @@
 package com.github.spafka.rpc
 
+import java.util
 import java.util.concurrent.{Callable, CompletableFuture}
 
-import akka.actor.{ActorSystem, Address, Props}
+import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import com.github.spafka.util.{AkkaUtils, Logging}
+import javax.annotation.concurrent.GuardedBy
 import org.apache.flink.api.common.time.Time
+
 
 class AkkaRpcService(val actorSystem: ActorSystem, val timeout: Time = Time.seconds(1L)) extends RpcService with Logging {
 
   val address: Address = AkkaUtils.getAddress(actorSystem)
 
-
+  @GuardedBy("lock")
+  private val actors = new util.HashMap[ActorRef, RpcEndpoint](4)
   override def startServer[C <: RpcEndpoint with RpcGateway](rpcEndpoint: C): RpcServer = {
 
     log.info(s"starting Rpc Server") //fixme

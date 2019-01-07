@@ -18,6 +18,7 @@ class AkkaInvocationHandler(rpcendPoint: ActorRef) extends InvocationHandler wit
     val remoteRpcInvocation = new RemoteRpcInvocation(methodName, parameterTypes, args)
 
 
+    // fixme return some
     rpcendPoint ! remoteRpcInvocation
     return null
 
