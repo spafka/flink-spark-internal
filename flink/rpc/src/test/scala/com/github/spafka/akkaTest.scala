@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, Props}
 import com.github.spafka.util.AkkaUtils
-import grizzled.slf4j.Logger
 import org.junit.Test
 import org.slf4j.LoggerFactory
 
@@ -40,9 +39,11 @@ class akkaTest {
 
     println(helloEndPoint)
 
-    val slave = AkkaUtils.startSlaveActorSystem(logger = log)
+    val slaveActor = AkkaUtils.startSlaveActorSystem(logger = log)
 
-    val helloRef = slave.actorSelection("akka.tcp://master@127.0.0.1:6332/user/hello")
+    val helloRef = slaveActor.actorSelection("akka.tcp://master@127.0.0.1:6332/user/hello")
+
+    println(slaveActor)
 
     helloRef ! "string"
     helloRef ! 1

@@ -1,0 +1,40 @@
+package com.github.spafka.rpc
+
+import java.util.concurrent.{Callable, CompletableFuture}
+
+import akka.actor.{ActorSystem, Address}
+import com.github.spafka.util.{AkkaUtils, Logging}
+import org.apache.flink.api.common.time.Time
+
+class AkkaRpcService(val actorSystem: ActorSystem, val timeout: Time = Time.seconds(1L)) extends RpcService with Logging {
+
+  val address: Address = AkkaUtils.getAddress(actorSystem)
+
+
+  override def startServer[C <: RpcEndpoint with RpcGateway](rpcEndpoint: C): RpcServer = {
+
+    log.info(s"starting Rpc Server") //fixme
+
+
+
+    null
+  }
+
+  override def getAddress: String = ???
+
+  override def getPort: Int = ???
+
+  override def start: Unit = ???
+
+  override def stop: Unit = ???
+
+  override def preStart: Unit = ???
+
+  override def preStop: Unit = ???
+
+  override def connect[T <: RpcGateway](adress: String): CompletableFuture[T] = ???
+
+  override def execute(runnable: Runnable): Unit = ???
+
+  override def execute[T](callable: Callable[T]): CompletableFuture[T] = ???
+}

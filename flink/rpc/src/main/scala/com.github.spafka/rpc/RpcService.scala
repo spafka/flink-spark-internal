@@ -1,6 +1,6 @@
 package com.github.spafka.rpc
 
-import java.util.concurrent.Callable
+import java.util.concurrent.{Callable, CompletableFuture}
 
 import scala.concurrent.Promise
 
@@ -27,11 +27,13 @@ trait RpcService {
   def preStop
 
   // before rpc we muse conncect it
-  def connect[T <: RpcGateWay](adress: String): Promise[T]
+  def connect[T <: RpcGateway](adress: String): CompletableFuture[T]
 
   def execute(runnable: Runnable): Unit
 
-  def execute[T](callable: Callable[T]): Promise[T]
+  def execute[T](callable: Callable[T]): CompletableFuture[T]
+
+  def startServer[C <: RpcEndpoint with RpcGateway](rpcEndpoint: C): RpcServer
 
 
 }

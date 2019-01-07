@@ -6,9 +6,9 @@ package com.github.spafka.rpc
   * @Date 2019/1/6
   *
   */
-private[rpc] trait RpcEndpoint extends RpcGateWay {
+abstract class RpcEndpoint(val rpcService: RpcService, val endpointId: String) extends RpcGateway {
 
-  @scala.beans.BeanProperty var rpcServer: RpcService = _
+  @scala.beans.BeanProperty var rpcServer: RpcServer = rpcService.startServer(this)
 
   // lifecycle wirh rpcServer
   def start
