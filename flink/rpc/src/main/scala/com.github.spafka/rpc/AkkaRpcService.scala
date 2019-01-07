@@ -2,7 +2,7 @@ package com.github.spafka.rpc
 
 import java.util.concurrent.{Callable, CompletableFuture}
 
-import akka.actor.{ActorSystem, Address}
+import akka.actor.{ActorSystem, Address, Props}
 import com.github.spafka.util.{AkkaUtils, Logging}
 import org.apache.flink.api.common.time.Time
 
@@ -14,8 +14,8 @@ class AkkaRpcService(val actorSystem: ActorSystem, val timeout: Time = Time.seco
   override def startServer[C <: RpcEndpoint with RpcGateway](rpcEndpoint: C): RpcServer = {
 
     log.info(s"starting Rpc Server") //fixme
-
-
+    // fixme use akka
+    val actorRef = actorSystem.actorOf(Props(classOf[AkkaRpcActor[C]], rpcEndpoint), rpcEndpoint.endpointId)
 
     null
   }
