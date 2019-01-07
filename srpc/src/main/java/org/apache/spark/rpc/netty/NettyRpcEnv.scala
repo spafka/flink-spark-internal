@@ -17,7 +17,7 @@
 package org.apache.spark.rpc.netty
 
 import java.io._
-import java.lang.{Boolean => JBoolean}
+import java.lang.{Boolean ⇒ JBoolean}
 import java.net.{InetSocketAddress, URI}
 import java.nio.ByteBuffer
 import java.nio.channels.{Pipe, ReadableByteChannel, WritableByteChannel}
@@ -612,7 +612,7 @@ private[netty] class NettyRpcHandler(
     }
   }
 
-  override def connectionTerminated(client: TransportClient): Unit = {
+  def connectionTerminated(client: TransportClient): Unit = {
     val addr = client.getChannel.remoteAddress().asInstanceOf[InetSocketAddress]
     if (addr != null) {
       clients.remove(client)

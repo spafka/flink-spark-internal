@@ -58,6 +58,13 @@ object SparkTransportConf {
 
     new TransportConf(module, new ConfigProvider {
       override def get(name: String): String = conf.get(name)
+
+      override def get(name: String, defaultValue: String): String = conf.get(name, defaultValue)
+
+      override def getAll(): java.lang.Iterable[java.util.Map.Entry[String, String]] = {
+        import scala.collection.JavaConverters._
+        conf.getAll.toMap.asJava.entrySet()
+      }
     })
   }
 
