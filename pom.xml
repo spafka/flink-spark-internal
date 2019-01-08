@@ -55,6 +55,7 @@
         <spark.version>2.3.2</spark.version>
         <flink.version>1.7.0</flink.version>
         <version.servlet>2.5</version.servlet>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>
@@ -188,6 +189,7 @@
                         <arg>-Xlint:all</arg>
                         <!-- Prevents recompilation due to missing package-info.class, see MCOMPILER-205 -->
                         <arg>-Xpkginfo:always</arg>
+
                     </compilerArgs>
                 </configuration>
             </plugin>
@@ -217,19 +219,6 @@
                             </rules>
                         </configuration>
                     </execution>
-                    <!--<execution>-->
-                    <!--<id>dependency-convergence</id>-->
-                    <!--<goals>-->
-                    <!--<goal>enforce</goal>-->
-                    <!--</goals>-->
-                    <!--<configuration>-->
-                    <!--<rules>-->
-                    <!--<dependencyConvergence>-->
-                    <!--<uniqueVersions>false</uniqueVersions>-->
-                    <!--</dependencyConvergence>-->
-                    <!--</rules>-->
-                    <!--</configuration>-->
-                    <!--</execution>-->
                 </executions>
             </plugin>
 
@@ -276,6 +265,7 @@
                         <arg>-feature</arg>
                         <arg>-explaintypes</arg>
                         <arg>-Yno-adapted-args</arg>
+                        <arg>-target:jvm-1.8</arg>
                     </args>
                     <jvmArgs>
                         <jvmArg>-Xms1024m</jvmArg>
@@ -367,17 +357,6 @@
             </activation>
         </profile>
 
-        <profile>
-            <id>test-java-home</id>
-            <activation>
-                <property>
-                    <name>env.JAVA_HOME</name>
-                </property>
-            </activation>
-            <properties>
-                <test.java.home>${env.JAVA_HOME}</test.java.home>
-            </properties>
-        </profile>
 
         <!-- Exists for backwards compatibility; profile doesn't do anything -->
         <profile>

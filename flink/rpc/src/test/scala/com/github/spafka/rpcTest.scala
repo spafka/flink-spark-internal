@@ -1,7 +1,7 @@
 package com.github.spafka
 
 import akka.actor.ActorSystem
-import com.github.spafka.rpc.{AkkaRpcActor, AkkaRpcService, RpcEndpoint}
+import com.github.spafka.rpc.{AkkaRpcService, RpcEndpoint}
 import com.github.spafka.util.AkkaUtils
 import org.apache.flink.api.common.time.Time
 import org.junit.{Before, Test}

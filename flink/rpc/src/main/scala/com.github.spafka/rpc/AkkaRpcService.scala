@@ -13,8 +13,8 @@ class AkkaRpcService(val actorSystem: ActorSystem, val timeout: Time = Time.seco
 
   val address: Address = AkkaUtils.getAddress(actorSystem)
 
-  @GuardedBy("lock")
-  private val actors = new util.HashMap[ActorRef, RpcEndpoint](4)
+  @GuardedBy("lock") private val actors = new util.HashMap[ActorRef, RpcEndpoint](4)
+
   override def startServer[C <: RpcEndpoint with RpcGateway](rpcEndpoint: C): RpcServer = {
 
     log.info(s"starting Rpc Server") //fixme
