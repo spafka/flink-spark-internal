@@ -8,7 +8,7 @@ package com.github.spafka.rpc
   */
 abstract class RpcEndpoint(val rpcService: RpcService, val endpointId: String) extends RpcGateway {
 
-  @scala.beans.BeanProperty var rpcServer: RpcServer = rpcService.startServer(this)
+  val rpcServer: RpcServer = rpcService.startServer(this)
 
   // lifecycle wirh rpcServer
   def start

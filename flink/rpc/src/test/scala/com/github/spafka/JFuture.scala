@@ -23,14 +23,11 @@ class JFuture extends Logging {
 
     val stringToString: JFunction[_ >: String, _ <: String] = (a: String) ⇒ a + "c"
     val value: CompletableFuture[String] = CompletableFuture.supplyAsync[String](() ⇒ {
-      log.info(s"${TimeUnit.SECONDS.sleep(1)}")
       "a"
     }).thenApplyAsync[String](((t: String) ⇒ {
-      log.info(s"${TimeUnit.SECONDS.sleep(1)}")
       t + "b"
     }): JFunction[_ >: String, _ <: String]) //
       .thenApplyAsync[String](((t: String) ⇒ {
-      log.info(s"${TimeUnit.SECONDS.sleep(1)}")
       t + "c"
     }): JFunction[_ >: String, _ <: String]) //
     println(value.get())
