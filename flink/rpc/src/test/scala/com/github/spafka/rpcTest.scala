@@ -41,7 +41,7 @@ trait TaskGateWay extends RpcGateway {
 class TaskExecutor(rpcService: RpcService, endpointId: String) extends RpcEndpoint(rpcService, endpointId) with TaskGateWay with Logging {
   override def start: Unit = {
 
-    log.info(s"taskexecutor start")
+   rpcService.connect("")
   }
 
   override def stop: Unit = ???
