@@ -3,6 +3,8 @@ package com.github.spafka.rpc
 import java.lang.reflect.{InvocationHandler, Method}
 
 import akka.actor.ActorRef
+import akka.pattern.ask
+import akka.util.Timeout
 import com.github.spafka.message.RemoteRpcInvocation
 import com.github.spafka.util.Logging
 import org.apache.flink.api.common.time.Time
@@ -13,7 +15,7 @@ class AkkaInvocationHandler(var address: String = null, //
                             val rpcEndpoint: ActorRef = null, //
                             var isLocal: Boolean = false, //
                             // default timeout for asks
-                            var timeout: Time = null)
+                            var timeout: Time = Time.seconds(5L))
     extends InvocationHandler
     with RpcServer
     with Logging {
@@ -48,12 +50,7 @@ class AkkaInvocationHandler(var address: String = null, //
     val parameterTypes = method.getParameterTypes
     val parameterAnnotations = method.getParameterAnnotations
 
-    import akka.pattern.ask
-    import akka.util.Timeout
-
-    import scala.concurrent.duration._
-    implicit val timeout = Timeout(5 seconds)
-
+    implicit val rpcTimeOut = Timeout(timeout.getSize, timeout.getUnit)
     val returnType = method.getReturnType
     var result: AnyRef = null
     if (Objects.equals(returnType, Void.TYPE)) {
@@ -75,4 +72,8 @@ class AkkaInvocationHandler(var address: String = null, //
     result
   }
 
+  override def getAddress: String = { address }
+  override def getHostname: String = { hostname }
+  override def start: Unit = {}
+  override def stop: Unit = {}
 }

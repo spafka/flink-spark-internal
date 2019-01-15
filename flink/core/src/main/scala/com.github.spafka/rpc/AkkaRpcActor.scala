@@ -7,9 +7,18 @@ import com.github.spafka.message.RpcInvocation
 class AkkaRpcActor[T <: RpcEndpoint with RpcGateway](val rpcEndpoint: T)
     extends Actor
     with Logging {
+  var state = State.STOPPED
 
   override def receive: Receive = {
     case rpcInvocation: RpcInvocation ⇒ handleRpcInvocation(rpcInvocation)
+    case State.STARTED ⇒ {
+      logInfo(s"AkkaRpcActor starting")
+      state = State.STARTED
+    }
+    case State.STARTED ⇒ {
+      logInfo(s"AkkaRpcActor ending")
+      state = State.STOPPED
+    }
   }
 
   @throws[NoSuchMethodException]
@@ -27,4 +36,9 @@ class AkkaRpcActor[T <: RpcEndpoint with RpcGateway](val rpcEndpoint: T)
 
     println(value)
   }
+
+}
+object State extends Enumeration {
+  type State = Value
+  val STARTED, STOPPED = Value
 }

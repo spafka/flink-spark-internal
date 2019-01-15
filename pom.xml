@@ -56,28 +56,11 @@
     </properties>
 
     <dependencies>
-
-        <!-- https://mvnrepository.com/artifact/org.scalaz/scalaz-core -->
-        <dependency>
-            <groupId>org.scalaz</groupId>
-            <artifactId>scalaz-core_${scala.binary.version}</artifactId>
-            <version>7.2.27</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.16.20</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>org.scala-lang.modules</groupId>
             <artifactId>scala-java8-compat_${scala.binary.version}</artifactId>
             <version>0.9.0</version>
         </dependency>
-
-
-        <!-- This manages the 'javax.annotation' annotations (JSR305) -->
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
@@ -399,6 +382,13 @@
             <modules>
                 <module>spark</module>
                 <module>srpc</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>flink</id>
+            <modules>
+                <module>flink</module>
+                <module>mini-cluster</module>
             </modules>
         </profile>
     </profiles>

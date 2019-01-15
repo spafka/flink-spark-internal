@@ -7,12 +7,13 @@ package com.github.spafka.rpc
   *
   */
 abstract class RpcEndpoint(val rpcService: RpcService, val endpointId: String)
-    extends RpcGateway {
+    extends RpcGateway
+    with StartStopable {
 
   val rpcServer: RpcServer = rpcService.startServer(this)
 
   // lifecycle wirh rpcServer
-  def start
+  def start = {}
 
   def stop
 

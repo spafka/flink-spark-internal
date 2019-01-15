@@ -1,12 +1,16 @@
 package com.github.spafka.rpc
 
 import java.util
-import java.util.concurrent.{Callable, CompletableFuture}
+import java.util.concurrent.CompletableFuture
 
-import akka.actor.{ActorRef, ActorSystem, Address, Props}
+import akka.actor.{ActorIdentity, ActorRef, ActorSystem, Address, Props}
+import akka.pattern.ask
+import akka.util.Timeout
 import com.github.spafka.util.{AkkaUtils, Logging}
 import javax.annotation.concurrent.GuardedBy
 import org.apache.flink.api.common.time.Time
+
+import scala.util.{Failure, Success}
 
 class AkkaRpcService(val actorSystem: ActorSystem,
                      val timeout: Time = Time.seconds(1L))
@@ -66,12 +70,8 @@ class AkkaRpcService(val actorSystem: ActorSystem,
 
     var akkaInvocationHandler: InvocationHandler = null
 
-    akkaInvocationHandler = new AkkaInvocationHandler(
-      akkaAddress,
-      hostname,
-      actorRef,
-      timeout = Time.seconds(1L)
-    )
+    akkaInvocationHandler =
+      new AkkaInvocationHandler(akkaAddress, hostname, actorRef, false, timeout)
 
     val classLoader: ClassLoader = getClass.getClassLoader
 
@@ -87,17 +87,10 @@ class AkkaRpcService(val actorSystem: ActorSystem,
     return server
   }
 
-  override def getAddress: String = ???
+  override def getAddress: String =
+    AkkaUtils.getAddress(actorSystem).host.getOrElse("")
 
-  override def getPort: Int = ???
-
-  override def start: Unit = ???
-
-  override def stop: Unit = ???
-
-  override def preStart: Unit = ???
-
-  override def preStop: Unit = ???
+  override def getPort: Int = AkkaUtils.getAddress(actorSystem).port.get
 
   override def connect[T <: RpcGateway](adress: String,
                                         clazz: Class[T]): CompletableFuture[T] =
@@ -112,14 +105,12 @@ class AkkaRpcService(val actorSystem: ActorSystem,
       )
     })
 
-  override def execute(runnable: Runnable): Unit = ???
-  override def execute[T](callable: Callable[T]): CompletableFuture[T] = ???
-
   private def connectInternal[C <: RpcGateway](
     address: String,
     clazz: Class[C],
     invocationHandlerFactory: Function[ActorRef, InvocationHandler]
   ) = {
+    import java.util.concurrent.TimeUnit
 
     logInfo(
       s"Try to connect to remote RPC endpoint with address ${address}. Returning a ${clazz.getName} gateway.",
@@ -127,16 +118,10 @@ class AkkaRpcService(val actorSystem: ActorSystem,
 
     val actorSel = actorSystem.actorSelection(address)
 
-    import akka.actor.ActorIdentity
-    import akka.pattern.ask
-    import akka.util.Timeout
-
-    import scala.concurrent.duration._
-
-    implicit val timeout = Timeout(5 seconds)
-
     val identifyFuture = new CompletableFuture[ActorIdentity]
-    import scala.util.{Failure, Success}
+
+    implicit val timeout = Timeout(1, TimeUnit.SECONDS)
+
     val future = actorSel ? new Identify(42)
     future onComplete {
       case Success(x) => {
@@ -163,4 +148,9 @@ class AkkaRpcService(val actorSystem: ActorSystem,
     proxy
   }
 
+}
+
+object AkkaRpcService {
+  implicit val timeOut: Time ⇒ Timeout = (time: Time) ⇒
+    Timeout(time.getSize, time.getUnit)
 }
