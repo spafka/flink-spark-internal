@@ -18,13 +18,18 @@ class AkkaRpcService(val actorSystem: ActorSystem,
 
   import akka.actor.Identify
 
+  import scala.concurrent.ExecutionContextExecutor
+
   val address: Address = AkkaUtils.getAddress(actorSystem)
+
+  implicit val sc: ExecutionContextExecutor = actorSystem.dispatcher
 
   @GuardedBy("lock") private val actors =
     new util.HashMap[ActorRef, RpcEndpoint](4)
 
   override def startServer[C <: RpcEndpoint with RpcGateway](
-      rpcEndpoint: C): RpcServer = {
+    rpcEndpoint: C
+  ): RpcServer = {
     import java.util
 
     import com.github.spafka.util.RpcUtils
@@ -36,7 +41,8 @@ class AkkaRpcService(val actorSystem: ActorSystem,
     // Akka ActorSysterm 构造RpcEndPoint
     var akkaRpcActorProps = Props.create(
       classOf[AkkaRpcActor[_ <: RpcEndpoint with RpcGateway]],
-      rpcEndpoint)
+      rpcEndpoint
+    )
 
     // AkkaRpcActor actor实例
     var actorRef =
@@ -44,7 +50,8 @@ class AkkaRpcService(val actorSystem: ActorSystem,
     actors.put(actorRef, rpcEndpoint)
 
     logInfo(
-      s"Starting RPC endpoint for ${rpcEndpoint.getClass.getName} at ${actorRef.path} .")
+      s"Starting RPC endpoint for ${rpcEndpoint.getClass.getName} at ${actorRef.path} ."
+    )
 
     val akkaAddress: String = AkkaUtils.getAkkaURL(actorSystem, actorRef)
     var hostname: String = null
@@ -52,7 +59,8 @@ class AkkaRpcService(val actorSystem: ActorSystem,
     if (host.isEmpty) hostname = "localhost" else hostname = host.get
 
     val implementedRpcGateways: util.Set[Class[_]] = new util.HashSet[Class[_]](
-      RpcUtils.extractImplementedRpcGateways(rpcEndpoint.getClass))
+      RpcUtils.extractImplementedRpcGateways(rpcEndpoint.getClass)
+    )
 
     implementedRpcGateways.add(classOf[RpcServer])
 
@@ -62,15 +70,18 @@ class AkkaRpcService(val actorSystem: ActorSystem,
       akkaAddress,
       hostname,
       actorRef,
-      timeout = Time.seconds(1L))
+      timeout = Time.seconds(1L)
+    )
 
     val classLoader: ClassLoader = getClass.getClassLoader
 
     import scala.collection.JavaConverters._
     val server: RpcServer = Proxy
-      .newProxyInstance(classLoader, //
-                        implementedRpcGateways.asScala.toArray, //
-                        akkaInvocationHandler) //
+      .newProxyInstance(
+        classLoader, //
+        implementedRpcGateways.asScala.toArray, //
+        akkaInvocationHandler
+      ) //
       .asInstanceOf[RpcServer]
 
     return server
@@ -88,92 +99,68 @@ class AkkaRpcService(val actorSystem: ActorSystem,
 
   override def preStop: Unit = ???
 
-  override def connect[T <: RpcGateway](
-      adress: String): CompletableFuture[T] = {}
+  override def connect[T <: RpcGateway](adress: String,
+                                        clazz: Class[T]): CompletableFuture[T] =
+    connectInternal(address.host.get, clazz, (actorRef: ActorRef) => {
+
+      new AkkaInvocationHandler(
+        adress,
+        hostname = adress,
+        actorRef,
+        false,
+        Time.seconds(5)
+      )
+    })
 
   override def execute(runnable: Runnable): Unit = ???
-
   override def execute[T](callable: Callable[T]): CompletableFuture[T] = ???
 
   private def connectInternal[C <: RpcGateway](
-      address: String,
-      clazz: Class[C],
-      invocationHandlerFactory: Function[ActorRef, InvocationHandler]) = {
-    import java.util.concurrent.Future
-
-    import akka.actor.{ActorIdentity, ActorSelection}
-    import akka.pattern.Patterns
+    address: String,
+    clazz: Class[C],
+    invocationHandlerFactory: Function[ActorRef, InvocationHandler]
+  ) = {
 
     logInfo(
       s"Try to connect to remote RPC endpoint with address ${address}. Returning a ${clazz.getName} gateway.",
     )
 
-    val actorSel: ActorSelection = actorSystem.actorSelection(address)
+    val actorSel = actorSystem.actorSelection(address)
 
-    val identify: Future[ActorIdentity] = Patterns
-      .ask(actorSel, new Identify(42), timeout.toMilliseconds)
-      .mapTo[ActorIdentity](
-        ClassTag$.MODULE$.apply[ActorIdentity](classOf[ActorIdentity])
-      )
+    import akka.actor.ActorIdentity
+    import akka.pattern.ask
+    import akka.util.Timeout
 
-    val identifyFuture: CompletableFuture[ActorIdentity] =
-      FutureUtils.toJava(identify)
+    import scala.concurrent.duration._
 
-    val actorRefFuture: CompletableFuture[ActorRef] =
-      identifyFuture.thenApply((actorIdentity: ActorIdentity) => {
-        def foo(actorIdentity: ActorIdentity) = {
-          if (actorIdentity.getRef == null) {
-            import java.util.concurrent.CompletionException
-            throw new CompletionException(
-              new RpcConnectionException(
-                "Could not connect to rpc endpoint under address " + address + '.'
-              )
-            )
-          } else { return actorIdentity.getRef }
-        }
-        foo(actorIdentity)
-      })
+    implicit val timeout = Timeout(5 seconds)
 
-    val handshakeFuture: CompletableFuture[HandshakeSuccessMessage] =
-      actorRefFuture.thenCompose(
-        (actorRef: ActorRef) =>
-          FutureUtils.toJava(
-            Patterns
-              .ask(
-                actorRef,
-                new RemoteHandshakeMessage(clazz, getVersion),
-                timeout.toMilliseconds
-              )
-              .mapTo[HandshakeSuccessMessage](
-                ClassTag$.MODULE$
-                  .apply[HandshakeSuccessMessage](
-                    classOf[HandshakeSuccessMessage])
-              )
+    val identifyFuture = new CompletableFuture[ActorIdentity]
+    import scala.util.{Failure, Success}
+    val future = actorSel ? new Identify(42)
+    future onComplete {
+      case Success(x) => {
+        identifyFuture.complete(x.asInstanceOf[ActorIdentity])
+      }
+      case Failure(e) => { identifyFuture.completeExceptionally(e) }
+    }
+
+    val proxy: CompletableFuture[C] = identifyFuture.thenApply(x ⇒ {
+      val invocationHandler = invocationHandlerFactory.apply(x.getRef)
+
+      val classLoader = getClass.getClassLoader
+
+      @SuppressWarnings(Array("unchecked")) val proxy = Proxy
+        .newProxyInstance(
+          classLoader,
+          Array[Class[_]](clazz),
+          invocationHandler
         )
-      )
+        .asInstanceOf[C]
+      proxy
+    })
 
-    return actorRefFuture.thenCombineAsync(
-      handshakeFuture,
-      (actorRef: ActorRef, ignored: HandshakeSuccessMessage) => {
-        def foo(actorRef: ActorRef, ignored: HandshakeSuccessMessage) = {
-          val invocationHandler: InvocationHandler =
-            invocationHandlerFactory.apply(actorRef)
-// Rather than using the System ClassLoader directly, we derive the ClassLoader
-// from this class . That works better in cases where Flink runs embedded and all Flink
-// code is loaded dynamically (for example from an OSGI bundle) through a custom ClassLoader
-          val classLoader: ClassLoader = getClass.getClassLoader
-          @SuppressWarnings(Array("unchecked")) val proxy: C = Proxy
-            .newProxyInstance(
-              classLoader,
-              Array[Class[_]](clazz),
-              invocationHandler
-            )
-            .asInstanceOf[C]
-          return proxy
-        }
-        foo(actorRef, ignored)
-      },
-      actorSystem.dispatcher
-    )
+    proxy
   }
+
 }

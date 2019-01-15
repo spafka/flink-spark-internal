@@ -32,7 +32,8 @@ class AkkaInvocationHandler(var address: String = null, //
       new RemoteRpcInvocation(methodName, parameterTypes, args)
 
     logInfo(
-      s"AkkaInvocationHandler ${methodName} ${parameterTypes} ${remoteRpcInvocation}")
+      s"AkkaInvocationHandler ${methodName} ${parameterTypes} ${remoteRpcInvocation}"
+    )
 
     return invokeRpc(method, args, remoteRpcInvocation)
 
@@ -65,8 +66,8 @@ class AkkaInvocationHandler(var address: String = null, //
       // execute a synchronous call
       val ff = new CompletableFuture[Any]()
       import scala.util.{Failure, Success}
-      (rpcEndpoint ? (rpcInvocation, 5 seconds)) onComplete {
-        case Success(x) => { ff.complete(x ) }
+      rpcEndpoint ? rpcInvocation onComplete {
+        case Success(x) => { ff.complete(x) }
         case Failure(e) => { ff.completeExceptionally(e) }
       }
       result = ff

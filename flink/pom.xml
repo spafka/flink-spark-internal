@@ -17,15 +17,5 @@
         <module>test</module>
         <module>example</module>
     </modules>
-
     <artifactId>flink</artifactId>
-    <dependencies>
-        <dependency>
-            <groupId>com.github.spafka</groupId>
-            <artifactId>util</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
-
 </project>

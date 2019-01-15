@@ -30,12 +30,9 @@
     <packaging>pom</packaging>
     <version>1.0</version>
     <modules>
-        <module>util</module>
-        <module>calcite</module>
-        <module>spark</module>
         <module>flink</module>
         <module>mini-cluster</module>
-        <module>srpc</module>
+
     </modules>
     <properties>
         <disruptor.version>3.3.6</disruptor.version>
@@ -397,5 +394,14 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>spark</id>
+            <modules>
+                <module>spark</module>
+                <module>srpc</module>
+            </modules>
+        </profile>
     </profiles>
+
+
 </project>

@@ -17,8 +17,7 @@ case class BreakMessage() extends Message
 // TASK 相关
 abstract class TaskDesc() extends Serializable {
 
-  def run = {
-  }
+  def run = {}
 }
 
 case class Task(tdd: TaskDesc) {
@@ -37,4 +36,3 @@ case class Task(tdd: TaskDesc) {
 case class AskMessage() extends Message
 
 case class ReplyMessage() extends Message
-

@@ -1,23 +1,28 @@
 package com.github.spafka.message
 
-
 import java.io.IOException
 
+trait Rpc
 
-trait RpcInvocation {
-
-  @throws[IOException]
-  @throws[ClassNotFoundException] def getMethodName: String
+trait RpcInvocation extends Rpc {
 
   @throws[IOException]
-  @throws[ClassNotFoundException] def getParameterTypes: Array[Class[_]]
+  @throws[ClassNotFoundException]
+  def getMethodName: String
 
   @throws[IOException]
-  @throws[ClassNotFoundException] def getArgs: Array[AnyRef]
+  @throws[ClassNotFoundException]
+  def getParameterTypes: Array[Class[_]]
+
+  @throws[IOException]
+  @throws[ClassNotFoundException]
+  def getArgs: Array[AnyRef]
 }
-
-
-@SerialVersionUID(9187962608946082519L) case class RemoteRpcInvocation(var methodName: String, val parameterTypes: Array[Class[_]], var args: Array[AnyRef]) extends Serializable {
+@SerialVersionUID(9187962608946082519L) case class RemoteRpcInvocation(
+  var methodName: String,
+  val parameterTypes: Array[Class[_]],
+  var args: Array[AnyRef]
+) extends Serializable {
 
   private def getMethodName = methodName
 
@@ -27,3 +32,4 @@ trait RpcInvocation {
 
 }
 
+trait RpcMessage extends Rpc {}

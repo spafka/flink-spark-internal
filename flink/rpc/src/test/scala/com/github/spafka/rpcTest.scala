@@ -1,7 +1,12 @@
 package com.github.spafka
 
 import akka.actor.ActorSystem
-import com.github.spafka.rpc.{AkkaRpcService, RpcEndpoint, RpcGateway, RpcService}
+import com.github.spafka.rpc.{
+  AkkaRpcService,
+  RpcEndpoint,
+  RpcGateway,
+  RpcService
+}
 import com.github.spafka.util.{AkkaUtils, Logging}
 import org.apache.flink.api.common.time.Time
 import org.junit.{Before, Test}
@@ -14,13 +19,10 @@ class rpcTest {
   @Before def initactorSysterm(): Unit = {
     actorSystem = AkkaUtils.startMasterActorSystem()
   }
-
-
   @Test def test(): Unit = {
 
     // 先建立actorSysterm
     val rpcService = new AkkaRpcService(actorSystem, time)
-
 
     val taskExecutor = new TaskExecutor(rpcService, "task")
 
@@ -31,31 +33,28 @@ class rpcTest {
 
 trait TaskGateWay extends RpcGateway {
 
-  def regiest = {
-
-  }
+  def regiest = {}
 
 }
 
-
-class TaskExecutor(rpcService: RpcService, endpointId: String) extends RpcEndpoint(rpcService, endpointId) with TaskGateWay with Logging {
+class TaskExecutor(rpcService: RpcService, endpointId: String)
+    extends RpcEndpoint(rpcService, endpointId)
+    with TaskGateWay
+    with Logging {
   override def start: Unit = {
 
-   rpcService.connect("")
+    // rpcService.connect("")
   }
 
   override def stop: Unit = ???
 
-  override def preStart: Unit = ???
-
-  override def preStop: Unit = ???
+//  override def preStart: Unit = ???
+//
+//  override def preStop: Unit = ???
 
   override def getAddress: String = ???
 
   override def getHostname: String = ???
 }
 
-trait JobGateWay extends RpcGateway {
-
-}
-
+trait JobGateWay extends RpcGateway {}

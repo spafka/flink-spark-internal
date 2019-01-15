@@ -20,7 +20,6 @@ class akkaTest {
     val actorSystem = AkkaUtils.startDebugActorSystem()
     println(actorSystem)
 
-
     val hello = actorSystem.actorOf(Props(new HelloActor()))
 
     hello ! "string"
@@ -41,7 +40,8 @@ class akkaTest {
 
     val slaveActor = AkkaUtils.startSlaveActorSystem(logger = log)
 
-    val helloRef = slaveActor.actorSelection("akka.tcp://master@127.0.0.1:6332/user/hello")
+    val helloRef =
+      slaveActor.actorSelection("akka.tcp://master@127.0.0.1:6332/user/hello")
 
     println(slaveActor)
 
@@ -52,6 +52,5 @@ class akkaTest {
 
     TimeUnit.SECONDS.sleep(1)
   }
-
 
 }
