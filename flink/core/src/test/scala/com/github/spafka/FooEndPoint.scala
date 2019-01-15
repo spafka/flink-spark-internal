@@ -1,12 +1,12 @@
 package com.github.spafka
-import com.github.spafka.rpc.{RpcEndpoint, RpcService}
+import com.github.spafka.rpc.{RpcEndpoint, RpcGateway, RpcService}
 
-trait FooGateWay {
+trait FooGateWay extends RpcGateway {
 
   def foo: String
 }
 
-trait BarGateWay {
+trait BarGateWay extends RpcGateway {
 
   def bar: String
 }
@@ -57,11 +57,11 @@ object BarEndPoint extends App {
 
   private val actorSystem: ActorSystem = AkkaUtils.startSlaveActorSystem()
 
-  private val value: CompletableFuture[FooEndPoint] = new AkkaRpcService(
-    actorSystem
-  ).connect("akka://flink/user/fooEndPoint", classOf[FooEndPoint])
+  private val value: CompletableFuture[BarGateWay] =
+    new AkkaRpcService(actorSystem)
+      .connect("akka://flink/user/fooEndPoint", classOf[BarGateWay])
 
-  private val point: FooEndPoint = value.get()
+  private val point: BarGateWay = value.get()
+  point.bar
 
-  point.foo
 }
