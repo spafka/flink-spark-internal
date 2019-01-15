@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.github.spafka</groupId>
-            <artifactId>rpc</artifactId>
+            <artifactId>core</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
