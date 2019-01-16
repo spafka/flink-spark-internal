@@ -1,28 +1,31 @@
 package com.github.spafka.rpc
 
+import java.lang.reflect.{InvocationHandler, Proxy}
 import java.util
 import java.util.concurrent.CompletableFuture
+import java.util.function.Function
 
-import akka.actor.{ActorIdentity, ActorRef, ActorSystem, Address, Props}
+import akka.actor.{
+  ActorIdentity,
+  ActorRef,
+  ActorSystem,
+  Address,
+  Identify,
+  Props
+}
 import akka.pattern.ask
 import akka.util.Timeout
-import com.github.spafka.util.{AkkaUtils, Logging}
+import com.github.spafka.util.{AkkaUtils, Logging, RpcUtils}
 import javax.annotation.concurrent.GuardedBy
 import org.apache.flink.api.common.time.Time
 
+import scala.concurrent.ExecutionContextExecutor
 import scala.util.{Failure, Success}
 
 class AkkaRpcService(val actorSystem: ActorSystem,
                      val timeout: Time = Time.seconds(1L))
     extends RpcService
     with Logging {
-
-  import java.lang.reflect.{InvocationHandler, Proxy}
-  import java.util.function.Function
-
-  import akka.actor.Identify
-
-  import scala.concurrent.ExecutionContextExecutor
 
   val address: Address = AkkaUtils.getAddress(actorSystem)
 
@@ -34,9 +37,6 @@ class AkkaRpcService(val actorSystem: ActorSystem,
   override def startServer[C <: RpcEndpoint with RpcGateway](
     rpcEndpoint: C
   ): RpcServer = {
-    import java.util
-
-    import com.github.spafka.util.RpcUtils
 
     log.info(s"Starting Rpc Server")
 

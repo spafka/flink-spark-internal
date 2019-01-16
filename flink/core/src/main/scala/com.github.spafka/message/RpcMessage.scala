@@ -22,13 +22,14 @@ trait RpcInvocation extends Rpc {
   var methodName: String,
   val parameterTypes: Array[Class[_]],
   var args: Array[AnyRef]
-) extends Serializable {
+) extends RpcInvocation
+    with Serializable {
 
-  private def getMethodName = methodName
+  override def getMethodName = methodName
 
-  private def getParameterTypes = parameterTypes
+  override def getParameterTypes = parameterTypes
 
-  private def getArgs = args
+  override def getArgs = args
 
 }
 

@@ -8,6 +8,7 @@ import akka.util.Timeout
 import com.github.spafka.message.RemoteRpcInvocation
 import com.github.spafka.util.Logging
 import org.apache.flink.api.common.time.Time
+import scala.concurrent.Future
 
 // 动态代理，使之调Rpc就像调用本地一样
 class AkkaInvocationHandler(var address: String = null, //
@@ -65,7 +66,7 @@ class AkkaInvocationHandler(var address: String = null, //
       }
       result = ff
     } else {
-      import scala.concurrent.Future
+
       val f: Future[Any] = rpcEndpoint ? rpcInvocation
 
       f.onComplete {
