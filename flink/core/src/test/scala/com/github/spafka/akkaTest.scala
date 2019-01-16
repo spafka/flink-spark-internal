@@ -13,6 +13,7 @@ class akkaTest {
     override def receive = {
       case msg: String ⇒ println("echo " + msg)
       case msg ⇒ println("none string msg")
+      case _ ⇒
     }
   }
 
@@ -29,6 +30,7 @@ class akkaTest {
   }
 
   @Test def testRemoteActorSysTerm(): Unit = {
+    import akka.actor.ActorSelection
 
     val log = LoggerFactory.getLogger(classOf[akkaTest])
     val masterActor = AkkaUtils.startMasterActorSystem(logger = log)
@@ -40,15 +42,28 @@ class akkaTest {
 
     val slaveActor = AkkaUtils.startSlaveActorSystem(logger = log)
 
-    val helloRef =
-      slaveActor.actorSelection("akka.tcp://master@127.0.0.1:6332/user/hello")
+    val helloSel: ActorSelection =
+      slaveActor.actorSelection("akka.tcp://flink@127.0.0.1:6332/user/hello")
 
-    println(slaveActor)
+    helloSel ! "sss"
 
-    helloRef ! "string"
-    helloRef ! 1
+    import akka.actor.{ActorIdentity, Identify}
+    import akka.pattern.ask
+    import akka.util.Timeout
 
-    println(helloRef)
+    import scala.concurrent.duration._
+    implicit val timeout: Timeout = (5 seconds)
+
+    val identify = new Identify(42)
+    val a = helloSel ? identify
+    val eventualIdentity = a.mapTo[ActorIdentity]
+
+    implicit val sc = slaveActor.dispatcher
+    eventualIdentity.onComplete {
+      case scala.util.Success(value) ⇒ println(value.getRef)
+      case scala.util.Failure(exception) ⇒ println(exception.getMessage)
+    }
+    println(helloSel)
 
     TimeUnit.SECONDS.sleep(1)
   }

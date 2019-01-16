@@ -23,7 +23,7 @@ object ProxyTesting {
   def main(args: Array[String]) {
     val handler = new ProxyInvocationHandler
 
-    val impl = Proxy
+    val impl: Iface = Proxy
       .newProxyInstance(
         classOf[Iface].getClassLoader,
         Array(classOf[Iface]),

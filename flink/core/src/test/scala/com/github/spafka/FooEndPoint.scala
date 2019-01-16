@@ -1,5 +1,11 @@
 package com.github.spafka
+import java.util.concurrent.TimeUnit
+
+import akka.actor.{ActorIdentity, Identify}
+import akka.util.Timeout
 import com.github.spafka.rpc.{RpcEndpoint, RpcGateway, RpcService}
+
+import scala.util.{Failure, Success}
 
 trait FooGateWay extends RpcGateway {
 
@@ -42,8 +48,6 @@ object FooEndPoint extends App {
 
   private val actorSystem: ActorSystem = AkkaUtils.startMasterActorSystem()
 
-  new AkkaRpcService(actorSystem)
-
   new FooEndPoint(new AkkaRpcService(actorSystem), "fooEndPoint")
 
 }
@@ -51,17 +55,38 @@ object FooEndPoint extends App {
 object BarEndPoint extends App {
   import java.util.concurrent.CompletableFuture
 
-  import akka.actor.ActorSystem
+  import akka.actor.{ActorSelection, ActorSystem}
   import com.github.spafka.rpc.AkkaRpcService
   import com.github.spafka.util.AkkaUtils
+  import akka.pattern.ask
 
-  private val actorSystem: ActorSystem = AkkaUtils.startSlaveActorSystem()
+  private val actorSystem2: ActorSystem = AkkaUtils.startSlaveActorSystem()
+
+  val address = "akka.tcp://flink@127.0.0.1:6332/user/fooEndPoint";
+
+//  val actorSel = actorSystem2.actorSelection(address)
+//
+//  val identifyFuture = new CompletableFuture[ActorIdentity]
+//
+//  implicit val timeout = Timeout(10, TimeUnit.SECONDS)
+//  implicit val sc = actorSystem2.dispatcher
+//  val future = actorSel ? new Identify(42)
+//  future.mapTo[ActorIdentity] onComplete {
+//    case Success(x) => {
+//      identifyFuture.complete(x)
+//    }
+//    case Failure(e) => {
+//      identifyFuture.completeExceptionally(e)
+//    }
+//  }
 
   private val value: CompletableFuture[BarGateWay] =
-    new AkkaRpcService(actorSystem)
-      .connect("akka://flink/user/fooEndPoint", classOf[BarGateWay])
+    new AkkaRpcService(actorSystem2)
+      .connect(address, classOf[BarGateWay])
 
   private val point: BarGateWay = value.get()
   point.bar
+
+  TimeUnit.SECONDS.sleep(100)
 
 }

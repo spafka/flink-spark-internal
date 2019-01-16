@@ -5,7 +5,6 @@ import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit.NANOSECONDS
 import java.util.concurrent.locks.Lock
 
-
 import grizzled.slf4j.Logger
 import org.apache.commons.lang3.SystemUtils
 import sun.misc.Unsafe
@@ -45,7 +44,6 @@ object Utils {
 
   }
 
-
   /** lock and unlock  */
   def lock[T](lock: Lock, body: => T) = {
     try {
@@ -72,33 +70,46 @@ object Utils {
         // getNetworkInterfaces returns ifs in reverse order compared to ifconfig output order
         // on unix-like system. On windows, it returns in index order.
         // It's more proper to pick ip address following system output order.
-        val activeNetworkIFs = NetworkInterface.getNetworkInterfaces.asScala.toSeq
-        val reOrderedNetworkIFs = if (SystemUtils.IS_OS_WINDOWS) activeNetworkIFs else activeNetworkIFs.reverse
+        val activeNetworkIFs =
+          NetworkInterface.getNetworkInterfaces.asScala.toSeq
+        val reOrderedNetworkIFs =
+          if (SystemUtils.IS_OS_WINDOWS) activeNetworkIFs
+          else activeNetworkIFs.reverse
 
         for (ni <- reOrderedNetworkIFs) {
           val addresses = ni.getInetAddresses.asScala
-            .filterNot(addr => addr.isLinkLocalAddress || addr.isLoopbackAddress).toSeq
+            .filterNot(
+              addr => addr.isLinkLocalAddress || addr.isLoopbackAddress
+            )
+            .toSeq
           if (addresses.nonEmpty) {
-            val addr = addresses.find(_.isInstanceOf[Inet4Address]).getOrElse(addresses.head)
+            val addr = addresses
+              .find(_.isInstanceOf[Inet4Address])
+              .getOrElse(addresses.head)
             // because of Inet6Address.toHostName may add interface at the end if it knows about it
             val strippedAddress = InetAddress.getByAddress(addr.getAddress)
             // We've found an address that looks reasonable!
-            logger.warn("Your hostname, " + InetAddress.getLocalHost.getHostName + " resolves to" +
-              " a loopback address: " + address.getHostAddress + "; using " +
-              strippedAddress.getHostAddress + " instead (on interface " + ni.getName + ")")
-            logger.warn("Set SPARK_LOCAL_IP if you need to bind to another address")
+            logger.warn(
+              "Your hostname, " + InetAddress.getLocalHost.getHostName + " resolves to" +
+                " a loopback address: " + address.getHostAddress + "; using " +
+                strippedAddress.getHostAddress + " instead (on interface " + ni.getName + ")"
+            )
+            logger.warn(
+              "Set SPARK_LOCAL_IP if you need to bind to another address"
+            )
             return strippedAddress
           }
         }
-        logger.warn("Your hostname, " + InetAddress.getLocalHost.getHostName + " resolves to" +
-          " a loopback address: " + address.getHostAddress + ", but we couldn't find any" +
-          " external IP address!")
+        logger.warn(
+          "Your hostname, " + InetAddress.getLocalHost.getHostName + " resolves to" +
+            " a loopback address: " + address.getHostAddress + ", but we couldn't find any" +
+            " external IP address!"
+        )
         logger.warn("Set SPARK_LOCAL_IP if you need to bind to another address")
       }
       address
     }
   }
-
 
   def getUnSafe: Unsafe = {
     var unsafe: Unsafe = null
@@ -117,6 +128,5 @@ object Utils {
     t.setName(name)
     t
   }
-
 
 }

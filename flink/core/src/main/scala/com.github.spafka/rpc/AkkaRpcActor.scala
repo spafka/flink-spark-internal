@@ -19,6 +19,7 @@ class AkkaRpcActor[T <: RpcEndpoint with RpcGateway](val rpcEndpoint: T)
       logInfo(s"AkkaRpcActor ending")
       state = State.STOPPED
     }
+    case _ ⇒ println("adsadsacdas")
   }
 
   @throws[NoSuchMethodException]

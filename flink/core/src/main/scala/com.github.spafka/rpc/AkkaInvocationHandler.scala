@@ -52,15 +52,11 @@ class AkkaInvocationHandler(var address: String = null, //
 
     implicit val rpcTimeOut = Timeout(timeout.getSize, timeout.getUnit)
     val returnType = method.getReturnType
-    var result: AnyRef = null
+    var result: Any = null
     if (Objects.equals(returnType, Void.TYPE)) {
       rpcEndpoint ! (rpcInvocation)
       result = null
     } else if (Objects.equals(returnType, classOf[CompletableFuture[_]])) {
-      // execute a asynchronous call
-      result = rpcEndpoint ? (rpcInvocation)
-    } else {
-      // execute a synchronous call
       val ff = new CompletableFuture[Any]()
       import scala.util.{Failure, Success}
       rpcEndpoint ? rpcInvocation onComplete {
@@ -68,8 +64,18 @@ class AkkaInvocationHandler(var address: String = null, //
         case Failure(e) => { ff.completeExceptionally(e) }
       }
       result = ff
+    } else {
+      import scala.concurrent.Future
+      val f: Future[Any] = rpcEndpoint ? rpcInvocation
+
+      f.onComplete {
+        case scala.util.Success(value) ⇒ {
+          result = value
+        }
+        case scala.util.Failure(exception) ⇒ throw exception
+      }
     }
-    result
+    result.asInstanceOf[AnyRef]
   }
 
   override def getAddress: String = { address }

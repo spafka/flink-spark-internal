@@ -29,7 +29,6 @@ class Lock {
     })
   }
 
-
   // locksupport 提供了线程级别的中断，并且不受先中断，还是先释放的影响
   @Test
   def lockSupport: Unit = {
@@ -49,7 +48,4 @@ class Lock {
 
   }
 
-
 }
-
-

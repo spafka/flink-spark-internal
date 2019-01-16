@@ -92,13 +92,13 @@ class AkkaRpcService(val actorSystem: ActorSystem,
 
   override def getPort: Int = AkkaUtils.getAddress(actorSystem).port.get
 
-  override def connect[T <: RpcGateway](adress: String,
+  override def connect[T <: RpcGateway](x: String,
                                         clazz: Class[T]): CompletableFuture[T] =
-    connectInternal(address.host.get, clazz, (actorRef: ActorRef) => {
+    connectInternal(x, clazz, (actorRef: ActorRef) => {
 
       new AkkaInvocationHandler(
-        adress,
-        hostname = adress,
+        x,
+        hostname = x,
         actorRef,
         false,
         Time.seconds(5)
@@ -120,14 +120,16 @@ class AkkaRpcService(val actorSystem: ActorSystem,
 
     val identifyFuture = new CompletableFuture[ActorIdentity]
 
-    implicit val timeout = Timeout(1, TimeUnit.SECONDS)
+    implicit val timeout = Timeout(100, TimeUnit.SECONDS)
 
     val future = actorSel ? new Identify(42)
-    future onComplete {
+    future.mapTo[ActorIdentity] onComplete {
       case Success(x) => {
-        identifyFuture.complete(x.asInstanceOf[ActorIdentity])
+        identifyFuture.complete(x)
       }
-      case Failure(e) => { identifyFuture.completeExceptionally(e) }
+      case Failure(e) => {
+        identifyFuture.completeExceptionally(e)
+      }
     }
 
     val proxy: CompletableFuture[C] = identifyFuture.thenApply(x ⇒ {
@@ -135,7 +137,7 @@ class AkkaRpcService(val actorSystem: ActorSystem,
 
       val classLoader = getClass.getClassLoader
 
-      @SuppressWarnings(Array("unchecked")) val proxy = Proxy
+      @SuppressWarnings(Array("unchecked")) val proxy: C = Proxy
         .newProxyInstance(
           classLoader,
           Array[Class[_]](clazz),
