@@ -14,8 +14,6 @@
         <module>jobmanager</module>
         <module>taskmanager</module>
         <module>mesos</module>
-        <module>test</module>
-
     </modules>
     <artifactId>flink</artifactId>
 </project>
