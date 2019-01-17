@@ -44,8 +44,8 @@ import scala.concurrent.duration._
   * so status handling should be idempotent.
   */
 class TaskMonitor(
-    schedulerDriver: SchedulerDriver,
-    goalState: TaskGoalState) extends Actor with FSM[TaskMonitorState,StateData] {
+                   schedulerDriver: SchedulerDriver,
+                   goalState: TaskGoalState) extends Actor with FSM[TaskMonitorState, StateData] {
 
   val LOG = Logger(getClass)
 
@@ -199,18 +199,25 @@ object TaskMonitor {
     * An FSM state of the task monitor, roughly corresponding to the task status.
     */
   sealed trait TaskMonitorState
+
   case object Suspended extends TaskMonitorState
+
   case object New extends TaskMonitorState
+
   case object Reconciling extends TaskMonitorState
+
   case object Staging extends TaskMonitorState
+
   case object Running extends TaskMonitorState
+
   case object Killing extends TaskMonitorState
 
   /**
     * The task monitor state data.
+    *
     * @param goal the goal (intentional) state of the task.
     */
-  case class StateData(goal:TaskGoalState)
+  case class StateData(goal: TaskGoalState)
 
   /**
     * Indicates the goal (intentional) state of a Mesos task; behavior varies accordingly.
@@ -218,8 +225,11 @@ object TaskMonitor {
   sealed trait TaskGoalState {
     val taskID: Protos.TaskID
   }
+
   case class New(taskID: Protos.TaskID) extends TaskGoalState
+
   case class Launched(taskID: Protos.TaskID, slaveID: Protos.SlaveID) extends TaskGoalState
+
   case class Released(taskID: Protos.TaskID, slaveID: Protos.SlaveID) extends TaskGoalState
 
 
@@ -244,9 +254,9 @@ object TaskMonitor {
   /**
     * Creates the properties for the TaskMonitor actor.
     *
-    * @param actorClass the task monitor actor class
+    * @param actorClass      the task monitor actor class
     * @param schedulerDriver the Mesos scheduler driver
-    * @param goalState the task's goal state
+    * @param goalState       the task's goal state
     * @tparam T the type of the task monitor actor class
     * @return the Props to create the task monitor
     */

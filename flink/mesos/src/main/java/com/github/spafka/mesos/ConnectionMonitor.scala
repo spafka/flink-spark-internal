@@ -97,7 +97,7 @@ object ConnectionMonitor {
   /**
     * Creates the properties for the ConnectionMonitor actor.
     *
-    * @param actorClass  the connection monitor actor class
+    * @param actorClass the connection monitor actor class
     * @tparam T the type of the connection monitor actor class
     * @return the Props to create the connection monitor
     */

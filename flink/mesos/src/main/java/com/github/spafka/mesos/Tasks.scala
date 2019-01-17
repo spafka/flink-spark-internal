@@ -33,14 +33,14 @@ import scala.collection.mutable.{Map => MutableMap}
   * Routes messages between the scheduler and individual task monitor actors.
   */
 class Tasks(
-     manager: ActorRef,
-     schedulerDriver: SchedulerDriver,
-     taskMonitorCreator: (ActorRefFactory,TaskGoalState) => ActorRef) extends Actor {
+             manager: ActorRef,
+             schedulerDriver: SchedulerDriver,
+             taskMonitorCreator: (ActorRefFactory, TaskGoalState) => ActorRef) extends Actor {
 
   /**
     * A map of task monitors by task ID.
     */
-  private[mesos] val taskMap: MutableMap[Protos.TaskID,ActorRef] = MutableMap()
+  private[mesos] val taskMap: MutableMap[Protos.TaskID, ActorRef] = MutableMap()
 
   /**
     * Cache of current connection state.
@@ -57,7 +57,7 @@ class Tasks(
       registered = None
       context.actorSelection("*").tell(msg, self)
 
-    case msg : Connected =>
+    case msg: Connected =>
       registered = Some(msg)
       context.actorSelection("*").tell(msg, self)
 
@@ -111,10 +111,10 @@ object Tasks {
     * Create a tasks actor.
     */
   def createActorProps[T <: Tasks, M <: TaskMonitor](
-      actorClass: Class[T],
-      manager: ActorRef,
-      schedulerDriver: SchedulerDriver,
-      taskMonitorClass: Class[M]): Props = {
+                                                      actorClass: Class[T],
+                                                      manager: ActorRef,
+                                                      schedulerDriver: SchedulerDriver,
+                                                      taskMonitorClass: Class[M]): Props = {
 
     val taskMonitorCreator = (factory: ActorRefFactory, task: TaskGoalState) => {
       val props = TaskMonitor.createActorProps(taskMonitorClass, schedulerDriver, task)

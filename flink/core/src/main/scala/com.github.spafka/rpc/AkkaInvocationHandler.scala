@@ -20,7 +20,7 @@ class AkkaInvocationHandler(var address: String = null, //
                             var isLocal: Boolean = false, //
                             // default timeout for asks
                             var timeout: Time = Time.seconds(5L))
-    extends InvocationHandler
+  extends InvocationHandler
     with RpcServer
     with Logging {
 
@@ -39,8 +39,10 @@ class AkkaInvocationHandler(var address: String = null, //
     return invokeRpc(method, args, remoteRpcInvocation)
 
   }
+
   implicit val ec =
     ExecutionContext.fromExecutor(Executors.newFixedThreadPool(1))
+
   @throws[Exception]
   private def invokeRpc(method: Method,
                         args: Array[AnyRef],
@@ -56,8 +58,12 @@ class AkkaInvocationHandler(var address: String = null, //
       val ff = new CompletableFuture[Any]()
       import scala.util.{Failure, Success}
       rpcEndpoint ? rpcInvocation onComplete {
-        case Success(x) => { ff.complete(x) }
-        case Failure(e) => { ff.completeExceptionally(e) }
+        case Success(x) => {
+          ff.complete(x)
+        }
+        case Failure(e) => {
+          ff.completeExceptionally(e)
+        }
       }
       result = ff
     } else {
@@ -78,8 +84,15 @@ class AkkaInvocationHandler(var address: String = null, //
     result.asInstanceOf[AnyRef]
   }
 
-  override def getAddress: String = { address }
-  override def getHostname: String = { hostname }
+  override def getAddress: String = {
+    address
+  }
+
+  override def getHostname: String = {
+    hostname
+  }
+
   override def start: Unit = {}
+
   override def stop: Unit = {}
 }

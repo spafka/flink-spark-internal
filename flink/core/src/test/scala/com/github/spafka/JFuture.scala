@@ -10,6 +10,7 @@ class JFuture extends Logging {
   import java.util.concurrent.Executors
 
   val ex = Executors.newCachedThreadPool()
+
   @Test def testFuture(): Unit = {
     import java.util.concurrent.{Callable, CompletableFuture, TimeUnit}
 
@@ -21,14 +22,14 @@ class JFuture extends Logging {
       a + "c"
     val value: CompletableFuture[String] = CompletableFuture
       .supplyAsync[String](() ⇒ {
-        "a"
-      })
+      "a"
+    })
       .thenApplyAsync[String](((t: String) ⇒ {
-        t + "b"
-      }): JFunction[_ >: String, _ <: String]) //
+      t + "b"
+    }): JFunction[_ >: String, _ <: String]) //
       .thenApplyAsync[String](((t: String) ⇒ {
-        t + "c"
-      }): JFunction[_ >: String, _ <: String]) //
+      t + "c"
+    }): JFunction[_ >: String, _ <: String]) //
     println(value.get())
     TimeUnit.SECONDS.sleep(1)
   }

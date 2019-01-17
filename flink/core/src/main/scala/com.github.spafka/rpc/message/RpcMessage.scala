@@ -18,12 +18,13 @@ trait RpcInvocation extends Rpc {
   @throws[ClassNotFoundException]
   def getArgs: Array[AnyRef]
 }
+
 @SerialVersionUID(9187962608946082519L) case class RemoteRpcInvocation(
-  var methodName: String,
-  val parameterTypes: Array[Class[_]],
-  var args: Array[AnyRef]
-) extends RpcInvocation
-    with Serializable {
+                                                                        var methodName: String,
+                                                                        val parameterTypes: Array[Class[_]],
+                                                                        var args: Array[AnyRef]
+                                                                      ) extends RpcInvocation
+  with Serializable {
 
   override def getMethodName = methodName
 

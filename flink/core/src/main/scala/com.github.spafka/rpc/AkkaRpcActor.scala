@@ -5,7 +5,7 @@ import com.github.spafka.util.Logging
 import com.github.spafka.rpc.message.RpcInvocation
 
 class AkkaRpcActor[T <: RpcEndpoint with RpcGateway](val rpcEndpoint: T)
-    extends Actor
+  extends Actor
     with Logging {
   var state = State.STOPPED
 
@@ -42,6 +42,7 @@ class AkkaRpcActor[T <: RpcEndpoint with RpcGateway](val rpcEndpoint: T)
   }
 
 }
+
 object State extends Enumeration {
   type State = Value
   val STARTED, STOPPED = Value

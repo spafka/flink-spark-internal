@@ -7,7 +7,7 @@ package com.github.spafka.rpc
   *
   */
 abstract class RpcEndpoint(val rpcService: RpcService, val endpointId: String)
-    extends RpcGateway
+  extends RpcGateway
     with StartStopable {
 
   val rpcServer: RpcServer = rpcService.startServer(this)
@@ -17,9 +17,9 @@ abstract class RpcEndpoint(val rpcService: RpcService, val endpointId: String)
 
   def stop
 
-//  def preStart
-//
-//  def preStop
+  //  def preStart
+  //
+  //  def preStop
 
   // lifecycle end
 }

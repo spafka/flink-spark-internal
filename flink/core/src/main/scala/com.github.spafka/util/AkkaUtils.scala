@@ -17,12 +17,12 @@ import org.apache.flink.annotation.VisibleForTesting
 import org.slf4j.{Logger, LoggerFactory}
 
 class RemoteAddressExtensionImplementation(system: ExtendedActorSystem)
-    extends Extension {
+  extends Extension {
   def address: Address = system.provider.getDefaultAddress
 }
 
 object RemoteAddressExtension
-    extends ExtensionKey[RemoteAddressExtensionImplementation] {}
+  extends ExtensionKey[RemoteAddressExtensionImplementation] {}
 
 object AkkaUtils {
 
@@ -63,17 +63,17 @@ object AkkaUtils {
 
   @throws[Exception]
   def startMasterActorSystem(
-    confPath: String = "master.conf",
-    logger: Logger = LoggerFactory.getLogger("akka")
-  ): ActorSystem = {
+                              confPath: String = "master.conf",
+                              logger: Logger = LoggerFactory.getLogger("akka")
+                            ): ActorSystem = {
     startActorSystem(confPath, logger)
   }
 
   @throws[Exception]
   def startSlaveActorSystem(
-    confPath: String = "slave.conf",
-    logger: Logger = LoggerFactory.getLogger("akka")
-  ): ActorSystem = {
+                             confPath: String = "slave.conf",
+                             logger: Logger = LoggerFactory.getLogger("akka")
+                           ): ActorSystem = {
     startActorSystem(confPath, logger)
   }
 

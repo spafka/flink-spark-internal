@@ -19,6 +19,7 @@ class rpcTest {
   @Before def initactorSysterm(): Unit = {
     actorSystem = AkkaUtils.startMasterActorSystem()
   }
+
   @Test def test(): Unit = {
 
     // 先建立actorSysterm
@@ -38,7 +39,7 @@ trait TaskGateWay extends RpcGateway {
 }
 
 class TaskExecutor(rpcService: RpcService, endpointId: String)
-    extends RpcEndpoint(rpcService, endpointId)
+  extends RpcEndpoint(rpcService, endpointId)
     with TaskGateWay
     with Logging {
   override def start: Unit = {
@@ -48,9 +49,9 @@ class TaskExecutor(rpcService: RpcService, endpointId: String)
 
   override def stop: Unit = ???
 
-//  override def preStart: Unit = ???
-//
-//  override def preStop: Unit = ???
+  //  override def preStart: Unit = ???
+  //
+  //  override def preStop: Unit = ???
 
   override def getAddress: String = ???
 

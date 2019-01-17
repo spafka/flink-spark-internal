@@ -71,7 +71,7 @@ object Utils {
         // on unix-like system. On windows, it returns in index order.
         // It's more proper to pick ip address following system output order.
         val activeNetworkIFs =
-          NetworkInterface.getNetworkInterfaces.asScala.toSeq
+        NetworkInterface.getNetworkInterfaces.asScala.toSeq
         val reOrderedNetworkIFs =
           if (SystemUtils.IS_OS_WINDOWS) activeNetworkIFs
           else activeNetworkIFs.reverse

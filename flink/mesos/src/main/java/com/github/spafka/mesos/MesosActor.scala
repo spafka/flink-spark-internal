@@ -78,11 +78,11 @@ class MesosActor extends Actor {
     // MESOS 连接信息FSM
     connectionMonitor = context.actorOf(Props(classOf[ConnectionMonitor]))
     // MESOS Executor FSM
-    launchCoordinator = context.actorOf(Props(classOf[LaunchCoordinator],self, schedulerDriver, createOptimizer()))
+    launchCoordinator = context.actorOf(Props(classOf[LaunchCoordinator], self, schedulerDriver, createOptimizer()))
     //
     taskRouter = context.actorOf(Tasks.createActorProps(classOf[Tasks], self, schedulerDriver, classOf[TaskMonitor]))
     //
-    reconciliationCoordinator = context.actorOf(Props(classOf[ReconciliationCoordinator],schedulerDriver))
+    reconciliationCoordinator = context.actorOf(Props(classOf[ReconciliationCoordinator], schedulerDriver))
 
     connectionMonitor ! new ConnectionMonitor.Start
   }
@@ -93,7 +93,7 @@ class MesosActor extends Actor {
     */
   private def createOptimizer(): TaskSchedulerBuilder = {
     return new TaskSchedulerBuilder() {
-      private  val builder = new TaskScheduler.Builder
+      private val builder = new TaskScheduler.Builder
 
       override
 

@@ -15,9 +15,9 @@ trait RpcService {
   def connect[T <: RpcGateway](adress: String,
                                clazz: Class[T]): CompletableFuture[T]
 
-//  def execute(runnable: Runnable): Unit
-//
-//  def execute[T](callable: Callable[T]): CompletableFuture[T]
+  //  def execute(runnable: Runnable): Unit
+  //
+  //  def execute[T](callable: Callable[T]): CompletableFuture[T]
 
   def startServer[C <: RpcEndpoint with RpcGateway](rpcEndpoint: C): RpcServer
 

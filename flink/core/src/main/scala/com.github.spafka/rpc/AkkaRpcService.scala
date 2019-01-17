@@ -24,7 +24,7 @@ import scala.util.{Failure, Success}
 
 class AkkaRpcService(val actorSystem: ActorSystem,
                      val timeout: Time = Time.seconds(1L))
-    extends RpcService
+  extends RpcService
     with Logging {
 
   val address: Address = AkkaUtils.getAddress(actorSystem)
@@ -35,8 +35,8 @@ class AkkaRpcService(val actorSystem: ActorSystem,
     new util.HashMap[ActorRef, RpcEndpoint](4)
 
   override def startServer[C <: RpcEndpoint with RpcGateway](
-    rpcEndpoint: C
-  ): RpcServer = {
+                                                              rpcEndpoint: C
+                                                            ): RpcServer = {
 
     log.info(s"Starting Rpc Server")
 
@@ -100,10 +100,10 @@ class AkkaRpcService(val actorSystem: ActorSystem,
     })
 
   private def connectInternal[C <: RpcGateway](
-    address: String,
-    clazz: Class[C],
-    invocationHandlerFactory: Function[ActorRef, InvocationHandler]
-  ) = {
+                                                address: String,
+                                                clazz: Class[C],
+                                                invocationHandlerFactory: Function[ActorRef, InvocationHandler]
+                                              ) = {
     import java.util.concurrent.TimeUnit
 
     logInfo(

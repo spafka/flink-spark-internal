@@ -64,16 +64,16 @@ object CepApp {
       //        }
       //      })
       .assignTimestampsAndWatermarks(
-        new AssignerWithPunctuatedWatermarks[BASEDTO]() {
-          override def extractTimestamp(element: BASEDTO,
-                                        previousTimestamp: Long): Long =
-            element.seconds1970.toLong
+      new AssignerWithPunctuatedWatermarks[BASEDTO]() {
+        override def extractTimestamp(element: BASEDTO,
+                                      previousTimestamp: Long): Long =
+          element.seconds1970.toLong
 
-          override def checkAndGetNextWatermark(lastElement: BASEDTO,
-                                                extractedTimestamp: Long) =
-            new Watermark(lastElement.seconds1970.toLong - 1000)
-        }
-      )
+        override def checkAndGetNextWatermark(lastElement: BASEDTO,
+                                              extractedTimestamp: Long) =
+          new Watermark(lastElement.seconds1970.toLong - 1000)
+      }
+    )
 
     val p1 = Pattern
       .begin[BASEDTO]("base")
@@ -111,8 +111,8 @@ object CepApp {
       })
       .select(new PatternSelectFunction[BASEDTO, Unit] {
         override def select(
-          map: java.util.Map[String, java.util.List[BASEDTO]]
-        ): Unit = {
+                             map: java.util.Map[String, java.util.List[BASEDTO]]
+                           ): Unit = {
           System.err.println(map + "\n-----------------------------")
 
         }

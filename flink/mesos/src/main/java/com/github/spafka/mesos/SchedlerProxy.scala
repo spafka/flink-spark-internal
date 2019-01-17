@@ -7,10 +7,10 @@ import org.apache.flink.mesos.scheduler.messages._
 import org.apache.mesos.{Protos, Scheduler, SchedulerDriver}
 
 
-class SchedlerProxy(var  mesosActor: ActorRef)  extends  Scheduler{
+class SchedlerProxy(var mesosActor: ActorRef) extends Scheduler {
 
   override def registered(schedulerDriver: SchedulerDriver, frameworkID: Protos.FrameworkID, masterInfo: Protos.MasterInfo): Unit = {
-    mesosActor ! new Registered(frameworkID,masterInfo)
+    mesosActor ! new Registered(frameworkID, masterInfo)
   }
 
   override def reregistered(schedulerDriver: SchedulerDriver, masterInfo: Protos.MasterInfo): Unit = {
@@ -31,7 +31,7 @@ class SchedlerProxy(var  mesosActor: ActorRef)  extends  Scheduler{
   }
 
   override def frameworkMessage(schedulerDriver: SchedulerDriver, executorID: Protos.ExecutorID, slaveID: Protos.SlaveID, bytes: Array[Byte]): Unit = {
-    mesosActor ! new FrameworkMessage(executorID,slaveID,bytes)
+    mesosActor ! new FrameworkMessage(executorID, slaveID, bytes)
   }
 
   override def disconnected(schedulerDriver: SchedulerDriver): Unit = {
@@ -39,11 +39,11 @@ class SchedlerProxy(var  mesosActor: ActorRef)  extends  Scheduler{
   }
 
   override def slaveLost(schedulerDriver: SchedulerDriver, slaveID: Protos.SlaveID): Unit = {
-    mesosActor !  new SlaveLost(slaveID)
+    mesosActor ! new SlaveLost(slaveID)
   }
 
   override def executorLost(schedulerDriver: SchedulerDriver, executorID: Protos.ExecutorID, slaveID: Protos.SlaveID, status: Int): Unit = {
-    mesosActor ! new ExecutorLost(executorID,slaveID,status)
+    mesosActor ! new ExecutorLost(executorID, slaveID, status)
   }
 
   override def error(schedulerDriver: SchedulerDriver, s: String): Unit = {

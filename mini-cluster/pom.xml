@@ -15,6 +15,7 @@
         <module>zookeeper</module>
         <module>kafka</module>
         <module>flink-server</module>
+        <module>spark</module>
     </modules>
 
     <properties>

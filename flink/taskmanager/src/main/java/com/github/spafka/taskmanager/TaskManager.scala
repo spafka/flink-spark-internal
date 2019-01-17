@@ -31,10 +31,10 @@ class TaskManager extends Actor {
 
   override def supervisorStrategy = {
     OneForOneStrategy() {
-//      case BrokenPlateException => Resume
-//      case DrunkenFoolException => Restart
-//      case RestaurantFireError =>Escalate
-//      case TiredChefException => Stop
+      //      case BrokenPlateException => Resume
+      //      case DrunkenFoolException => Restart
+      //      case RestaurantFireError =>Escalate
+      //      case TiredChefException => Stop
       case _ => Escalate
     }
   }
@@ -49,8 +49,8 @@ object TaskManager {
     val LOG = Logger(classOf[JobManager])
 
     val conf = Map("port" -> "6124")
-    val actorSystem = AkkaUtils.startActorSystem( "slave.conf",
-        LOG.logger)
+    val actorSystem = AkkaUtils.startActorSystem("slave.conf",
+      LOG.logger)
     // actorSelection 连接远程的actor
     val ref = actorSystem.actorSelection(s"akka.tcp://flink@127.0.0.1:6332/user/master")
 

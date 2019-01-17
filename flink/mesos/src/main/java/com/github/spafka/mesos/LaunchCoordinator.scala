@@ -89,7 +89,7 @@ class LaunchCoordinator(
     */
   when(Suspended) {
     case Event(msg: Connected, data: GatherData) =>
-      if(data.tasks.nonEmpty) goto(GatheringOffers)
+      if (data.tasks.nonEmpty) goto(GatheringOffers)
       else goto(Idle)
   }
 
@@ -109,7 +109,9 @@ class LaunchCoordinator(
     case Event(offers: ResourceOffers, data: GatherData) =>
       // decline any offers that come in
       schedulerDriver.suppressOffers()
-      for(offer <- offers.offers().asScala) { schedulerDriver.declineOffer(offer.getId) }
+      for (offer <- offers.offers().asScala) {
+        schedulerDriver.declineOffer(offer.getId)
+      }
       stay()
 
     case Event(msg: Launch, data: GatherData) =>
@@ -149,12 +151,12 @@ class LaunchCoordinator(
 
     case Event(offers: ResourceOffers, data: GatherData) =>
       val leases = offers.offers().asScala.map(new Offer(_))
-      if(LOG.isInfoEnabled) {
-        val (cpus, gpus, mem) = leases.foldLeft((0.0,0.0,0.0)) {
-          (z,o) => (z._1 + o.cpuCores(), z._2 + o.gpus(), z._3 + o.memoryMB())
+      if (LOG.isInfoEnabled) {
+        val (cpus, gpus, mem) = leases.foldLeft((0.0, 0.0, 0.0)) {
+          (z, o) => (z._1 + o.cpuCores(), z._2 + o.gpus(), z._3 + o.memoryMB())
         }
         LOG.info(s"Received offer(s) of $mem MB, $cpus cpus, $gpus gpus:")
-        for(l <- leases) {
+        for (l <- leases) {
           val reservations = l.getResources.asScala.map(_.getRole).toSet
           LOG.info(
             s"  ${l.getId} from ${l.hostname()} of ${l.memoryMB()} MB," +
@@ -165,7 +167,7 @@ class LaunchCoordinator(
       stay using data.copy(newLeases = data.newLeases ++ leases) forMax (1 seconds)
 
     case Event(StateTimeout, data: GatherData) =>
-      val remaining = MutableMap(data.tasks.map(t => t.taskRequest.getId -> t):_*)
+      val remaining = MutableMap(data.tasks.map(t => t.taskRequest.getId -> t): _*)
 
       LOG.info(s"Processing ${remaining.size} task(s) against ${data.newLeases.length}"
         + s" new offer(s) plus outstanding offers.")
@@ -174,10 +176,10 @@ class LaunchCoordinator(
       val result = optimizer.scheduleOnce(
         data.tasks.map(_.taskRequest).asJava, data.newLeases.asJava)
 
-      if(LOG.isInfoEnabled) {
+      if (LOG.isInfoEnabled) {
         // note that vmCurrentStates are computed before any actions taken (incl. expiration)
         LOG.info("Resources considered: (note: expired offers not deducted from below)")
-        for(vm <- optimizer.getVmCurrentStates.asScala) {
+        for (vm <- optimizer.getVmCurrentStates.asScala) {
           val lease = vm.getCurrAvailableResources
           LOG.info(s"  ${vm.getHostname} has ${lease.memoryMB()} MB," +
             s" ${lease.cpuCores()} cpus, ${lease.getScalarValue("gpus")} gpus")
@@ -185,7 +187,7 @@ class LaunchCoordinator(
       }
       log.debug(result.toString)
 
-      for((hostname, assignments) <- result.getResultMap.asScala) {
+      for ((hostname, assignments) <- result.getResultMap.asScala) {
 
         // process the assignments into a set of operations (reserve and/or launch)
         val slaveId = assignments.getLeasesUsed.get(0).getOffer.getSlaveId
@@ -194,9 +196,9 @@ class LaunchCoordinator(
 
         // update the state to reflect the launched tasks
         val launchedTasks = operations
-          .filter(_.getType==Protos.Offer.Operation.Type.LAUNCH)
+          .filter(_.getType == Protos.Offer.Operation.Type.LAUNCH)
           .flatMap(_.getLaunch.getTaskInfosList.asScala.map(_.getTaskId))
-        for(taskId <- launchedTasks) {
+        for (taskId <- launchedTasks) {
           val task = remaining.remove(taskId.getValue).get
           LOG.debug(s"Assigned task ${task.taskRequest().getId} to host ${hostname}.")
           optimizer.getTaskAssigner.call(task.taskRequest, hostname)
@@ -205,17 +207,17 @@ class LaunchCoordinator(
         // send the operations to Mesos via manager
         manager ! new AcceptOffers(hostname, offerIds.asJava, operations.asJava)
 
-        if(LOG.isInfoEnabled) {
+        if (LOG.isInfoEnabled) {
           LOG.info(s"Launched ${launchedTasks.length} task(s) on ${hostname}"
             + s" using ${offerIds.length} offer(s):")
-          for(offerId <- offerIds) {
+          for (offerId <- offerIds) {
             LOG.info(s"  ${offerId.getValue}")
           }
         }
       }
 
       // stay in GatheringOffers state if any tasks remain, otherwise transition to idle
-      if(remaining.isEmpty) {
+      if (remaining.isEmpty) {
         goto(Idle) using data.copy(newLeases = Nil, tasks = Nil)
       } else {
         LOG.info(s"Waiting for more offers; ${remaining.size} task(s) are not yet launched.")
@@ -241,7 +243,7 @@ class LaunchCoordinator(
 
     case Event(msg: Assign, _) =>
       // recovering an earlier task assignment
-      for(task <- msg.tasks.asScala) {
+      for (task <- msg.tasks.asScala) {
         LOG.debug(s"Assigned task ${task.f0.getId} to host ${task.f1}.")
         optimizer.getTaskAssigner.call(task.f0, task.f1)
       }
@@ -274,14 +276,17 @@ object LaunchCoordinator {
     * An FSM state of the launch coordinator.
     */
   sealed trait TaskState
+
   case object GatheringOffers extends TaskState
+
   case object Idle extends TaskState
+
   case object Suspended extends TaskState
 
   /**
     * FSM state data.
     *
-    * @param tasks the tasks to launch.
+    * @param tasks     the tasks to launch.
     * @param newLeases new leases not yet handed to the optimizer.
     */
   case class GatherData(tasks: Seq[LaunchableTask] = Nil, newLeases: Seq[VirtualMachineLease] = Nil)
@@ -321,17 +326,17 @@ object LaunchCoordinator {
     *
     * The operations may include reservations and task launches.
     *
-    * @param log the logger to use.
-    * @param slaveId the slave associated with the given assignments.
+    * @param log         the logger to use.
+    * @param slaveId     the slave associated with the given assignments.
     * @param assignments the task assignments as provided by the optimizer.
-    * @param allTasks all known tasks, keyed by taskId.
+    * @param allTasks    all known tasks, keyed by taskId.
     * @return the operations to perform.
     */
-   def processAssignments(
-                                  log: Logger,
-                                  slaveId: Protos.SlaveID,
-                                  assignments: VMAssignmentResult,
-                                  allTasks: Map[String, LaunchableTask]): Seq[Protos.Offer.Operation] = {
+  def processAssignments(
+                          log: Logger,
+                          slaveId: Protos.SlaveID,
+                          assignments: VMAssignmentResult,
+                          allTasks: Map[String, LaunchableTask]): Seq[Protos.Offer.Operation] = {
 
     val resources =
       assignments.getLeasesUsed.asScala.flatMap(_.asInstanceOf[Offer].getResources.asScala)
@@ -359,8 +364,8 @@ object LaunchCoordinator {
   /**
     * Get the configuration properties for the launch coordinator.
     *
-    * @param actorClass the launch coordinator actor class.
-    * @param flinkConfig the Flink configuration.
+    * @param actorClass      the launch coordinator actor class.
+    * @param flinkConfig     the Flink configuration.
     * @param schedulerDriver the Mesos scheduler driver.
     * @tparam T the launch coordinator actor class.
     * @return the Akka props to create the launch coordinator actor.
