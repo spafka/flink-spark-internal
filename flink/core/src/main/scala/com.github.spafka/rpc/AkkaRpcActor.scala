@@ -2,7 +2,7 @@ package com.github.spafka.rpc
 
 import akka.actor.Actor
 import com.github.spafka.util.Logging
-import com.github.spafka.message.RpcInvocation
+import com.github.spafka.rpc.message.RpcInvocation
 
 class AkkaRpcActor[T <: RpcEndpoint with RpcGateway](val rpcEndpoint: T)
     extends Actor
@@ -28,14 +28,17 @@ class AkkaRpcActor[T <: RpcEndpoint with RpcGateway](val rpcEndpoint: T)
     rpcEndpoint.getClass.getMethod(methodName, parameterTypes: _*)
 
   private def handleRpcInvocation(rpcInvocation: RpcInvocation) = {
+    import java.util.concurrent.CompletableFuture
 
     val methodName = rpcInvocation.getMethodName
     val parameterTypes = rpcInvocation.getParameterTypes
     val rpcMethod = lookupRpcMethod(methodName, parameterTypes)
 
-    val value = rpcMethod.invoke(rpcInvocation.getArgs)
+    rpcMethod.setAccessible(true)
+    val result = rpcMethod.invoke(rpcEndpoint, rpcInvocation.getArgs: _*)
 
-    println(value)
+    sender() ! result
+
   }
 
 }

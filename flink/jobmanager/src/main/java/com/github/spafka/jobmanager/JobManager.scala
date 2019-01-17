@@ -3,9 +3,9 @@ package com.github.spafka.jobmanager
 import java.net.InetAddress
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.github.spafka.message.{AskMessage, RigistMessage, Task}
+import com.github.spafka.rpc.message.{AskMessage, RigistMessage, Task}
 import com.github.spafka.util.AkkaUtils
-import com.github.spafka.message.{AskMessage, Task,ReplyMessage}
+import com.github.spafka.rpc.message.{AskMessage, Task,ReplyMessage}
 import grizzled.slf4j.Logger
 
 class JobManager(protected val map: Map[String, String]) extends Actor {

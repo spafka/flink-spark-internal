@@ -6,7 +6,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.github.spafka._
 import com.github.spafka.jobmanager.JobManager
-import com.github.spafka.message._
+import com.github.spafka.rpc.message._
 import com.github.spafka.util.AkkaUtils
 import grizzled.slf4j.Logger
 

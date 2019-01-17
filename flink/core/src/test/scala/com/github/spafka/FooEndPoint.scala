@@ -22,7 +22,11 @@ class FooEndPoint(rpcService: RpcService, endpointId: String)
   override def getAddress: String = rpcService.getAddress
   override def getHostname: String = rpcService.getAddress
 
-  override def foo: String = { "foo" }
+  override def foo = {
+
+    println("foo")
+    "foo"
+  }
 }
 
 class BarEndPoint(rpcService: RpcService, endpointId: String)
@@ -59,13 +63,12 @@ object BarEndPoint extends App {
 
   val address = "akka.tcp://flink@127.0.0.1:6332/user/fooEndPoint";
 
-  private val value: CompletableFuture[BarGateWay] =
+  val fooGateWay: CompletableFuture[FooGateWay] =
     new AkkaRpcService(actorSystem2)
-      .connect(address, classOf[BarGateWay])
+      .connect(address, classOf[FooGateWay])
+  private val foo: String = fooGateWay.get().foo
 
-  private val point: BarGateWay = value.get()
-  point.bar
-
+  println(foo)
   TimeUnit.SECONDS.sleep(100)
 
 }

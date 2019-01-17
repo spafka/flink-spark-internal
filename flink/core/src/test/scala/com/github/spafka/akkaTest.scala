@@ -45,8 +45,6 @@ class akkaTest {
     val helloSel: ActorSelection =
       slaveActor.actorSelection("akka.tcp://flink@127.0.0.1:6332/user/hello")
 
-    helloSel ! "sss"
-
     import akka.actor.{ActorIdentity, Identify}
     import akka.pattern.ask
     import akka.util.Timeout

@@ -96,13 +96,7 @@ class AkkaRpcService(val actorSystem: ActorSystem,
                                         clazz: Class[T]): CompletableFuture[T] =
     connectInternal(x, clazz, (actorRef: ActorRef) => {
 
-      new AkkaInvocationHandler(
-        x,
-        hostname = x,
-        actorRef,
-        false,
-        Time.seconds(5)
-      )
+      new AkkaInvocationHandler(x, x, actorRef, false, Time.seconds(5))
     })
 
   private def connectInternal[C <: RpcGateway](

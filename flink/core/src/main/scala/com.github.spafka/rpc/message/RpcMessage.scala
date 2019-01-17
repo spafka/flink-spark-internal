@@ -1,4 +1,4 @@
-package com.github.spafka.message
+package com.github.spafka.rpc.message
 
 import java.io.IOException
 
