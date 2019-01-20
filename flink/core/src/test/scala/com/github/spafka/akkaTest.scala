@@ -2,7 +2,8 @@ package com.github.spafka
 
 import java.util.concurrent.TimeUnit
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorIdentity, ActorSelection, Identify, Props}
+import akka.util.Timeout
 import com.github.spafka.util.AkkaUtils
 import org.junit.Test
 import org.slf4j.LoggerFactory
@@ -30,7 +31,7 @@ class akkaTest {
   }
 
   @Test def testRemoteActorSysTerm(): Unit = {
-    import akka.actor.ActorSelection
+
 
     val log = LoggerFactory.getLogger(classOf[akkaTest])
     val masterActor = AkkaUtils.startMasterActorSystem(logger = log)
@@ -53,6 +54,7 @@ class akkaTest {
     implicit val timeout: Timeout = (5 seconds)
 
     val identify = new Identify(42)
+
     val a = helloSel ? identify
     val eventualIdentity = a.mapTo[ActorIdentity]
 
