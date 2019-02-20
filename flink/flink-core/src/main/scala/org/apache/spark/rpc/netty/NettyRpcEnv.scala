@@ -104,7 +104,7 @@ class NettyRpcEnv(
     dispatcher.registerRpcEndpoint(name, endpoint)
   }
 
-  def asyncSetupEndpointRefByURI(uri: String): Future[RpcEndpointRef] = {
+  override def asyncSetupEndpointRefByURI(uri: String): Future[RpcEndpointRef] = {
     val addr = RpcEndpointAddress(uri)
     val endpointRef = new NettyRpcEndpointRef(conf, addr, this)
     val verifier = new NettyRpcEndpointRef(

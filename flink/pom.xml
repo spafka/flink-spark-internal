@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <modules>
-        <module>core</module>
+        <module>flink-core</module>
         <module>jobmanager</module>
         <module>taskmanager</module>
         <module>mesos</module>

@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.github.spafka</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>flink-core</artifactId>
             <version>1.0</version>
         </dependency>
     </dependencies>
