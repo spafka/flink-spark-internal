@@ -110,7 +110,8 @@ trait Logging {
     // org.apache.logging.slf4j.Log4jLoggerFactory
     val usingLog4j12 = "org.slf4j.impl.Log4jLoggerFactory".equals(binderClass)
     if (usingLog4j12) {
-      val log4j12Initialized = LogManager.getRootLogger.getAllAppenders.hasMoreElements
+      val log4j12Initialized =
+        LogManager.getRootLogger.getAllAppenders.hasMoreElements
     }
     Logging.initialized = true
 

@@ -36,7 +36,7 @@ case class Bound[T](point: T, inc: Boolean)(implicit ordering: Ordering[T]) {
 
   override def equals(that: Any): Boolean = that match {
     case b: Bound[T] => ordering.compare(point, b.point) == 0 && inc == b.inc
-    case _ => false
+    case _           => false
   }
 }
 
@@ -63,9 +63,19 @@ object ScanRange {
   def empty[T] = ScanRange[T](None, None)
 
   // split (a, b] to (a, b) and [b, b]
-  def split[T](range: ScanRange[T])(implicit ordering: Ordering[T]): Seq[ScanRange[T]] = {
-    if (range.end.map(_.inc).getOrElse(false) && compare(range.start, range.end, ordering) != 0) {
-      Seq(ScanRange(range.start, Some(Bound(range.end.get.point, false))), ScanRange(Some(Bound(range.end.get.point, true)), Some(Bound(range.end.get.point, true))))
+  def split[T](
+    range: ScanRange[T]
+  )(implicit ordering: Ordering[T]): Seq[ScanRange[T]] = {
+    if (range.end
+          .map(_.inc)
+          .getOrElse(false) && compare(range.start, range.end, ordering) != 0) {
+      Seq(
+        ScanRange(range.start, Some(Bound(range.end.get.point, false))),
+        ScanRange(
+          Some(Bound(range.end.get.point, true)),
+          Some(Bound(range.end.get.point, true))
+        )
+      )
     } else {
       Seq(range)
     }
@@ -74,7 +84,10 @@ object ScanRange {
   // For some type T, e.g., Bytes, there is no explicit maximum and minimum
   // If min is true, None = negative infinity
   // Otherwise, None = positive infinity
-  def compare[T](b: Option[Bound[T]], point: Option[Bound[T]], ordering: Ordering[T], min: Boolean = true): Int = {
+  def compare[T](b: Option[Bound[T]],
+                 point: Option[Bound[T]],
+                 ordering: Ordering[T],
+                 min: Boolean = true): Int = {
     if (b.isEmpty && point.isEmpty) {
       0
     } else if (b.isEmpty) {
@@ -120,7 +133,10 @@ object ScanRange {
   // Return the first insertion point
   // If min is true, take None as Minimum
   // Otherwise, take None as Maximum
-  private def bSearch[T](v: IndexedSeq[Option[Bound[T]]], point: Option[Bound[T]], ordering: Ordering[T], min: Boolean): Int = {
+  private def bSearch[T](v: IndexedSeq[Option[Bound[T]]],
+                         point: Option[Bound[T]],
+                         ordering: Ordering[T],
+                         min: Boolean): Int = {
     var start = 0
     var end = v.length // invariant: all element left to start is less than k and all elements right to end
     // is no less than k
@@ -137,7 +153,9 @@ object ScanRange {
     start
   }
 
-  def and[T](bounds: ScanRange[T], ranges: Array[ScanRange[T]])(implicit ordering: Ordering[T]): Array[ScanRange[T]] = {
+  def and[T](bounds: ScanRange[T], ranges: Array[ScanRange[T]])(
+    implicit ordering: Ordering[T]
+  ): Array[ScanRange[T]] = {
     val search = new ArrayBuffer[ScanRange[T]]() // We assume that the range size is reasonably small, and no need to use binary search
     ranges.foreach { range =>
       val l = {
@@ -155,14 +173,17 @@ object ScanRange {
         }
       } // Avoid l = (a, r = a) or l = [a, r = a) or l = (a, r = a]
       // We have to do this to avoid on executor to fetch any data from other region server
-      if (l.isEmpty || r.isEmpty || (ordering.compare(l.get.point, r.get.point) == 0 && l.get.inc && r.get.inc) || ordering.compare(l.get.point, r.get.point) < 0) {
+      if (l.isEmpty || r.isEmpty || (ordering.compare(l.get.point, r.get.point) == 0 && l.get.inc && r.get.inc) || ordering
+            .compare(l.get.point, r.get.point) < 0) {
         search += (ScanRange(l, r))
       }
     }
     search.toArray
   }
 
-  def or[T](extra: ScanRange[T], ranges: Array[ScanRange[T]])(implicit ordering: Ordering[T]): Array[ScanRange[T]] = {
+  def or[T](extra: ScanRange[T], ranges: Array[ScanRange[T]])(
+    implicit ordering: Ordering[T]
+  ): Array[ScanRange[T]] = {
     val search = new ArrayBuffer[ScanRange[T]]()
     val (l, u) = (ranges.map(_.start), ranges.map(_.end))
     val lIdx = bSearch(l, extra.start, ordering, true)
@@ -172,7 +193,8 @@ object ScanRange {
       // Do not fill the gap even it is only one element
       if (extra.start.isDefined && lIdx != 0) {
         if (u(lIdx - 1).isDefined) {
-          val tmp = ordering.compare(extra.start.get.point, u(lIdx - 1).get.point)
+          val tmp =
+            ordering.compare(extra.start.get.point, u(lIdx - 1).get.point)
           if (tmp < 0 || (tmp == 0 && (extra.start.get.inc || u(lIdx - 1).get.inc))) {
             (l(lIdx - 1), lIdx - 1)
           } else {
@@ -210,35 +232,41 @@ object ScanRange {
         (extra.end, uIdx)
       }
     }
-    (0 until lowIdx).foreach { x =>
-      search.+=(ranges(x))
+    (0 until lowIdx).foreach { x => search.+=(ranges(x))
     }
     search.+=(ScanRange(low, up))
-    (upIdx until ranges.length).foreach { x =>
-      search.+=(ranges(x))
+    (upIdx until ranges.length).foreach { x => search.+=(ranges(x))
     }
     search.toArray
   }
 
-  def and[T](left: Array[ScanRange[T]], right: Array[ScanRange[T]])(implicit ordering: Ordering[T]): Array[ScanRange[T]] = {
+  def and[T](left: Array[ScanRange[T]], right: Array[ScanRange[T]])(
+    implicit ordering: Ordering[T]
+  ): Array[ScanRange[T]] = {
     // (0, 5), (10, 15) and with (2, 3) (8, 12) = (2, 3), (10, 12)
     val tmp = left.map(x => ScanRange.and(x, right))
-    tmp.reduce[Array[ScanRange[T]]] { case (x, y) => x.foldLeft(y) { case (m, n) => ScanRange.or(n, m)
-    }
+    tmp.reduce[Array[ScanRange[T]]] {
+      case (x, y) => x.foldLeft(y) { case (m, n) => ScanRange.or(n, m) }
     }
   }
 
-  @tailrec def or[T](left: Array[ScanRange[T]], right: Array[ScanRange[T]])(implicit ordering: Ordering[T]): Array[ScanRange[T]] = {
+  @tailrec def or[T](left: Array[ScanRange[T]], right: Array[ScanRange[T]])(
+    implicit ordering: Ordering[T]
+  ): Array[ScanRange[T]] = {
     if (left.length <= right.length) {
-      left.foldLeft(right) { case (x, y) => ScanRange.or(y, x)
-      }
+      left.foldLeft(right) { case (x, y) => ScanRange.or(y, x) }
     } else {
       or(right, left)
     }
   }
 
   // Construct multi-dimensional scan ranges.
-  def apply(length: Int, low: Array[Byte], lowInc: Boolean, up: Array[Byte], upInc: Boolean, offset: Int): ScanRange[Array[Byte]] = {
+  def apply(length: Int,
+            low: Array[Byte],
+            lowInc: Boolean,
+            up: Array[Byte],
+            upInc: Boolean,
+            offset: Int): ScanRange[Array[Byte]] = {
     val end = Array.fill(length)(-1: Byte)
     System.arraycopy(up, 0, end, offset, up.length)
     ScanRange(Some(Bound(low, lowInc)), Some(Bound(end, upInc)))
@@ -255,7 +283,9 @@ object ScanRange {
 case class BoundRange(low: Array[Byte], upper: Array[Byte])
 
 // The range in less and greater have to be lexi ordered.
-case class BoundRanges(less: Array[BoundRange], greater: Array[BoundRange], value: Array[Byte])
+case class BoundRanges(less: Array[BoundRange],
+                       greater: Array[BoundRange],
+                       value: Array[Byte])
 
 object BoundRange extends Logging {
 
@@ -267,46 +297,127 @@ object BoundRange extends Logging {
     in match {
       // For short, integer, and long, the order of number is consistent with byte array order
       // regardless of its sign. But the negative number is larger than positive number in byte array.
-      case a: Integer => if (f.fCoder == pt) {
-        val b = Bytes.toBytes(a)
-        if (a >= 0) {
-          logDebug(s"range is 0 to $a and ${Integer.MIN_VALUE} to -1")
-          Some(BoundRanges(Array(BoundRange(Bytes.toBytes(0: Int), b), BoundRange(Bytes.toBytes(Integer.MIN_VALUE), Bytes.toBytes(-1: Int))), Array(BoundRange(b, Bytes.toBytes(Integer.MAX_VALUE))), b))
+      case a: Integer =>
+        if (f.fCoder == pt) {
+          val b = Bytes.toBytes(a)
+          if (a >= 0) {
+            logDebug(s"range is 0 to $a and ${Integer.MIN_VALUE} to -1")
+            Some(
+              BoundRanges(
+                Array(
+                  BoundRange(Bytes.toBytes(0: Int), b),
+                  BoundRange(
+                    Bytes.toBytes(Integer.MIN_VALUE),
+                    Bytes.toBytes(-1: Int)
+                  )
+                ),
+                Array(BoundRange(b, Bytes.toBytes(Integer.MAX_VALUE))),
+                b
+              )
+            )
+          } else {
+            Some(
+              BoundRanges(
+                Array(BoundRange(Bytes.toBytes(Integer.MIN_VALUE), b)),
+                Array(
+                  BoundRange(
+                    Bytes.toBytes(0: Int),
+                    Bytes.toBytes(Integer.MAX_VALUE)
+                  ),
+                  BoundRange(b, Bytes.toBytes(-1: Integer))
+                ),
+                b
+              )
+            )
+          }
         } else {
-          Some(BoundRanges(Array(BoundRange(Bytes.toBytes(Integer.MIN_VALUE), b)), Array(BoundRange(Bytes.toBytes(0: Int), Bytes.toBytes(Integer.MAX_VALUE)), BoundRange(b, Bytes.toBytes(-1: Integer))), b))
+          // Non-PrimitiveType
+          val min = coder.toBytes(Integer.MIN_VALUE)
+          val max = coder.toBytes(Integer.MAX_VALUE)
+          Some(
+            BoundRanges(Array(BoundRange(min, b)), Array(BoundRange(b, max)), b)
+          )
         }
-      } else {
-        // Non-PrimitiveType
-        val min = coder.toBytes(Integer.MIN_VALUE)
-        val max = coder.toBytes(Integer.MAX_VALUE)
-        Some(BoundRanges(Array(BoundRange(min, b)), Array(BoundRange(b, max)), b))
-      }
-      case a: Long => if (f.fCoder == pt) {
-        val b = Bytes.toBytes(a)
-        if (a >= 0) {
-          Some(BoundRanges(Array(BoundRange(Bytes.toBytes(0: Long), b), BoundRange(Bytes.toBytes(Long.MinValue), Bytes.toBytes(-1: Long))), Array(BoundRange(b, Bytes.toBytes(Long.MaxValue))), b))
+      case a: Long =>
+        if (f.fCoder == pt) {
+          val b = Bytes.toBytes(a)
+          if (a >= 0) {
+            Some(
+              BoundRanges(
+                Array(
+                  BoundRange(Bytes.toBytes(0: Long), b),
+                  BoundRange(
+                    Bytes.toBytes(Long.MinValue),
+                    Bytes.toBytes(-1: Long)
+                  )
+                ),
+                Array(BoundRange(b, Bytes.toBytes(Long.MaxValue))),
+                b
+              )
+            )
+          } else {
+            Some(
+              BoundRanges(
+                Array(BoundRange(Bytes.toBytes(Long.MinValue), b)),
+                Array(
+                  BoundRange(
+                    Bytes.toBytes(0: Long),
+                    Bytes.toBytes(Long.MaxValue)
+                  ),
+                  BoundRange(b, Bytes.toBytes(-1: Long))
+                ),
+                b
+              )
+            )
+          }
         } else {
-          Some(BoundRanges(Array(BoundRange(Bytes.toBytes(Long.MinValue), b)), Array(BoundRange(Bytes.toBytes(0: Long), Bytes.toBytes(Long.MaxValue)), BoundRange(b, Bytes.toBytes(-1: Long))), b))
+          // Non-PrimitiveType
+          val min = coder.toBytes(Long.MinValue)
+          val max = coder.toBytes(Long.MaxValue)
+          Some(
+            BoundRanges(Array(BoundRange(min, b)), Array(BoundRange(b, max)), b)
+          )
         }
-      } else {
-        // Non-PrimitiveType
-        val min = coder.toBytes(Long.MinValue)
-        val max = coder.toBytes(Long.MaxValue)
-        Some(BoundRanges(Array(BoundRange(min, b)), Array(BoundRange(b, max)), b))
-      }
-      case a: Short => if (f.fCoder == pt) {
-        val b = Bytes.toBytes(a)
-        if (a >= 0) {
-          Some(BoundRanges(Array(BoundRange(Bytes.toBytes(0: Short), b), BoundRange(Bytes.toBytes(Short.MinValue), Bytes.toBytes(-1: Short))), Array(BoundRange(b, Bytes.toBytes(Short.MaxValue))), b))
+      case a: Short =>
+        if (f.fCoder == pt) {
+          val b = Bytes.toBytes(a)
+          if (a >= 0) {
+            Some(
+              BoundRanges(
+                Array(
+                  BoundRange(Bytes.toBytes(0: Short), b),
+                  BoundRange(
+                    Bytes.toBytes(Short.MinValue),
+                    Bytes.toBytes(-1: Short)
+                  )
+                ),
+                Array(BoundRange(b, Bytes.toBytes(Short.MaxValue))),
+                b
+              )
+            )
+          } else {
+            Some(
+              BoundRanges(
+                Array(BoundRange(Bytes.toBytes(Short.MinValue), b)),
+                Array(
+                  BoundRange(
+                    Bytes.toBytes(0: Short),
+                    Bytes.toBytes(Short.MaxValue)
+                  ),
+                  BoundRange(b, Bytes.toBytes(-1: Short))
+                ),
+                b
+              )
+            )
+          }
         } else {
-          Some(BoundRanges(Array(BoundRange(Bytes.toBytes(Short.MinValue), b)), Array(BoundRange(Bytes.toBytes(0: Short), Bytes.toBytes(Short.MaxValue)), BoundRange(b, Bytes.toBytes(-1: Short))), b))
+          // Non-PrimitiveType
+          val min = coder.toBytes(Short.MinValue)
+          val max = coder.toBytes(Short.MaxValue)
+          Some(
+            BoundRanges(Array(BoundRange(min, b)), Array(BoundRange(b, max)), b)
+          )
         }
-      } else {
-        // Non-PrimitiveType
-        val min = coder.toBytes(Short.MinValue)
-        val max = coder.toBytes(Short.MaxValue)
-        Some(BoundRanges(Array(BoundRange(min, b)), Array(BoundRange(b, max)), b))
-      }
       case a: Double => // For both double and float, the order of positive number is consistent
         // with byte array order. But the order of negative number is the reverse
         // order of byte array. Please refer to IEEE-754 and
@@ -314,30 +425,90 @@ object BoundRange extends Logging {
         if (f.fCoder == pt) {
           val b = Bytes.toBytes(a)
           if (a >= 0.0f) {
-            Some(BoundRanges(Array(BoundRange(Bytes.toBytes(0.0d), b), BoundRange(Bytes.toBytes(-0.0d), Bytes.toBytes(Double.MinValue))), Array(BoundRange(b, Bytes.toBytes(Double.MaxValue))), b))
+            Some(
+              BoundRanges(
+                Array(
+                  BoundRange(Bytes.toBytes(0.0d), b),
+                  BoundRange(
+                    Bytes.toBytes(-0.0d),
+                    Bytes.toBytes(Double.MinValue)
+                  )
+                ),
+                Array(BoundRange(b, Bytes.toBytes(Double.MaxValue))),
+                b
+              )
+            )
           } else {
-            Some(BoundRanges(Array(BoundRange(b, Bytes.toBytes(Double.MinValue))), Array(BoundRange(Bytes.toBytes(0.0d), Bytes.toBytes(Double.MaxValue)), BoundRange(Bytes.toBytes(-0.0d), b)), b))
+            Some(
+              BoundRanges(
+                Array(BoundRange(b, Bytes.toBytes(Double.MinValue))),
+                Array(
+                  BoundRange(
+                    Bytes.toBytes(0.0d),
+                    Bytes.toBytes(Double.MaxValue)
+                  ),
+                  BoundRange(Bytes.toBytes(-0.0d), b)
+                ),
+                b
+              )
+            )
           }
         } else {
           // Non-PrimitiveType
           val min = coder.toBytes(Double.MinValue)
           val max = coder.toBytes(Double.MaxValue)
-          Some(BoundRanges(Array(BoundRange(min, b)), Array(BoundRange(b, max)), b))
+          Some(
+            BoundRanges(Array(BoundRange(min, b)), Array(BoundRange(b, max)), b)
+          )
         }
-      case a: Float => if (f.fCoder == pt) {
-        val b = Bytes.toBytes(a)
-        if (a >= 0.0f) {
-          Some(BoundRanges(Array(BoundRange(Bytes.toBytes(0.0f), b), BoundRange(Bytes.toBytes(-0.0f), Bytes.toBytes(Float.MinValue))), Array(BoundRange(b, Bytes.toBytes(Float.MaxValue))), b))
+      case a: Float =>
+        if (f.fCoder == pt) {
+          val b = Bytes.toBytes(a)
+          if (a >= 0.0f) {
+            Some(
+              BoundRanges(
+                Array(
+                  BoundRange(Bytes.toBytes(0.0f), b),
+                  BoundRange(
+                    Bytes.toBytes(-0.0f),
+                    Bytes.toBytes(Float.MinValue)
+                  )
+                ),
+                Array(BoundRange(b, Bytes.toBytes(Float.MaxValue))),
+                b
+              )
+            )
+          } else {
+            Some(
+              BoundRanges(
+                Array(BoundRange(b, Bytes.toBytes(Float.MinValue))),
+                Array(
+                  BoundRange(
+                    Bytes.toBytes(0.0f),
+                    Bytes.toBytes(Float.MaxValue)
+                  ),
+                  BoundRange(Bytes.toBytes(-0.0f), b)
+                ),
+                b
+              )
+            )
+          }
         } else {
-          Some(BoundRanges(Array(BoundRange(b, Bytes.toBytes(Float.MinValue))), Array(BoundRange(Bytes.toBytes(0.0f), Bytes.toBytes(Float.MaxValue)), BoundRange(Bytes.toBytes(-0.0f), b)), b))
+          // Non-PrimitiveType
+          val min = coder.toBytes(Float.MinValue)
+          val max = coder.toBytes(Float.MaxValue)
+          Some(
+            BoundRanges(Array(BoundRange(min, b)), Array(BoundRange(b, max)), b)
+          )
         }
-      } else {
-        // Non-PrimitiveType
-        val min = coder.toBytes(Float.MinValue)
-        val max = coder.toBytes(Float.MaxValue)
-        Some(BoundRanges(Array(BoundRange(min, b)), Array(BoundRange(b, max)), b))
-      }
-      case _: Array[Byte] | _: Byte | _: String | _: UTF8String => Some(BoundRanges(Array(BoundRange(Array.fill(b.length)(ByteMin), b)), Array(BoundRange(b, Array.fill(b.length)(ByteMax))), b))
+      case _: Array[Byte] | _: Byte | _: String | _: UTF8String =>
+        Some(
+          BoundRanges(
+            Array(BoundRange(Array.fill(b.length)(ByteMin), b)),
+            Array(BoundRange(b, Array.fill(b.length)(ByteMax))),
+            b
+          )
+        )
       case _ => None
     }
   }

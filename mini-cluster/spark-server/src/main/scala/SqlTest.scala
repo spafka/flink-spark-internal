@@ -59,7 +59,7 @@ object SparkSQLExample {
     // $example on:create_df$
     val df =
       spark.read.json(
-        "D:\\OpenAi\\Apache\\flink-spark-internal\\mini-cluster\\spark\\src\\main\\resources\\people.json"
+        "D:\\OpenAi\\Apache\\flink-spark-internal\\mini-cluster\\spark-server\\src\\main\\resources\\people.json"
       )
 
     // Displays the content of the DataFrame to stdout

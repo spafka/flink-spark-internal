@@ -25,7 +25,6 @@ package object hbase {
   //Do not use BinaryType.ordering
   implicit val order: Ordering[HBaseType] = ord
 
-
   val ord: Ordering[HBaseType] = new Ordering[HBaseType] {
 
     def compare(x: Array[Byte], y: Array[Byte]): Int = {

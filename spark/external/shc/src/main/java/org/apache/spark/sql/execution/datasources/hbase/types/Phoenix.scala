@@ -36,22 +36,25 @@ class Phoenix(f: Option[Field] = None) extends SHCDataType {
     if (f.isDefined) {
       mapToPhoenixTypeInstance(f.get.dt).toObject(src)
     } else {
-      throw new UnsupportedOperationException("Phoenix coder: without field metadata, 'fromBytes' conversion can not be supported")
+      throw new UnsupportedOperationException(
+        "Phoenix coder: without field metadata, 'fromBytes' conversion can not be supported"
+      )
     }
   }
 
   def toBytes(input: Any): Array[Byte] = {
     input match {
-      case data: Boolean => PBoolean.INSTANCE.toBytes(data)
-      case data: Byte => PTinyint.INSTANCE.toBytes(data)
+      case data: Boolean     => PBoolean.INSTANCE.toBytes(data)
+      case data: Byte        => PTinyint.INSTANCE.toBytes(data)
       case data: Array[Byte] => PVarbinary.INSTANCE.toBytes(data)
-      case data: Double => PDouble.INSTANCE.toBytes(data)
-      case data: Float => PFloat.INSTANCE.toBytes(data)
-      case data: Int => PInteger.INSTANCE.toBytes(data)
-      case data: Long => PLong.INSTANCE.toBytes(data)
-      case data: Short => PSmallint.INSTANCE.toBytes(data)
-      case data: String => PVarchar.INSTANCE.toBytes(data)
-      case _ => throw new UnsupportedOperationException(s"unsupported data type $input")
+      case data: Double      => PDouble.INSTANCE.toBytes(data)
+      case data: Float       => PFloat.INSTANCE.toBytes(data)
+      case data: Int         => PInteger.INSTANCE.toBytes(data)
+      case data: Long        => PLong.INSTANCE.toBytes(data)
+      case data: Short       => PSmallint.INSTANCE.toBytes(data)
+      case data: String      => PVarchar.INSTANCE.toBytes(data)
+      case _ =>
+        throw new UnsupportedOperationException(s"unsupported data type $input")
     }
   }
 
@@ -59,24 +62,30 @@ class Phoenix(f: Option[Field] = None) extends SHCDataType {
 
   override def isCompositeKeySupported(): Boolean = true
 
-  override def decodeCompositeRowKey(row: Array[Byte], keyFields: Seq[Field]): Map[Field, Any] = {
+  override def decodeCompositeRowKey(row: Array[Byte],
+                                     keyFields: Seq[Field]): Map[Field, Any] = {
     if (schema == null) schema = buildSchema(keyFields)
     val ptr: ImmutableBytesWritable = new ImmutableBytesWritable
     val maxOffest = schema.iterator(row, 0, row.length, ptr)
     var ret = Map.empty[Field, Any]
     for (i <- 0 until schema.getFieldCount) {
       if (schema.next(ptr, i, maxOffest) != null) {
-        val value = mapToPhoenixTypeInstance(keyFields(i).dt).toObject(ptr, schema.getField(i).getDataType, SortOrder.getDefault)
+        val value = mapToPhoenixTypeInstance(keyFields(i).dt)
+          .toObject(ptr, schema.getField(i).getDataType, SortOrder.getDefault)
         ret += ((keyFields(i), value))
       }
     }
     ret
   }
 
-  override def encodeCompositeRowKey(rkIdxedFields: Seq[(Int, Field)], row: Row): Seq[Array[Byte]] = {
-    rkIdxedFields.map { case (x, y) => var ret = toBytes(row(x)) // the last dimension of composite key does not need SEPARATOR
-      if (y.length == -1 && x < rkIdxedFields.size - 1) ret ++= QueryConstants.SEPARATOR_BYTE_ARRAY
-      ret
+  override def encodeCompositeRowKey(rkIdxedFields: Seq[(Int, Field)],
+                                     row: Row): Seq[Array[Byte]] = {
+    rkIdxedFields.map {
+      case (x, y) =>
+        var ret = toBytes(row(x)) // the last dimension of composite key does not need SEPARATOR
+        if (y.length == -1 && x < rkIdxedFields.size - 1)
+          ret ++= QueryConstants.SEPARATOR_BYTE_ARRAY
+        ret
     }
   }
 
@@ -91,15 +100,16 @@ class Phoenix(f: Option[Field] = None) extends SHCDataType {
   private def mapToPhoenixTypeInstance(input: DataType): PDataType[_] = {
     input match {
       case BooleanType => PBoolean.INSTANCE
-      case ByteType => PTinyint.INSTANCE
-      case DoubleType => PDouble.INSTANCE
+      case ByteType    => PTinyint.INSTANCE
+      case DoubleType  => PDouble.INSTANCE
       case IntegerType => PInteger.INSTANCE
-      case FloatType => PFloat.INSTANCE
-      case LongType => PLong.INSTANCE
-      case ShortType => PSmallint.INSTANCE
-      case StringType => PVarchar.INSTANCE
-      case BinaryType => PVarbinary.INSTANCE
-      case _ => throw new UnsupportedOperationException(s"unsupported data type $input")
+      case FloatType   => PFloat.INSTANCE
+      case LongType    => PLong.INSTANCE
+      case ShortType   => PSmallint.INSTANCE
+      case StringType  => PVarchar.INSTANCE
+      case BinaryType  => PVarbinary.INSTANCE
+      case _ =>
+        throw new UnsupportedOperationException(s"unsupported data type $input")
     }
   }
 

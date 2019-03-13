@@ -32,7 +32,8 @@ trait Resource {
   def release(): Unit
 }
 
-case class ScanResource(tbr: TableResource, rs: ResultScanner) extends Resource {
+case class ScanResource(tbr: TableResource, rs: ResultScanner)
+    extends Resource {
   def release() {
     rs.close()
     tbr.release()
@@ -61,7 +62,8 @@ trait ReferencedResource {
         init()
       }
     } catch {
-      case e: Throwable => release()
+      case e: Throwable =>
+        release()
         throw e
     }
   }
@@ -79,7 +81,8 @@ trait ReferencedResource {
       try {
         func
       } catch {
-        case e: Throwable => release()
+        case e: Throwable =>
+          release()
           throw e
       }
     }
@@ -93,7 +96,9 @@ case class RegionResource(relation: HBaseRelation) extends ReferencedResource {
 
   override def init(): Unit = {
     connection = HBaseConnectionCache.getConnection(relation.hbaseConf)
-    rl = connection.getRegionLocator(TableName.valueOf(relation.catalog.namespace, relation.catalog.name))
+    rl = connection.getRegionLocator(
+      TableName.valueOf(relation.catalog.namespace, relation.catalog.name)
+    )
   }
 
   override def destroy(): Unit = {
@@ -109,7 +114,18 @@ case class RegionResource(relation: HBaseRelation) extends ReferencedResource {
 
   val regions = releaseOnException {
     val keys = rl.getStartEndKeys
-    keys.getFirst.zip(keys.getSecond).zipWithIndex.map(x => HBaseRegion(x._2, Some(x._1._1), Some(x._1._2), Some(rl.getRegionLocation(x._1._1).getHostname)))
+    keys.getFirst
+      .zip(keys.getSecond)
+      .zipWithIndex
+      .map(
+        x =>
+          HBaseRegion(
+            x._2,
+            Some(x._1._1),
+            Some(x._1._2),
+            Some(rl.getRegionLocation(x._1._1).getHostname)
+        )
+      )
   }
 }
 
@@ -119,7 +135,9 @@ case class TableResource(relation: HBaseRelation) extends ReferencedResource {
 
   override def init(): Unit = {
     connection = HBaseConnectionCache.getConnection(relation.hbaseConf)
-    table = connection.getTable(TableName.valueOf(relation.catalog.namespace, relation.catalog.name))
+    table = connection.getTable(
+      TableName.valueOf(relation.catalog.namespace, relation.catalog.name)
+    )
   }
 
   override def destroy(): Unit = {
@@ -133,9 +151,10 @@ case class TableResource(relation: HBaseRelation) extends ReferencedResource {
     }
   }
 
-  def get(list: java.util.List[org.apache.hadoop.hbase.client.Get]) = releaseOnException {
-    GetResource(this, table.get(list))
-  }
+  def get(list: java.util.List[org.apache.hadoop.hbase.client.Get]) =
+    releaseOnException {
+      GetResource(this, table.get(list))
+    }
 
   def getScanner(scan: Scan): ScanResource = releaseOnException {
     ScanResource(this, table.getScanner(scan))

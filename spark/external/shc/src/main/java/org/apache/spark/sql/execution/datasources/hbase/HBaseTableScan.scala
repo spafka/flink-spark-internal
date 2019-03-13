@@ -37,11 +37,23 @@ import org.apache.spark.util.ShutdownHookManager
 
 import scala.collection.mutable
 
-private[hbase] case class HBaseRegion(override val index: Int, start: Option[HBaseType] = None, end: Option[HBaseType] = None, server: Option[String] = None) extends Partition
+private[hbase] case class HBaseRegion(override val index: Int,
+                                      start: Option[HBaseType] = None,
+                                      end: Option[HBaseType] = None,
+                                      server: Option[String] = None)
+    extends Partition
 
-private[hbase] case class HBaseScanPartition(override val index: Int, regions: HBaseRegion, scanRanges: Array[ScanRange[Array[Byte]]], tf: SerializedTypedFilter) extends Partition
+private[hbase] case class HBaseScanPartition(
+  override val index: Int,
+  regions: HBaseRegion,
+  scanRanges: Array[ScanRange[Array[Byte]]],
+  tf: SerializedTypedFilter
+) extends Partition
 
-private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns: Array[String], filters: Array[Filter]) extends RDD[Row](relation.sqlContext.sparkContext, Nil) {
+private[hbase] class HBaseTableScanRDD(relation: HBaseRelation,
+                                       requiredColumns: Array[String],
+                                       filters: Array[Filter])
+    extends RDD[Row](relation.sqlContext.sparkContext, Nil) {
   val outputs = StructType(requiredColumns.map(relation.schema(_))).toAttributes
   val columnFields = relation.splitRowKeyColumns(requiredColumns)._2
 
@@ -55,14 +67,24 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
     val r = RegionResource(relation)
     logInfo(s"[SPARK-HBASE] There are ${r.size} regions")
     val ps = r.flatMap { x => // HBase take maximum as empty byte array, change it here.
-      val pScan = ScanRange(Some(Bound(x.start.get, true)), if (x.end.get.size == 0) None else Some(Bound(x.end.get, false)))
+      val pScan = ScanRange(
+        Some(Bound(x.start.get, true)),
+        if (x.end.get.size == 0) None else Some(Bound(x.end.get, false))
+      )
       val ranges = ScanRange.and(pScan, hbaseFilter.ranges)(hbase.ord)
       logInfo(s"[SPARK-HBASE] partition $idx size: ${ranges.size}")
       if (ranges.size > 0) {
         if (log.isDebugEnabled) {
           ranges.foreach(x => logDebug(x.toString))
         }
-        val p = Some(HBaseScanPartition(idx, x, ranges, TypedFilter.toSerializedTypedFilter(hbaseFilter.tf)))
+        val p = Some(
+          HBaseScanPartition(
+            idx,
+            x,
+            ranges,
+            TypedFilter.toSerializedTypedFilter(hbaseFilter.tf)
+          )
+        )
         idx += 1
         p
       } else {
@@ -70,7 +92,8 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
       }
     }.toArray
     r.release()
-    ShutdownHookManager.addShutdownHook { () => HBaseConnectionCache.close() }
+    ShutdownHookManager.addShutdownHook { () => HBaseConnectionCache.close()
+    }
     ps.asInstanceOf[Array[Partition]]
   }
 
@@ -79,22 +102,29 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
     val r = result.getRow
     val keySeq = {
       if (relation.isComposite()) {
-        relation.catalog.shcTableCoder.decodeCompositeRowKey(r, relation.catalog.getRowKey)
+        relation.catalog.shcTableCoder
+          .decodeCompositeRowKey(r, relation.catalog.getRowKey)
       } else {
         val f = relation.catalog.getRowKey.head
         Seq((f, SHCDataTypeFactory.create(f).fromBytes(r))).toMap
       }
     }
 
-    val valueSeq = fields.filter(!_.isRowKey).map { x =>
-      val kv = result.getColumnLatestCell(relation.catalog.shcTableCoder.toBytes(x.cf), relation.catalog.shcTableCoder.toBytes(x.col))
-      if (kv == null || kv.getValueLength == 0) {
-        (x, null)
-      } else {
-        val v = CellUtil.cloneValue(kv)
-        (x, SHCDataTypeFactory.create(x).fromBytes(v))
+    val valueSeq = fields
+      .filter(!_.isRowKey)
+      .map { x =>
+        val kv = result.getColumnLatestCell(
+          relation.catalog.shcTableCoder.toBytes(x.cf),
+          relation.catalog.shcTableCoder.toBytes(x.col)
+        )
+        if (kv == null || kv.getValueLength == 0) {
+          (x, null)
+        } else {
+          val v = CellUtil.cloneValue(kv)
+          (x, SHCDataTypeFactory.create(x).fromBytes(v))
+        }
       }
-    }.toMap
+      .toMap
 
     val unioned = keySeq ++ valueSeq // Return the row ordered by the requested order
     Row.fromSeq(fields.map(unioned.get(_).getOrElse(null)))
@@ -105,30 +135,41 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
     val r = result.getRow
     val keySeq: Map[Field, Any] = {
       if (relation.isComposite()) {
-        relation.catalog.shcTableCoder.decodeCompositeRowKey(r, relation.catalog.getRowKey)
+        relation.catalog.shcTableCoder
+          .decodeCompositeRowKey(r, relation.catalog.getRowKey)
       } else {
         val f = relation.catalog.getRowKey.head
         Seq((f, SHCDataTypeFactory.create(f).fromBytes(r))).toMap
       }
     }
 
-    val valueSeq: Seq[Map[Long, (Field, Any)]] = fields.filter(!_.isRowKey).map { x =>
-      import scala.collection.JavaConverters.asScalaBufferConverter
-      val dataType = SHCDataTypeFactory.create(x)
-      val kvs = result.getColumnCells(relation.catalog.shcTableCoder.toBytes(x.cf), relation.catalog.shcTableCoder.toBytes(x.col)).asScala
+    val valueSeq: Seq[Map[Long, (Field, Any)]] =
+      fields.filter(!_.isRowKey).map { x =>
+        import scala.collection.JavaConverters.asScalaBufferConverter
+        val dataType = SHCDataTypeFactory.create(x)
+        val kvs = result
+          .getColumnCells(
+            relation.catalog.shcTableCoder.toBytes(x.cf),
+            relation.catalog.shcTableCoder.toBytes(x.col)
+          )
+          .asScala
 
-      kvs.map(kv => {
-        val v = CellUtil.cloneValue(kv)
-        (kv.getTimestamp, x -> dataType.fromBytes(v))
-      }).toMap.withDefaultValue(x -> null)
-    }
+        kvs
+          .map(kv => {
+            val v = CellUtil.cloneValue(kv)
+            (kv.getTimestamp, x -> dataType.fromBytes(v))
+          })
+          .toMap
+          .withDefaultValue(x -> null)
+      }
 
     val ts = valueSeq.foldLeft(Set.empty[Long])((acc, map) => acc ++ map.keySet) //we are loosing duplicate here, because we didn't support passing version (timestamp) to the row
     ts.map(version => {
-      keySeq ++ valueSeq.map(_.apply(version)).toMap
-    }).map { unioned => // Return the row ordered by the requested order
-      Row.fromSeq(fields.map(unioned.get(_).getOrElse(null)))
-    }
+        keySeq ++ valueSeq.map(_.apply(version)).toMap
+      })
+      .map { unioned => // Return the row ordered by the requested order
+        Row.fromSeq(fields.map(unioned.get(_).getOrElse(null)))
+      }
   }
 
   private def toResultIterator(result: GetResource): Iterator[Result] = {
@@ -191,7 +232,8 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
     val iterator = new Iterator[Row] {
       val start = System.currentTimeMillis()
       var rowCount: Int = 0
-      val indexedFields = relation.getIndexedProjections(requiredColumns).map(_._1)
+      val indexedFields =
+        relation.getIndexedProjections(requiredColumns).map(_._1)
 
       override def hasNext: Boolean = {
         if (it.hasNext) {
@@ -222,7 +264,8 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
       val start = System.currentTimeMillis()
       var rowCount: Int = 0
       var rows: Set[Row] = Set.empty[Row]
-      val indexedFields = relation.getIndexedProjections(requiredColumns).map(_._1)
+      val indexedFields =
+        relation.getIndexedProjections(requiredColumns).map(_._1)
 
       override def hasNext: Boolean = {
         if (!rows.isEmpty || it.hasNext) {
@@ -262,18 +305,26 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
   }
 
   override def getPreferredLocations(split: Partition): Seq[String] = {
-    split.asInstanceOf[HBaseScanPartition].regions.server.map {
-      identity
-    }.toSeq
+    split
+      .asInstanceOf[HBaseScanPartition]
+      .regions
+      .server
+      .map {
+        identity
+      }
+      .toSeq
   }
 
-  private def buildScan(start: Option[HBaseType], end: Option[HBaseType], columns: Seq[Field], filter: Option[HFilter]): Scan = {
+  private def buildScan(start: Option[HBaseType],
+                        end: Option[HBaseType],
+                        columns: Seq[Field],
+                        filter: Option[HFilter]): Scan = {
     val scan = {
       (start, end) match {
         case (Some(lb), Some(ub)) => new Scan(lb, ub)
-        case (Some(lb), None) => new Scan(lb)
-        case (None, Some(ub)) => new Scan(Array[Byte](), ub)
-        case _ => new Scan
+        case (Some(lb), None)     => new Scan(lb)
+        case (None, Some(ub))     => new Scan(Array[Byte](), ub)
+        case _                    => new Scan
       }
     }
     handleTimeSemantics(scan)
@@ -281,23 +332,38 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
     // set fetch size
     // scan.setCaching(scannerFetchSize)
     columns.foreach { c =>
-      scan.addColumn(relation.catalog.shcTableCoder.toBytes(c.cf), relation.catalog.shcTableCoder.toBytes(c.col))
+      scan.addColumn(
+        relation.catalog.shcTableCoder.toBytes(c.cf),
+        relation.catalog.shcTableCoder.toBytes(c.col)
+      )
     }
-    val size = sparkConf.getInt(SparkHBaseConf.CachingSize, SparkHBaseConf.defaultCachingSize)
+    val size = sparkConf.getInt(
+      SparkHBaseConf.CachingSize,
+      SparkHBaseConf.defaultCachingSize
+    )
     scan.setCaching(size)
     filter.foreach(scan.setFilter(_))
     scan
   }
 
-  private def buildGets(tbr: TableResource, g: Array[ScanRange[Array[Byte]]], columns: Seq[Field], filter: Option[HFilter]): Iterator[Result] = {
-    val size = sparkConf.getInt(SparkHBaseConf.BulkGetSize, SparkHBaseConf.defaultBulkGetSize)
+  private def buildGets(tbr: TableResource,
+                        g: Array[ScanRange[Array[Byte]]],
+                        columns: Seq[Field],
+                        filter: Option[HFilter]): Iterator[Result] = {
+    val size = sparkConf.getInt(
+      SparkHBaseConf.BulkGetSize,
+      SparkHBaseConf.defaultBulkGetSize
+    )
     g.grouped(size).flatMap { x =>
       val gets = new ArrayList[Get]()
       x.foreach { y =>
         val g = new Get(y.start.get.point)
         handleTimeSemantics(g)
         columns.foreach { c =>
-          g.addColumn(relation.catalog.shcTableCoder.toBytes(c.cf), relation.catalog.shcTableCoder.toBytes(c.col))
+          g.addColumn(
+            relation.catalog.shcTableCoder.toBytes(c.cf),
+            relation.catalog.shcTableCoder.toBytes(c.col)
+          )
         }
         filter.foreach(g.setFilter(_))
         gets.add(g)
@@ -314,7 +380,8 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
     rddResources.release()
   }
 
-  override def compute(split: Partition, context: TaskContext): Iterator[Row] = {
+  override def compute(split: Partition,
+                       context: TaskContext): Iterator[Row] = {
     SHCCredentialsManager.processShcToken(serializedToken)
     val ord = hbase.ord
     //implicitly[Ordering[HBaseType]]
@@ -322,7 +389,11 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
     // remove the inclusive upperbound
     val scanRanges = partition.scanRanges.flatMap(ScanRange.split(_)(ord))
     val (g, s) = scanRanges.partition { x =>
-      x.start.isDefined && x.end.isDefined && ScanRange.compare(x.start, x.end, ord) == 0
+      x.start.isDefined && x.end.isDefined && ScanRange.compare(
+        x.start,
+        x.end,
+        ord
+      ) == 0
     }
     logInfo(s"[SPARK-HBASE] ${g.length} gets, ${s.length} scans")
     context.addTaskCompletionListener[Unit](context => close())
@@ -336,18 +407,23 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
       }
     }
 
-    val scans = s.map(x => buildScan(x.get(x.start), x.get(x.end), columnFields, filter))
+    val scans =
+      s.map(x => buildScan(x.get(x.start), x.get(x.end), columnFields, filter))
 
-    val sIts = scans.par.map { scan =>
-      val scanner = tableResource.getScanner(scan)
-      rddResources.addResource(scanner)
-      scanner
-    }.map(toResultIterator(_))
+    val sIts = scans.par
+      .map { scan =>
+        val scanner = tableResource.getScanner(scan)
+        rddResources.addResource(scanner)
+        scanner
+      }
+      .map(toResultIterator(_))
 
-    val rIt = sIts.fold(Iterator.empty: Iterator[Result]) { case (x, y) => x ++ y
+    val rIt = sIts.fold(Iterator.empty: Iterator[Result]) {
+      case (x, y) => x ++ y
     } ++ gIt
 
-    ShutdownHookManager.addShutdownHook { () => HBaseConnectionCache.close() }
+    ShutdownHookManager.addShutdownHook { () => HBaseConnectionCache.close()
+    }
     if (relation.mergeToLatest) {
       toRowIterator(rIt)
     } else {
@@ -359,17 +435,25 @@ private[hbase] class HBaseTableScanRDD(relation: HBaseRelation, requiredColumns:
     // Set timestamp related values if present
     (query, relation.timestamp, relation.minStamp, relation.maxStamp) match {
       case (q: Scan, Some(ts), None, None) => q.setTimeStamp(ts)
-      case (q: Get, Some(ts), None, None) => q.setTimeStamp(ts)
-      case (q: Scan, None, Some(minStamp), Some(maxStamp)) => q.setTimeRange(minStamp, maxStamp)
-      case (q: Get, None, Some(minStamp), Some(maxStamp)) => q.setTimeRange(minStamp, maxStamp)
+      case (q: Get, Some(ts), None, None)  => q.setTimeStamp(ts)
+      case (q: Scan, None, Some(minStamp), Some(maxStamp)) =>
+        q.setTimeRange(minStamp, maxStamp)
+      case (q: Get, None, Some(minStamp), Some(maxStamp)) =>
+        q.setTimeRange(minStamp, maxStamp)
       case (q, None, None, None) =>
-      case _ => throw new IllegalArgumentException("Invalid combination of query/timestamp/time range provided")
+      case _ =>
+        throw new IllegalArgumentException(
+          "Invalid combination of query/timestamp/time range provided"
+        )
     }
     if (relation.maxVersions.isDefined) {
       query match {
         case q: Scan => q.setMaxVersions(relation.maxVersions.get)
-        case q: Get => q.setMaxVersions(relation.maxVersions.get)
-        case _ => throw new IllegalArgumentException("Invalid query provided with maxVersions")
+        case q: Get  => q.setMaxVersions(relation.maxVersions.get)
+        case _ =>
+          throw new IllegalArgumentException(
+            "Invalid query provided with maxVersions"
+          )
       }
     }
   }
