@@ -26,3 +26,7 @@ hs_err_pid*
 .idea/
 
 target/
+
+!/mini-cluster/spark-server/src/main/assembly/original-spark-examples_2.12-3.0.0-SNAPSHOT.jar
+
+work/
