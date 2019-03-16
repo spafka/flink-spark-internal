@@ -11,7 +11,7 @@ services:
 #  hive-2.1.1:
 #    build: ./services/hive-docker/2.1.1
 #    image: spafka/hive:2.1.1
-#
-#  spark-2.4.0:
-#    build: ./services/spark-docker/2.4.0
-#    image: spafka/spark:2.4.0
+
+  spark-2.4.0:
+    build: ./services/spark-docker/2.4.0
+    image: spafka/spark:2.4.0
