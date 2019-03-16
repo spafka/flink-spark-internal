@@ -23,7 +23,7 @@ RUN chmod 600 /root/.ssh/config && \
     chown root:root /root/.ssh/config
 
 #安装Protocol Buffer, Hadoo$
-RUN wget https://http://mirror.bit.edu.cn/apache/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz && \
+RUN wget https://mirror.bit.edu.cn/apache/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz && \
 	tar -xzvf hadoop-$HADOOP_VERSION.tar.gz -C /root/ && \
     mv /root/hadoop-$HADOOP_VERSION $HADOOP_HOME && \
     rm -rf hadoop-$HADOOP_VERSION.tar.gz && \
