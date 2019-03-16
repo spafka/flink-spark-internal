@@ -1,6 +1,6 @@
 FROM spafka/hadoop:2.7.7
 
-MAINTAINER twinsen <ruoyu-chen@foxmail.com>
+MAINTAINER spafka <ruoyu-chen@foxmail.com>
 
 USER root
 

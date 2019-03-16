@@ -1,6 +1,6 @@
 FROM centos:7
 
-MAINTAINER spafka <ruoyu-chen@foxmail.com>
+MAINTAINER spafka <spafka@foxmail.com>
 
 USER root
 
