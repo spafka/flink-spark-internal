@@ -9,9 +9,9 @@ ENV SPARK_HOME=/root/spark
 ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin:.
 
 #安装spark 2.1.0
-RUN wget https://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0-bin-without-hadoop-scala-2.12.tgz && \
+RUN wget https://mirror.bit.edu.cn/apache/spark/spark-2.4.0/spark-2.4.0-bin-without-hadoop-scala-2.12.tgz && \
     tar -xzvf spark-2.4.0-bin-without-hadoop-scala-2.12.tgz -C /root/ && \
-    mv /root/spark-2.1.0-bin-without-hadoop $SPARK_HOME && \
+    mv /root/spark-2.4.0-bin-without-hadoop $SPARK_HOME && \
     rm -rf spark-2.4.0-bin-without-hadoop-scala-2.12.tgz && \
     rm -rf $SPARK_HOME/bin/*.cmd && \
     rm -rf $SPARK_HOME/sbin/*.cmd && \
