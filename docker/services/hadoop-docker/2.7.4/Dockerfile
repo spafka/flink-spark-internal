@@ -31,9 +31,9 @@ RUN wget https://archive.apache.org/dist/hadoop/core/hadoop-2.7.4/hadoop-2.7.4.t
     rm -rf $HADOOP_CONF_DIR/*.cmd && \
     rm -rf $HADOOP_CONF_DIR/*.template && \
     rm -rf $HADOOP_CONF_DIR/*.example && \
-    wget https://github.com/ruoyu-chen/hadoop-docker/raw/master/dist/protobuf.tar.gz && \
-	tar -xzvf protobuf.tar.gz -C /root/ && \
-	rm -rf protobuf.tar.gz	
+#    wget https://github.com/ruoyu-chen/hadoop-docker/raw/master/dist/protobuf.tar.gz && \
+#	tar -xzvf protobuf.tar.gz -C /root/ && \
+#	rm -rf protobuf.tar.gz
 
 #拷贝环境变量配置文件
 ADD config/other/bashrc /root/.bashrc
