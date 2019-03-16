@@ -36,11 +36,4 @@ RUN yum update -y \
     && rm -f ${JAVA_HOME}/*.zip \
     && cd /
 
-
-# 安装 OpenJDK
-RUN yum update -y && \
-    yum install -y java-1.8.0-openjdk-devel && \
-    yum clean all && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-
 CMD ["/bin/bash"]
