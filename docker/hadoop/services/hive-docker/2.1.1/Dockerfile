@@ -1,4 +1,4 @@
-FROM spafka/hadoop:2.7.4
+FROM spafka/hadoop:2.7.7
 
 MAINTAINER twinsen <ruoyu-chen@foxmail.com>
 
@@ -11,7 +11,7 @@ ENV PATH=$PATH:$HIVE_HOME/bin:.
 #http://mirrors.hust.edu.cn/apache/hive/hive-2.1.1/apache-hive-2.1.1-bin.tar.gz
 
 # 安装 Hive
-RUN wget https://archive.apache.org/dist/hive/hive-2.1.1/apache-hive-2.1.1-bin.tar.gz && \
+RUN wget http://mirrors.hust.edu.cn/apache/hive/hive-2.1.1/apache-hive-2.1.1-bin.tar.gz && \
     tar -xzvf apache-hive-2.1.1-bin.tar.gz -C /root/ && \
     mv /root/apache-hive-2.1.1-bin $HIVE_HOME && \
     rm -rf apache-hive-2.1.1-bin.tar.gz && \
