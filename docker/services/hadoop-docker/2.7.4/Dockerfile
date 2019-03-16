@@ -11,7 +11,7 @@ ENV PATH=$PATH:/root/protobuf/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:.
 
 # 1. 安装 OpenSSH, OpenSSL, bzip2-devel
 # 2. 同时配置SSH免密钥登陆
-RUN yum install -y openssh openssh-server openssh-clients openssl openssl-devel bzip2-devel && \
+RUN yum install -y openssh openssh-server openssh-clients openssl openssl-devel bzip2-devel wget  && \
     yum clean all && \
     ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' && \
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
