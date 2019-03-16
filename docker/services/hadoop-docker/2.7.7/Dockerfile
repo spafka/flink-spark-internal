@@ -9,6 +9,8 @@ ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/lib/native/:/root/protobuf/lib
 ENV PATH=$PATH:/root/protobuf/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:.
 
+ENV HADOOP_VERSION=2.7.7
+
 # 1. 安装 OpenSSH, OpenSSL, bzip2-devel
 # 2. 同时配置SSH免密钥登陆
 RUN yum install -y openssh openssh-server openssh-clients openssl openssl-devel bzip2-devel wget  && \
@@ -20,11 +22,11 @@ ADD config/other/ssh_config /root/.ssh/config
 RUN chmod 600 /root/.ssh/config && \
     chown root:root /root/.ssh/config
 
-#安装Protocol Buffer, Hadoop
-RUN wget https://archive.apache.org/dist/hadoop/core/hadoop-2.7.4/hadoop-2.7.4.tar.gz && \
-	tar -xzvf hadoop-2.7.4.tar.gz -C /root/ && \
-    mv /root/hadoop-2.7.2 $HADOOP_HOME && \
-    rm -rf hadoop-2.7.4.tar.gz && \
+#安装Protocol Buffer, Hadoo$
+RUN wget https://http://mirror.bit.edu.cn/apache/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz && \
+	tar -xzvf hadoop-$HADOOP_VERSION.tar.gz -C /root/ && \
+    mv /root/hadoop-$HADOOP_VERSION $HADOOP_HOME && \
+    rm -rf hadoop-$HADOOP_VERSION.tar.gz && \
     rm -rf $HADOOP_HOME/bin/*.cmd && \
     rm -rf $HADOOP_HOME/sbin/*.cmd && \
     rm -rf $HADOOP_HOME/sbin/*all* && \
