@@ -32,7 +32,7 @@ RUN wget https://mirror.bit.edu.cn/apache/hadoop/core/hadoop-$HADOOP_VERSION/had
     rm -rf $HADOOP_HOME/sbin/*all* && \
     rm -rf $HADOOP_CONF_DIR/*.cmd && \
     rm -rf $HADOOP_CONF_DIR/*.template && \
-    rm -rf $HADOOP_CONF_DIR/*.example && \
+    rm -rf $HADOOP_CONF_DIR/*.example
 #    wget https://github.com/ruoyu-chen/hadoop-docker/raw/master/dist/protobuf.tar.gz && \
 #	tar -xzvf protobuf.tar.gz -C /root/ && \
 #	rm -rf protobuf.tar.gz
