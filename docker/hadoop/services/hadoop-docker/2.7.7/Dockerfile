@@ -1,6 +1,6 @@
 FROM spafka/centos7-java8:1.0.0
 
-MAINTAINER twinsen <ruoyu-chen@foxmail.com>
+MAINTAINER spafka <spafka@apache.com>
 
 USER root
 
