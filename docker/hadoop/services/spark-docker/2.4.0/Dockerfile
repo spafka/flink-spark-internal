@@ -1,4 +1,4 @@
-FROM spafka/hive:2.1.1
+FROM spafka/hadoop:2.7.7
 
 MAINTAINER twinsen <ruoyu-chen@foxmail.com>
 
