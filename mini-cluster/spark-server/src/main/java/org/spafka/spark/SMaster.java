@@ -2,6 +2,7 @@ package org.spafka.spark;
 
 import org.apache.spark.deploy.master.Master;
 
+
 public class SMaster {
 
     public static void main(String[] args) {
