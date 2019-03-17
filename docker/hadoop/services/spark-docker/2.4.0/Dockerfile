@@ -16,7 +16,7 @@ RUN wget https://mirror.bit.edu.cn/apache/spark/spark-2.4.0/spark-2.4.0-bin-with
     rm -rf spark-2.4.0-bin-without-hadoop-scala-2.12.tgz && \
     rm -rf $SPARK_HOME/bin/*.cmd && \
     rm -rf $SPARK_HOME/sbin/*.cmd && \
-    rm -rf $SPARK_HOME/ec2 &&
+    rm -rf $SPARK_HOME/ec2
 
 #拷贝Spark配置文件
 COPY config/spark/* $SPARK_HOME/conf/
