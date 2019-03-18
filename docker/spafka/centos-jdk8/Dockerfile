@@ -6,11 +6,14 @@ RUN yum update -y && \
     rpm -Uvh http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm && \
     #systemctl stop firewalld && systemctl disable firewalld && \
     yum -y install mesos marathon && yum -y install mesosphere-zookeeper
+# 定义默认的MESOS环境变量
 ENV MESOS_LOG_DIR /var/log/mesos
 ENV MESOS_WORK_DIR /var/work/mesos
+# 外部挂载
 VOLUME /var/log
 
-CMD ["/bin/bash"]
+
+CMD ["/bin/bash","/usr/sbin/meses-master"]
 
 #docker build -t spafka/mesos:v1
 #docker run -it \
