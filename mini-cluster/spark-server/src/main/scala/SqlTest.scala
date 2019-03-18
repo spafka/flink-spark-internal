@@ -248,7 +248,7 @@ object SparkSQLExample {
     // $example on:programmatic_schema$
     // Create an RDD
     val peopleRDD =
-    spark.sparkContext.textFile("examples/src/main/resources/people.txt")
+      spark.sparkContext.textFile("examples/src/main/resources/people.txt")
 
     // The schema is encoded in a string
     val schemaString = "name age"

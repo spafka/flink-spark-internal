@@ -8,5 +8,5 @@ docker run -d --net=host \
   -e MESOS_LOG_DIR=/var/log/mesos \
   -e MESOS_WORK_DIR=/var/tmp/mesos \
   -v "$(pwd)/log/mesos:/var/log/mesos" \
-  -v "$(pwd)/tmp/mesos:/var/tmp/mesos" \
-  mesosphere/mesos-master:1.4.1
+  -v "$(pwd)/work/mesos:/var/tmp/mesos" \
+  mesosphere/mesos-master:1.7.1
