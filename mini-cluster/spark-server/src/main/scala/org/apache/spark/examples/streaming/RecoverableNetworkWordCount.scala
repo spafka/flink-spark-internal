@@ -74,20 +74,20 @@ object DroppedWordsCounter {
   * they can be registered on driver failures.
   *
   * Usage: RecoverableNetworkWordCount <hostname> <port> <checkpoint-directory> <output-file>
-  *   <hostname> and <port> describe the TCP server that Spark Streaming would connect to receive
+  * <hostname> and <port> describe the TCP server that Spark Streaming would connect to receive
   *   data. <checkpoint-directory> directory to HDFS-compatible file system which checkpoint data
-  *   <output-file> file to which the word counts will be appended
+  * <output-file> file to which the word counts will be appended
   *
   * <checkpoint-directory> and <output-file> must be absolute paths
   *
   * To run this on your local machine, you need to first run a Netcat server
   *
-  *      `$ nc -lk 9999`
+  * `$ nc -lk 9999`
   *
   * and run the example as
   *
-  *      `$ ./bin/run-example org.apache.spark.examples.streaming.RecoverableNetworkWordCount \
-  *              localhost 9999 ~/checkpoint/ ~/out`
+  * `$ ./bin/run-example org.apache.spark.examples.streaming.RecoverableNetworkWordCount \
+  * localhost 9999 ~/checkpoint/ ~/out`
   *
   * If the directory ~/checkpoint/ does not exist (e.g. running for the first time), it will create
   * a new StreamingContext (will print "Creating new context" to the console). Otherwise, if
@@ -174,4 +174,5 @@ object RecoverableNetworkWordCount {
     ssc.awaitTermination()
   }
 }
+
 // scalastyle:on println

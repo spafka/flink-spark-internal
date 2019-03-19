@@ -57,4 +57,5 @@ object GroupByTest {
     spark.stop()
   }
 }
+
 // scalastyle:on println

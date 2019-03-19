@@ -72,4 +72,5 @@ object SparkTC {
     spark.stop()
   }
 }
+
 // scalastyle:on println

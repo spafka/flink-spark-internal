@@ -59,4 +59,5 @@ object BroadcastTest {
     spark.stop()
   }
 }
+
 // scalastyle:on println

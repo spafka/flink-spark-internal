@@ -155,4 +155,5 @@ object SparkALS {
     new Array2DRowRealMatrix(Array.fill(rows, cols)(math.random))
 
 }
+
 // scalastyle:on println

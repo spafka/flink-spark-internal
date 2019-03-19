@@ -56,4 +56,5 @@ object MultiBroadcastTest {
     spark.stop()
   }
 }
+
 // scalastyle:on println

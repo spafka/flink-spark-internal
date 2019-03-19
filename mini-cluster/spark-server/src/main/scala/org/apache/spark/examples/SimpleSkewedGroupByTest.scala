@@ -66,4 +66,5 @@ object SimpleSkewedGroupByTest {
     spark.stop()
   }
 }
+
 // scalastyle:on println

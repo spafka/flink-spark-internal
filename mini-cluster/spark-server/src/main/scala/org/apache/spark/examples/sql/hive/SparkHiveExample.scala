@@ -26,6 +26,7 @@ object SparkHiveExample {
 
   // $example on:spark_hive$
   case class Record(key: Int, value: String)
+
   // $example off:spark_hive$
 
   def main(args: Array[String]) {

@@ -56,37 +56,49 @@ object SimpleTypedAggregator {
     spark.stop()
   }
 }
+
 // scalastyle:on println
 
 class TypedSum[IN](val f: IN => Long) extends Aggregator[IN, Long, Long] {
   override def zero: Long = 0L
+
   override def reduce(b: Long, a: IN): Long = b + f(a)
+
   override def merge(b1: Long, b2: Long): Long = b1 + b2
+
   override def finish(reduction: Long): Long = reduction
 
   override def bufferEncoder: Encoder[Long] = Encoders.scalaLong
+
   override def outputEncoder: Encoder[Long] = Encoders.scalaLong
 }
 
 class TypedCount[IN](val f: IN => Any) extends Aggregator[IN, Long, Long] {
   override def zero: Long = 0
+
   override def reduce(b: Long, a: IN): Long = {
     if (f(a) == null) b else b + 1
   }
+
   override def merge(b1: Long, b2: Long): Long = b1 + b2
+
   override def finish(reduction: Long): Long = reduction
 
   override def bufferEncoder: Encoder[Long] = Encoders.scalaLong
+
   override def outputEncoder: Encoder[Long] = Encoders.scalaLong
 }
 
 class TypedAverage[IN](val f: IN => Double)
-    extends Aggregator[IN, (Double, Long), Double] {
+  extends Aggregator[IN, (Double, Long), Double] {
   override def zero: (Double, Long) = (0.0, 0L)
+
   override def reduce(b: (Double, Long), a: IN): (Double, Long) =
     (f(a) + b._1, 1 + b._2)
+
   override def finish(reduction: (Double, Long)): Double =
     reduction._1 / reduction._2
+
   override def merge(b1: (Double, Long), b2: (Double, Long)): (Double, Long) = {
     (b1._1 + b2._1, b1._2 + b2._2)
   }
@@ -94,12 +106,14 @@ class TypedAverage[IN](val f: IN => Double)
   override def bufferEncoder: Encoder[(Double, Long)] = {
     Encoders.tuple(Encoders.scalaDouble, Encoders.scalaLong)
   }
+
   override def outputEncoder: Encoder[Double] = Encoders.scalaDouble
 }
 
 class TypedMin[IN](val f: IN => Double)
-    extends Aggregator[IN, MutableDouble, Option[Double]] {
+  extends Aggregator[IN, MutableDouble, Option[Double]] {
   override def zero: MutableDouble = null
+
   override def reduce(b: MutableDouble, a: IN): MutableDouble = {
     if (b == null) {
       new MutableDouble(f(a))
@@ -108,6 +122,7 @@ class TypedMin[IN](val f: IN => Double)
       b
     }
   }
+
   override def merge(b1: MutableDouble, b2: MutableDouble): MutableDouble = {
     if (b1 == null) {
       b2
@@ -118,6 +133,7 @@ class TypedMin[IN](val f: IN => Double)
       b1
     }
   }
+
   override def finish(reduction: MutableDouble): Option[Double] = {
     if (reduction != null) {
       Some(reduction.value)
@@ -128,13 +144,15 @@ class TypedMin[IN](val f: IN => Double)
 
   override def bufferEncoder: Encoder[MutableDouble] =
     Encoders.kryo[MutableDouble]
+
   override def outputEncoder: Encoder[Option[Double]] =
     Encoders.product[Option[Double]]
 }
 
 class TypedMax[IN](val f: IN => Long)
-    extends Aggregator[IN, MutableLong, Option[Long]] {
+  extends Aggregator[IN, MutableLong, Option[Long]] {
   override def zero: MutableLong = null
+
   override def reduce(b: MutableLong, a: IN): MutableLong = {
     if (b == null) {
       new MutableLong(f(a))
@@ -143,6 +161,7 @@ class TypedMax[IN](val f: IN => Long)
       b
     }
   }
+
   override def merge(b1: MutableLong, b2: MutableLong): MutableLong = {
     if (b1 == null) {
       b2
@@ -153,6 +172,7 @@ class TypedMax[IN](val f: IN => Long)
       b1
     }
   }
+
   override def finish(reduction: MutableLong): Option[Long] = {
     if (reduction != null) {
       Some(reduction.value)
@@ -162,6 +182,7 @@ class TypedMax[IN](val f: IN => Long)
   }
 
   override def bufferEncoder: Encoder[MutableLong] = Encoders.kryo[MutableLong]
+
   override def outputEncoder: Encoder[Option[Long]] =
     Encoders.product[Option[Long]]
 }

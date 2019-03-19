@@ -29,7 +29,7 @@ import org.apache.spark.sql.functions._
   * with a timestamp that is used to determine the windows into which it falls.
   *
   * Usage: StructuredNetworkWordCountWindowed <hostname> <port> <window duration>
-  *   [<slide duration>]
+  * [<slide duration>]
   * <hostname> and <port> describe the TCP server that Structured Streaming
   * would connect to receive data.
   * <window duration> gives the size of window, specified as integer number of seconds
@@ -39,10 +39,10 @@ import org.apache.spark.sql.functions._
   * <slide duration> is not provided, it defaults to <window duration>.
   *
   * To run this on your local machine, you need to first run a Netcat server
-  *    `$ nc -lk 9999`
+  * `$ nc -lk 9999`
   * and then run the example
-  *    `$ bin/run-example sql.streaming.StructuredNetworkWordCountWindowed
-  *    localhost 9999 <window duration in seconds> [<slide duration in seconds>]`
+  * `$ bin/run-example sql.streaming.StructuredNetworkWordCountWindowed
+  * localhost 9999 <window duration in seconds> [<slide duration in seconds>]`
   *
   * One recommended <window duration>, <slide duration> pair is 10, 5
   */
@@ -105,4 +105,5 @@ object StructuredNetworkWordCountWindowed {
     query.awaitTermination()
   }
 }
+
 // scalastyle:on println

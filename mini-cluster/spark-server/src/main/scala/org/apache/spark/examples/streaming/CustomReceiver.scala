@@ -33,9 +33,9 @@ import org.apache.spark.streaming.receiver.Receiver
   * text and \n delimited lines are considered as records. They are then counted and printed.
   *
   * To run this on your local machine, you need to first run a Netcat server
-  *    `$ nc -lk 9999`
+  * `$ nc -lk 9999`
   * and then run the example
-  *    `$ bin/run-example org.apache.spark.examples.streaming.CustomReceiver localhost 9999`
+  * `$ bin/run-example org.apache.spark.examples.streaming.CustomReceiver localhost 9999`
   */
 object CustomReceiver {
   def main(args: Array[String]) {
@@ -62,13 +62,15 @@ object CustomReceiver {
 }
 
 class CustomReceiver(host: String, port: Int)
-    extends Receiver[String](StorageLevel.MEMORY_AND_DISK_2)
+  extends Receiver[String](StorageLevel.MEMORY_AND_DISK_2)
     with Logging {
 
   def onStart() {
     // Start the thread that receives data over a connection
     new Thread("Socket Receiver") {
-      override def run() { receive() }
+      override def run() {
+        receive()
+      }
     }.start()
   }
 
@@ -105,4 +107,5 @@ class CustomReceiver(host: String, port: Int)
     }
   }
 }
+
 // scalastyle:on println

@@ -47,4 +47,5 @@ object SparkRemoteFileTest {
     spark.stop()
   }
 }
+
 // scalastyle:on println

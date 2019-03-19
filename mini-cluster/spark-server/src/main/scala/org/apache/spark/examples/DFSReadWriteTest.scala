@@ -49,10 +49,11 @@ object DFSReadWriteTest {
   }
 
   private def printUsage(): Unit = {
-    val usage = """DFS Read-Write Test
-    |Usage: localFile dfsDir
-    |localFile - (string) local file to use in test
-    |dfsDir - (string) DFS directory for read/write tests""".stripMargin
+    val usage =
+      """DFS Read-Write Test
+        |Usage: localFile dfsDir
+        |localFile - (string) local file to use in test
+        |dfsDir - (string) DFS directory for read/write tests""".stripMargin
 
     println(usage)
   }
@@ -138,4 +139,5 @@ object DFSReadWriteTest {
 
   }
 }
+
 // scalastyle:on println

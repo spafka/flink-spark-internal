@@ -28,13 +28,15 @@ import org.apache.spark.sql.SparkSession
   * would connect to receive data.
   *
   * To run this on your local machine, you need to first run a Netcat server
-  *    `$ nc -lk 9999`
+  * `$ nc -lk 9999`
   * and then run the example
-  *    `$ bin/run-example sql.streaming.StructuredNetworkWordCount
-  *    localhost 9999`
+  * `$ bin/run-example sql.streaming.StructuredNetworkWordCount
+  * localhost 9999`
   */
 object StructuredNetworkWordCount {
   def main(args: Array[String]) {
+
+
     if (args.length < 2) {
       System.err.println("Usage: StructuredNetworkWordCount <hostname> <port>")
       System.exit(1)
@@ -45,6 +47,7 @@ object StructuredNetworkWordCount {
 
     val spark = SparkSession.builder
       .appName("StructuredNetworkWordCount")
+      .master("local[*]")
       .getOrCreate()
 
     import spark.implicits._
@@ -66,9 +69,11 @@ object StructuredNetworkWordCount {
     val query = wordCounts.writeStream
       .outputMode("complete")
       .format("console")
+      //.trigger()
       .start()
 
     query.awaitTermination()
   }
 }
+
 // scalastyle:on println
