@@ -7,7 +7,7 @@ object SparkSubmit2 {
     val strings: Array[String] = ("--master=spark://0.0.0.0:7077\n" +
       "--class=org.apache.spark.examples.SparkPi\n" +
       "--verbose=true\n" +
-      "mini-cluster/spark-server/src/main/assembly/original-spark-examples_2.12-3.0.0-SNAPSHOT.jar\n")
+      "mini-cluster/spark-server/target/spark-server-1.0.jar\n")
       .split("\n")
     SparkSubmit.main(strings);
   }

@@ -32,14 +32,12 @@ object SparkSQLExample {
 
   // $example on:create_ds$
   case class Person(name: String, age: Long)
-
   // $example off:create_ds$
 
   def main(args: Array[String]) {
     // $example on:init_session$
     val spark = SparkSession
       .builder()
-      .master("local[*]")
       .appName("Spark SQL basic example")
       .config("spark.some.config.option", "some-value")
       .getOrCreate()
@@ -49,19 +47,16 @@ object SparkSQLExample {
     // $example off:init_session$
 
     runBasicDataFrameExample(spark)
-    //    runDatasetCreationExample(spark)
-    //    runInferSchemaExample(spark)
-    //    runProgrammaticSchemaExample(spark)
+    runDatasetCreationExample(spark)
+    runInferSchemaExample(spark)
+    runProgrammaticSchemaExample(spark)
 
     spark.stop()
   }
 
   private def runBasicDataFrameExample(spark: SparkSession): Unit = {
     // $example on:create_df$
-    val df =
-      spark.read.json(
-        "D:\\OpenAi\\Apache\\flink-spark-internal\\mini-cluster\\spark-server\\src\\main\\resources\\people.json"
-      )
+    val df = spark.read.json("examples/src/main/resources/people.json")
 
     // Displays the content of the DataFrame to stdout
     df.show()

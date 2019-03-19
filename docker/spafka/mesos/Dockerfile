@@ -1,4 +1,4 @@
-FROM centos:7
+FROM spafka/java8:v1
 MAINTAINER spafka <spafka@apache.com>
 USER root
 RUN yum update -y && \
