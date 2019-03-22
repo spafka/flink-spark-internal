@@ -27,7 +27,7 @@ class PageView(val url: String,
                val status: Int,
                val zipCode: Int,
                val userID: Int)
-  extends Serializable {
+    extends Serializable {
   override def toString(): String = {
     "%s\t%s\t%s\t%s\n".format(url, status, zipCode, userID)
   }

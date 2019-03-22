@@ -62,7 +62,7 @@ object CustomReceiver {
 }
 
 class CustomReceiver(host: String, port: Int)
-  extends Receiver[String](StorageLevel.MEMORY_AND_DISK_2)
+    extends Receiver[String](StorageLevel.MEMORY_AND_DISK_2)
     with Logging {
 
   def onStart() {

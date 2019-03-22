@@ -90,7 +90,7 @@ class TypedCount[IN](val f: IN => Any) extends Aggregator[IN, Long, Long] {
 }
 
 class TypedAverage[IN](val f: IN => Double)
-  extends Aggregator[IN, (Double, Long), Double] {
+    extends Aggregator[IN, (Double, Long), Double] {
   override def zero: (Double, Long) = (0.0, 0L)
 
   override def reduce(b: (Double, Long), a: IN): (Double, Long) =
@@ -111,7 +111,7 @@ class TypedAverage[IN](val f: IN => Double)
 }
 
 class TypedMin[IN](val f: IN => Double)
-  extends Aggregator[IN, MutableDouble, Option[Double]] {
+    extends Aggregator[IN, MutableDouble, Option[Double]] {
   override def zero: MutableDouble = null
 
   override def reduce(b: MutableDouble, a: IN): MutableDouble = {
@@ -150,7 +150,7 @@ class TypedMin[IN](val f: IN => Double)
 }
 
 class TypedMax[IN](val f: IN => Long)
-  extends Aggregator[IN, MutableLong, Option[Long]] {
+    extends Aggregator[IN, MutableLong, Option[Long]] {
   override def zero: MutableLong = null
 
   override def reduce(b: MutableLong, a: IN): MutableLong = {

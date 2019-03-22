@@ -9,6 +9,7 @@ RUN yum update -y && \
 # 定义默认的MESOS环境变量
 ENV MESOS_LOG_DIR /var/log/mesos
 ENV MESOS_WORK_DIR /var/work/mesos
+ENV MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so
 # 外部挂载
 VOLUME /var/log
 

@@ -103,11 +103,11 @@ object PageViewStream {
     )
 
     metric match {
-      case "pageCounts" => pageCounts.print()
-      case "slidingPageCounts" => slidingPageCounts.print()
+      case "pageCounts"          => pageCounts.print()
+      case "slidingPageCounts"   => slidingPageCounts.print()
       case "errorRatePerZipCode" => errorRatePerZipCode.print()
-      case "activeUserCount" => activeUserCount.print()
-      case "popularUsersSeen" =>
+      case "activeUserCount"     => activeUserCount.print()
+      case "popularUsersSeen"    =>
         // Look for users in our existing dataset and print it out if we have a match
         pageViews
           .map(view => (view.userID, 1))

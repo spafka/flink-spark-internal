@@ -50,7 +50,7 @@ object SQLDataSourceExample {
     // $example off:generic_load_save_functions$
     // $example on:manual_load_options$
     val peopleDF =
-    spark.read.format("json").load("examples/src/main/resources/people.json")
+      spark.read.format("json").load("examples/src/main/resources/people.json")
     peopleDF
       .select("name", "age")
       .write
