@@ -1,0 +1,77 @@
+version: '3'
+services:
+
+  zookeeper:
+    image: mesoscloud/zookeeper:3.4.8-centos-7
+    hostname: "zookeeper"
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+
+  mesos-master:
+    image: spafka/mesos-master:v1
+    hostname: "mesos-master"
+    container_name: master
+    privileged: true
+    environment:
+      - MESOS_HOSTNAME=mesos-master
+      - MESOS_CLUSTER=SMACK
+      - MESOS_QUORUM=1
+      - MESOS_ZK=zk://zookeeper:2181/mesos
+      - MESOS_LOG_DIR=/tmp/mesos/logs
+    links:
+      - zookeeper
+    ports:
+      - "5050:5050"
+
+  mesos-slave-1:
+    image: spafka/mesos-slave:v1
+    hostname: "mesos-slave-1"
+    container_name: slave-1
+    privileged: true
+    environment:
+      - MESOS_HOSTNAME=mesos-slave-1
+      - MESOS_PORT=5151
+      - MESOS_MASTER=zk://zookeeper:2181/mesos
+    links:
+      - zookeeper
+      - mesos-master
+    ports:
+      - "5151:5151"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  mesos-slave-2:
+    image: spafka/mesos-slave:v1
+    hostname: "mesos-slave-2"
+    container_name: slave-2
+    privileged: true
+    environment:
+      - MESOS_HOSTNAME=mesos-slave-2
+      - MESOS_PORT=5152
+      - MESOS_MASTER=zk://zookeeper:2181/mesos
+    links:
+      - zookeeper
+      - mesos-master
+    ports:
+      - "5152:5152"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  mesos-slave-3:
+    image: spafka/mesos-slave:v1
+    hostname: "mesos-slave-3"
+    container_name: slave-3
+    privileged: true
+    environment:
+     - MESOS_HOSTNAME=mesos-slave-3
+     - MESOS_PORT=5153
+     - MESOS_MASTER=zk://zookeeper:2181/mesos
+    links:
+      - zookeeper
+      - mesos-master
+    ports:
+      - "5153:5153"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
