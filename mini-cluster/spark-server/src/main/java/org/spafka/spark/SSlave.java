@@ -7,6 +7,8 @@ public class SSlave {
     public static void main(String[] args) {
 
         System.setProperty("SPARK_HOME","/tmp");
-        Worker.main(new String[]{"spark://0.0.0.0:7077"});
+
+
+        Worker.main(new String[]{"--cores","2","spark://0.0.0.0:7077"});
     }
 }
