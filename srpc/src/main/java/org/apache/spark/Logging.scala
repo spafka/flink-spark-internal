@@ -23,13 +23,13 @@ import org.slf4j.impl.StaticLoggerBinder
 import org.slf4j.{Logger, LoggerFactory}
 
 /**
- * Utility trait for classes that want to log data. Creates a SLF4J logger for the class and allows
- * logging messages at different levels using methods that only evaluate parameters lazily if the
- * log level is enabled.
- *
- * NOTE: DO NOT USE this class outside of Spark. It is intended as an internal utility.
- *       This will likely be changed or removed in future releases.
- */
+  * Utility trait for classes that want to log data. Creates a SLF4J logger for the class and allows
+  * logging messages at different levels using methods that only evaluate parameters lazily if the
+  * log level is enabled.
+  *
+  * NOTE: DO NOT USE this class outside of Spark. It is intended as an internal utility.
+  *       This will likely be changed or removed in future releases.
+  */
 trait Logging {
   // Make the log field transient so that objects with Logging can
   // be serialized and used on another machine
@@ -115,25 +115,35 @@ trait Logging {
     // org.apache.logging.slf4j.Log4jLoggerFactory
     val usingLog4j12 = "org.slf4j.impl.Log4jLoggerFactory".equals(binderClass)
     if (usingLog4j12) {
-      val log4j12Initialized = LogManager.getRootLogger.getAllAppenders.hasMoreElements
+      val log4j12Initialized =
+        LogManager.getRootLogger.getAllAppenders.hasMoreElements
       if (!log4j12Initialized) {
         // scalastyle:off println
         if (Utils.isInInterpreter) {
-          val replDefaultLogProps = "org/apache/spark/log4j-defaults-repl.properties"
+          val replDefaultLogProps =
+            "org/apache/spark/log4j-defaults-repl.properties"
           Option(Utils.getSparkClassLoader.getResource(replDefaultLogProps)) match {
             case Some(url) =>
               PropertyConfigurator.configure(url)
-              System.err.println(s"Using Spark's repl log4j profile: $replDefaultLogProps")
-              System.err.println("To adjust logging level use sc.setLogLevel(\"INFO\")")
+              System.err.println(
+                s"Using Spark's repl log4j profile: $replDefaultLogProps"
+              )
+              System.err.println(
+                "To adjust logging level use sc.setLogLevel(\"INFO\")"
+              )
             case None =>
-              System.err.println(s"Spark was unable to load $replDefaultLogProps")
+              System.err.println(
+                s"Spark was unable to load $replDefaultLogProps"
+              )
           }
         } else {
           val defaultLogProps = "org/apache/spark/log4j-defaults.properties"
           Option(Utils.getSparkClassLoader.getResource(defaultLogProps)) match {
             case Some(url) =>
               PropertyConfigurator.configure(url)
-              System.err.println(s"Using Spark's default log4j profile: $defaultLogProps")
+              System.err.println(
+                s"Using Spark's default log4j profile: $defaultLogProps"
+              )
             case None =>
               System.err.println(s"Spark was unable to load $defaultLogProps")
           }
@@ -157,7 +167,8 @@ private object Logging {
     // slf4j-to-jul bridge order to route their logs to JUL.
     val bridgeClass = Utils.classForName("org.slf4j.bridge.SLF4JBridgeHandler")
     bridgeClass.getMethod("removeHandlersForRootLogger").invoke(null)
-    val installed = bridgeClass.getMethod("isInstalled").invoke(null).asInstanceOf[Boolean]
+    val installed =
+      bridgeClass.getMethod("isInstalled").invoke(null).asInstanceOf[Boolean]
     if (!installed) {
       bridgeClass.getMethod("install").invoke(null)
     }

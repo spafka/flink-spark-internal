@@ -21,21 +21,21 @@ import akka.actor.Actor
 import org.slf4j.Logger
 
 /**
- * A trait to enable logging all Akka actor messages. Here's an example of using this:
- *
- * {{{
- *   class BlockManagerMasterActor extends Actor with ActorLogReceive with Logging {
- *     ...
- *     override def receiveWithLogging = {
- *       case GetLocations(blockId) =>
- *         sender ! getLocations(blockId)
- *       ...
- *     }
- *     ...
- *   }
- * }}}
- *
- */
+  * A trait to enable logging all Akka actor messages. Here's an example of using this:
+  *
+  * {{{
+  *   class BlockManagerMasterActor extends Actor with ActorLogReceive with Logging {
+  *     ...
+  *     override def receiveWithLogging = {
+  *       case GetLocations(blockId) =>
+  *         sender ! getLocations(blockId)
+  *       ...
+  *     }
+  *     ...
+  *   }
+  * }}}
+  *
+  */
 private[spark] trait ActorLogReceive {
   self: Actor =>
 
@@ -59,7 +59,9 @@ private[spark] trait ActorLogReceive {
       _receiveWithLogging.apply(o)
       val timeTaken = (System.nanoTime - start).toDouble / 1000000
       if (log.isDebugEnabled) {
-        log.debug(s"[actor] handled message ($timeTaken ms) $o from ${self.sender}")
+        log.debug(
+          s"[actor] handled message ($timeTaken ms) $o from ${self.sender}"
+        )
       }
     }
   }

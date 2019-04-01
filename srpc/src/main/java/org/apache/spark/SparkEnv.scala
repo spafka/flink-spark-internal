@@ -27,23 +27,22 @@ import org.apache.spark.util.Utils
 import scala.util.Properties
 
 /**
- * :: DeveloperApi ::
- * Holds all the runtime environment objects for a running Spark instance (either master or worker),
- * including the serializer, Akka actor system, block manager, map output tracker, etc. Currently
- * Spark code finds the SparkEnv through a global variable, so all the threads can access the same
- * SparkEnv. It can be accessed by SparkEnv.get (e.g. after creating a SparkContext).
- *
- * NOTE: This is not intended for external use. This is exposed for Shark and may be made private
- *       in a future release.
- */
-class SparkEnv (
-    val executorId: String,
-    private[spark] val rpcEnv: RpcEnv,
-    _actorSystem: ActorSystem, // TODO Remove actorSystem
-    val securityManager: SecurityManager,
-    val sparkFilesDir: String,
-
-    val conf: SparkConf) extends Logging {
+  * :: DeveloperApi ::
+  * Holds all the runtime environment objects for a running Spark instance (either master or worker),
+  * including the serializer, Akka actor system, block manager, map output tracker, etc. Currently
+  * Spark code finds the SparkEnv through a global variable, so all the threads can access the same
+  * SparkEnv. It can be accessed by SparkEnv.get (e.g. after creating a SparkContext).
+  *
+  * NOTE: This is not intended for external use. This is exposed for Shark and may be made private
+  *       in a future release.
+  */
+class SparkEnv(val executorId: String,
+               private[spark] val rpcEnv: RpcEnv,
+               _actorSystem: ActorSystem, // TODO Remove actorSystem
+               val securityManager: SecurityManager,
+               val sparkFilesDir: String,
+               val conf: SparkConf)
+    extends Logging {
 
   // TODO Remove actorSystem
   @deprecated("Actor system is no longer supported as of 1.4.0", "1.4.0")
@@ -53,13 +52,12 @@ class SparkEnv (
 
   // A general, soft-reference map for metadata needed during HadoopRDD split computation
   // (e.g., HadoopFileRDD uses this to cache JobConfs and InputFormats).
-  private[spark] val hadoopJobMetadata = new MapMaker().softValues().makeMap[String, Any]()
+  private[spark] val hadoopJobMetadata =
+    new MapMaker().softValues().makeMap[String, Any]()
 
   private var driverTmpDirToDelete: Option[String] = None
 
-  private[spark] def stop() {
-
-  }
+  private[spark] def stop() {}
 
 }
 
@@ -74,33 +72,31 @@ object SparkEnv extends Logging {
   }
 
   /**
-   * Returns the SparkEnv.
-   */
+    * Returns the SparkEnv.
+    */
   def get: SparkEnv = {
     env
   }
 
   /**
-   * Returns the ThreadLocal SparkEnv.
-   */
+    * Returns the ThreadLocal SparkEnv.
+    */
   @deprecated("Use SparkEnv.get instead", "1.2.0")
   def getThreadLocal: SparkEnv = {
     env
   }
 
-
-
   /**
-   * Return a map representation of jvm information, Spark properties, system properties, and
-   * class paths. Map keys define the category, and map values represent the corresponding
-   * attributes as a sequence of KV pairs. This is used mainly for SparkListenerEnvironmentUpdate.
-   */
-  private[spark]
-  def environmentDetails(
-      conf: SparkConf,
-      schedulingMode: String,
-      addedJars: Seq[String],
-      addedFiles: Seq[String]): Map[String, Seq[(String, String)]] = {
+    * Return a map representation of jvm information, Spark properties, system properties, and
+    * class paths. Map keys define the category, and map values represent the corresponding
+    * attributes as a sequence of KV pairs. This is used mainly for SparkListenerEnvironmentUpdate.
+    */
+  private[spark] def environmentDetails(
+    conf: SparkConf,
+    schedulingMode: String,
+    addedJars: Seq[String],
+    addedFiles: Seq[String]
+  ): Map[String, Seq[(String, String)]] = {
 
     import Properties._
     val jvmInformation = Seq(
@@ -121,8 +117,9 @@ object SparkEnv extends Logging {
 
     // System properties that are not java classpaths
     val systemProperties = Utils.getSystemProperties.toSeq
-    val otherProperties = systemProperties.filter { case (k, _) =>
-      k != "java.class.path" && !k.startsWith("spark.")
+    val otherProperties = systemProperties.filter {
+      case (k, _) =>
+        k != "java.class.path" && !k.startsWith("spark.")
     }.sorted
 
     // Class paths including all added jars and files
@@ -137,6 +134,7 @@ object SparkEnv extends Logging {
       "JVM Information" -> jvmInformation,
       "Spark Properties" -> sparkProperties,
       "System Properties" -> otherProperties,
-      "Classpath Entries" -> classPaths)
+      "Classpath Entries" -> classPaths
+    )
   }
 }

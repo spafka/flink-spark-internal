@@ -21,28 +21,26 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rpc.{RpcEndpoint, RpcEnv, RpcEnvConfig}
 import org.junit.{Before, Test}
 
-
 class AkkaRpcEnvSuite {
 
   def createRpcEnv(conf: SparkConf,
                    name: String,
                    port: Int,
                    clientMode: Boolean = false): RpcEnv = {
-    new AkkaRpcEnvFactory().create(
-      RpcEnvConfig(conf, name, "localhost", port,null, clientMode))
+    new AkkaRpcEnvFactory()
+      .create(RpcEnvConfig(conf, name, "localhost", port, null, clientMode))
   }
 
   var env: RpcEnv = _
 
   @Before
-  def init={
+  def init = {
     val conf = new SparkConf()
     env = createRpcEnv(conf, "local", 0)
   }
 
   @Test
   def akkaTest = {
-
 
     val ref = env.setupEndpoint("test_endpoint", new RpcEndpoint {
       override val rpcEnv = env
@@ -52,11 +50,18 @@ class AkkaRpcEnvSuite {
       }
     })
     val conf = new SparkConf()
-    val newRpcEnv = new AkkaRpcEnvFactory().create(
-      RpcEnvConfig(conf, "test", "localhost", 0, null, false))
+    val newRpcEnv = new AkkaRpcEnvFactory()
+      .create(RpcEnvConfig(conf, "test", "localhost", 0, null, false))
     try {
-      val newRef = newRpcEnv.setupEndpointRef("local", ref.address, "test_endpoint")
-      assert(s"akka.tcp://local@${env.address}/user/test_endpoint" equals  newRef.asInstanceOf[AkkaRpcEndpointRef].actorRef.path.toString)
+      val newRef =
+        newRpcEnv.setupEndpointRef("local", ref.address, "test_endpoint")
+      assert(
+        s"akka.tcp://local@${env.address}/user/test_endpoint" equals newRef
+          .asInstanceOf[AkkaRpcEndpointRef]
+          .actorRef
+          .path
+          .toString
+      )
     } finally {
       newRpcEnv.shutdown()
     }

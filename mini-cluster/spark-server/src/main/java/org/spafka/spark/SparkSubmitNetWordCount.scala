@@ -1,7 +1,5 @@
 package org.spafka.spark
 
-import java.util
-
 object SparkSubmitNetWordCount {
 
   import org.apache.spark.deploy.SparkSubmit

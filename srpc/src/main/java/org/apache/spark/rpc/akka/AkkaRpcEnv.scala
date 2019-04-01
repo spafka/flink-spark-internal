@@ -26,10 +26,22 @@ import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 
-import akka.actor.{ActorSystem, ExtendedActorSystem, Actor, ActorRef, Props, Address}
+import akka.actor.{
+  ActorSystem,
+  ExtendedActorSystem,
+  Actor,
+  ActorRef,
+  Props,
+  Address
+}
 import akka.event.Logging.Error
 import akka.pattern.{ask => akkaAsk}
-import akka.remote.{AssociationEvent, AssociatedEvent, DisassociatedEvent, AssociationErrorEvent}
+import akka.remote.{
+  AssociationEvent,
+  AssociatedEvent,
+  DisassociatedEvent,
+  AssociationErrorEvent
+}
 import akka.serialization.JavaSerializer
 
 import org.apache.spark.{Logging, SparkConf, SparkException}
@@ -42,18 +54,23 @@ import org.apache.spark.util.{ActorLogReceive, AkkaUtils, ThreadUtils}
   * TODO Once we remove all usages of Akka in other place, we can move this file to a new project and
   * remove Akka from the dependencies.
   */
-private[spark] class AkkaRpcEnv private[akka](
-                                               val actorSystem: ActorSystem,
-                                               val securityManager: SecurityManager,
-                                               conf: SparkConf,
-                                               boundPort: Int)
-  extends RpcEnv(conf) with Logging {
+private[spark] class AkkaRpcEnv private[akka] (
+  val actorSystem: ActorSystem,
+  val securityManager: SecurityManager,
+  conf: SparkConf,
+  boundPort: Int
+) extends RpcEnv(conf)
+    with Logging {
 
   private val defaultAddress: RpcAddress = {
-    val address = actorSystem.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress
+    val address =
+      actorSystem.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress
     // In some test case, ActorSystem doesn't bind to any address.
     // So just use some default value since they are only some unit tests
-    RpcAddress(address.host.getOrElse("localhost"), address.port.getOrElse(boundPort))
+    RpcAddress(
+      address.host.getOrElse("localhost"),
+      address.port.getOrElse(boundPort)
+    )
   }
 
   override val address: RpcAddress = defaultAddress
@@ -62,15 +79,17 @@ private[spark] class AkkaRpcEnv private[akka](
     * A lookup table to search a [[RpcEndpointRef]] for a [[RpcEndpoint]]. We need it to make
     * [[RpcEndpoint.self]] work.
     */
-  private val endpointToRef = new ConcurrentHashMap[RpcEndpoint, RpcEndpointRef]()
+  private val endpointToRef =
+    new ConcurrentHashMap[RpcEndpoint, RpcEndpointRef]()
 
   /**
     * Need this map to remove `RpcEndpoint` from `endpointToRef` via a `RpcEndpointRef`
     */
-  private val refToEndpoint = new ConcurrentHashMap[RpcEndpointRef, RpcEndpoint]()
+  private val refToEndpoint =
+    new ConcurrentHashMap[RpcEndpointRef, RpcEndpoint]()
 
-
-  private def registerEndpoint(endpoint: RpcEndpoint, endpointRef: RpcEndpointRef): Unit = {
+  private def registerEndpoint(endpoint: RpcEndpoint,
+                               endpointRef: RpcEndpointRef): Unit = {
     endpointToRef.put(endpoint, endpointRef)
     refToEndpoint.put(endpointRef, endpoint)
   }
@@ -85,76 +104,97 @@ private[spark] class AkkaRpcEnv private[akka](
   /**
     * Retrieve the [[RpcEndpointRef]] of `endpoint`.
     */
-  override def endpointRef(endpoint: RpcEndpoint): RpcEndpointRef = endpointToRef.get(endpoint)
+  override def endpointRef(endpoint: RpcEndpoint): RpcEndpointRef =
+    endpointToRef.get(endpoint)
 
-  override def setupEndpoint(name: String, endpoint: RpcEndpoint): RpcEndpointRef = {
+  override def setupEndpoint(name: String,
+                             endpoint: RpcEndpoint): RpcEndpointRef = {
     @volatile var endpointRef: AkkaRpcEndpointRef = null
     // Use defered function because the Actor needs to use `endpointRef`.
     // So `actorRef` should be created after assigning `endpointRef`.
-    val actorRef: () => ActorRef = () => actorSystem.actorOf(Props(new Actor with ActorLogReceive with Logging {
+    val actorRef: () => ActorRef = () =>
+      actorSystem.actorOf(
+        Props(new Actor with ActorLogReceive with Logging {
 
-      assert(endpointRef != null)
+          assert(endpointRef != null)
 
-      override def preStart(): Unit = {
-        // Listen for remote client network events
-        context.system.eventStream.subscribe(self, classOf[AssociationEvent])
-        safelyCall(endpoint) {
-          endpoint.onStart()
-        }
-      }
-
-      override def receiveWithLogging: Receive = {
-        case AssociatedEvent(_, remoteAddress, _) =>
-          safelyCall(endpoint) {
-            endpoint.onConnected(akkaAddressToRpcAddress(remoteAddress))
+          override def preStart(): Unit = {
+            // Listen for remote client network events
+            context.system.eventStream
+              .subscribe(self, classOf[AssociationEvent])
+            safelyCall(endpoint) {
+              endpoint.onStart()
+            }
           }
 
-        case DisassociatedEvent(_, remoteAddress, _) =>
-          safelyCall(endpoint) {
-            endpoint.onDisconnected(akkaAddressToRpcAddress(remoteAddress))
+          override def receiveWithLogging: Receive = {
+            case AssociatedEvent(_, remoteAddress, _) =>
+              safelyCall(endpoint) {
+                endpoint.onConnected(akkaAddressToRpcAddress(remoteAddress))
+              }
+
+            case DisassociatedEvent(_, remoteAddress, _) =>
+              safelyCall(endpoint) {
+                endpoint.onDisconnected(akkaAddressToRpcAddress(remoteAddress))
+              }
+
+            case AssociationErrorEvent(
+                cause,
+                localAddress,
+                remoteAddress,
+                inbound,
+                _
+                ) =>
+              safelyCall(endpoint) {
+                endpoint
+                  .onNetworkError(cause, akkaAddressToRpcAddress(remoteAddress))
+              }
+
+            case e: AssociationEvent =>
+            // TODO ignore?
+
+            case m: AkkaMessage =>
+              logDebug(s"Received RPC message: $m")
+              safelyCall(endpoint) {
+                processMessage(endpoint, m, sender)
+              }
+
+            case AkkaFailure(e) =>
+              safelyCall(endpoint) {
+                throw e
+              }
+
+            case message: Any => {
+              logWarning(s"Unknown message: $message")
+            }
+
           }
 
-        case AssociationErrorEvent(cause, localAddress, remoteAddress, inbound, _) =>
-          safelyCall(endpoint) {
-            endpoint.onNetworkError(cause, akkaAddressToRpcAddress(remoteAddress))
+          override def postStop(): Unit = {
+            unregisterEndpoint(endpoint.self)
+            safelyCall(endpoint) {
+              endpoint.onStop()
+            }
           }
 
-        case e: AssociationEvent =>
-        // TODO ignore?
-
-        case m: AkkaMessage =>
-          logDebug(s"Received RPC message: $m")
-          safelyCall(endpoint) {
-            processMessage(endpoint, m, sender)
-          }
-
-        case AkkaFailure(e) =>
-          safelyCall(endpoint) {
-            throw e
-          }
-
-        case message: Any => {
-          logWarning(s"Unknown message: $message")
-        }
-
-      }
-
-      override def postStop(): Unit = {
-        unregisterEndpoint(endpoint.self)
-        safelyCall(endpoint) {
-          endpoint.onStop()
-        }
-      }
-
-    }), name = name)
-    endpointRef = new AkkaRpcEndpointRef(defaultAddress, actorRef, conf, initInConstructor = false)
+        }),
+        name = name
+    )
+    endpointRef = new AkkaRpcEndpointRef(
+      defaultAddress,
+      actorRef,
+      conf,
+      initInConstructor = false
+    )
     registerEndpoint(endpoint, endpointRef)
     // Now actorRef can be created safely
     endpointRef.init()
     endpointRef
   }
 
-  private def processMessage(endpoint: RpcEndpoint, m: AkkaMessage, _sender: ActorRef): Unit = {
+  private def processMessage(endpoint: RpcEndpoint,
+                             m: AkkaMessage,
+                             _sender: ActorRef): Unit = {
     val message = m.message
     val needReply = m.needReply
     val pf: PartialFunction[Any, Unit] =
@@ -209,22 +249,36 @@ private[spark] class AkkaRpcEnv private[akka](
   }
 
   private def akkaAddressToRpcAddress(address: Address): RpcAddress = {
-    RpcAddress(address.host.getOrElse(defaultAddress.host),
-      address.port.getOrElse(defaultAddress.port))
+    RpcAddress(
+      address.host.getOrElse(defaultAddress.host),
+      address.port.getOrElse(defaultAddress.port)
+    )
   }
 
-  override def asyncSetupEndpointRefByURI(uri: String): Future[RpcEndpointRef] = {
+  override def asyncSetupEndpointRefByURI(
+    uri: String
+  ): Future[RpcEndpointRef] = {
     import actorSystem.dispatcher
-    actorSystem.actorSelection(uri).resolveOne(defaultLookupTimeout.duration).
-      map(new AkkaRpcEndpointRef(defaultAddress, _, conf)).
+    actorSystem
+      .actorSelection(uri)
+      .resolveOne(defaultLookupTimeout.duration)
+      .map(new AkkaRpcEndpointRef(defaultAddress, _, conf))
+      .
       // this is just in case there is a timeout from creating the future in resolveOne, we want the
       // exception to indicate the conf that determines the timeout
       recover(defaultLookupTimeout.addMessageIfTimeout)
   }
 
-  override def uriOf(systemName: String, address: RpcAddress, endpointName: String): String = {
+  override def uriOf(systemName: String,
+                     address: RpcAddress,
+                     endpointName: String): String = {
     AkkaUtils.address(
-      AkkaUtils.protocol(actorSystem), systemName, address.host, address.port, endpointName)
+      AkkaUtils.protocol(actorSystem),
+      systemName,
+      address.host,
+      address.port,
+      endpointName
+    )
   }
 
   override def shutdown(): Unit = {
@@ -243,26 +297,33 @@ private[spark] class AkkaRpcEnv private[akka](
   override def toString: String = s"${getClass.getSimpleName}($actorSystem)"
 
   override def deserialize[T](deserializationAction: () => T): T = {
-    JavaSerializer.currentSystem.withValue(actorSystem.asInstanceOf[ExtendedActorSystem]) {
+    JavaSerializer.currentSystem.withValue(
+      actorSystem.asInstanceOf[ExtendedActorSystem]
+    ) {
       deserializationAction()
     }
   }
 
   override def openChannel(uri: String): ReadableByteChannel = {
     throw new UnsupportedOperationException(
-      "AkkaRpcEnv's files should be retrieved using an HTTP client.")
+      "AkkaRpcEnv's files should be retrieved using an HTTP client."
+    )
   }
 
   override def fileServer: RpcEnvFileServer = ???
 
 }
 
-
 private[spark] class AkkaRpcEnvFactory extends RpcEnvFactory {
 
   def create(config: RpcEnvConfig): RpcEnv = {
     val (actorSystem, boundPort) = AkkaUtils.createActorSystem(
-      config.name, config.host, config.port, config.conf, config.securityManager)
+      config.name,
+      config.host,
+      config.port,
+      config.conf,
+      config.securityManager
+    )
 
     new AkkaRpcEnv(actorSystem, config.securityManager, config.conf, boundPort)
   }
@@ -271,28 +332,30 @@ private[spark] class AkkaRpcEnvFactory extends RpcEnvFactory {
 /**
   * Monitor errors reported by Akka and log them.
   */
-private[akka] class ErrorMonitor extends Actor with ActorLogReceive with Logging {
+private[akka] class ErrorMonitor
+    extends Actor
+    with ActorLogReceive
+    with Logging {
 
   override def preStart(): Unit = {
     context.system.eventStream.subscribe(self, classOf[Error])
   }
 
   override def receiveWithLogging: Actor.Receive = {
-    case Error(cause: Throwable, _, _, message: String) => logDebug(message, cause)
+    case Error(cause: Throwable, _, _, message: String) =>
+      logDebug(message, cause)
   }
 }
 
 private[akka] class AkkaRpcEndpointRef(
-                                        @transient private val defaultAddress: RpcAddress,
-                                        @transient private val _actorRef: () => ActorRef,
-                                        conf: SparkConf,
-                                        initInConstructor: Boolean)
-  extends RpcEndpointRef(conf) with Logging {
+  @transient private val defaultAddress: RpcAddress,
+  @transient private val _actorRef: () => ActorRef,
+  conf: SparkConf,
+  initInConstructor: Boolean
+) extends RpcEndpointRef(conf)
+    with Logging {
 
-  def this(
-            defaultAddress: RpcAddress,
-            _actorRef: ActorRef,
-            conf: SparkConf) = {
+  def this(defaultAddress: RpcAddress, _actorRef: ActorRef, conf: SparkConf) = {
     this(defaultAddress, () => _actorRef, conf, true)
   }
 
@@ -300,8 +363,10 @@ private[akka] class AkkaRpcEndpointRef(
 
   override lazy val address: RpcAddress = {
     val akkaAddress = actorRef.path.address
-    RpcAddress(akkaAddress.host.getOrElse(defaultAddress.host),
-      akkaAddress.port.getOrElse(defaultAddress.port))
+    RpcAddress(
+      akkaAddress.host.getOrElse(defaultAddress.host),
+      akkaAddress.port.getOrElse(defaultAddress.port)
+    )
   }
 
   override lazy val name: String = actorRef.path.name
@@ -321,30 +386,37 @@ private[akka] class AkkaRpcEndpointRef(
     actorRef ! AkkaMessage(message, false)
   }
 
-  override def ask[T: ClassTag](message: Any, timeout: RpcTimeout): Future[T] = {
-    actorRef.ask(AkkaMessage(message, true))(timeout.duration).flatMap {
-      // The function will run in the calling thread, so it should be short and never block.
-      case msg@AkkaMessage(message, reply) =>
-        if (reply) {
-          logError(s"Receive $msg but the sender cannot reply")
-          Future.failed(new SparkException(s"Receive $msg but the sender cannot reply"))
-        } else {
-          Future.successful(message)
-        }
-      case AkkaFailure(e) =>
-        Future.failed(e)
-    }(ThreadUtils.sameThread).mapTo[T].
-      recover(timeout.addMessageIfTimeout)(ThreadUtils.sameThread)
+  override def ask[T: ClassTag](message: Any,
+                                timeout: RpcTimeout): Future[T] = {
+    actorRef
+      .ask(AkkaMessage(message, true))(timeout.duration)
+      .flatMap {
+        // The function will run in the calling thread, so it should be short and never block.
+        case msg @ AkkaMessage(message, reply) =>
+          if (reply) {
+            logError(s"Receive $msg but the sender cannot reply")
+            Future.failed(
+              new SparkException(s"Receive $msg but the sender cannot reply")
+            )
+          } else {
+            Future.successful(message)
+          }
+        case AkkaFailure(e) =>
+          Future.failed(e)
+      }(ThreadUtils.sameThread)
+      .mapTo[T]
+      .recover(timeout.addMessageIfTimeout)(ThreadUtils.sameThread)
   }
 
   override def toString: String = s"${getClass.getSimpleName}($actorRef)"
 
   final override def equals(that: Any): Boolean = that match {
     case other: AkkaRpcEndpointRef => actorRef == other.actorRef
-    case _ => false
+    case _                         => false
   }
 
-  final override def hashCode(): Int = if (actorRef == null) 0 else actorRef.hashCode()
+  final override def hashCode(): Int =
+    if (actorRef == null) 0 else actorRef.hashCode()
 }
 
 /**

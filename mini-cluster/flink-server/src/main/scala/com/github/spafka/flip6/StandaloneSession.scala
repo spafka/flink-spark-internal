@@ -8,7 +8,7 @@ object StandaloneSession {
 
     val args1 = String
       .format(
-        "--configDir %s --executionMode cluster --host localhost --webui-port 8081",
+        "--configDir %s --executionMode cluster --host localhost --webui-port 80",
         Thread.currentThread.getContextClassLoader
           .getResource("flink-conf.yaml")
           .getFile + "/.."

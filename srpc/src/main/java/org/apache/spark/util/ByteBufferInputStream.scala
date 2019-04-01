@@ -20,14 +20,13 @@ package org.apache.spark.util
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-
 /**
- * Reads data from a ByteBuffer, and optionally cleans it up using BlockManager.dispose()
- * at the end of the stream (e.g. to close a memory-mapped file).
- */
-private[spark]
-class ByteBufferInputStream(private var buffer: ByteBuffer, dispose: Boolean = false)
-  extends InputStream {
+  * Reads data from a ByteBuffer, and optionally cleans it up using BlockManager.dispose()
+  * at the end of the stream (e.g. to close a memory-mapped file).
+  */
+private[spark] class ByteBufferInputStream(private var buffer: ByteBuffer,
+                                           dispose: Boolean = false)
+    extends InputStream {
 
   override def read(): Int = {
     if (buffer == null || buffer.remaining() == 0) {
@@ -67,13 +66,11 @@ class ByteBufferInputStream(private var buffer: ByteBuffer, dispose: Boolean = f
   }
 
   /**
-   * Clean up the buffer, and potentially dispose of it using BlockManager.dispose().
-   */
+    * Clean up the buffer, and potentially dispose of it using BlockManager.dispose().
+    */
   private def cleanUp() {
     if (buffer != null) {
-      if (dispose) {
-
-      }
+      if (dispose) {}
       buffer = null
     }
   }

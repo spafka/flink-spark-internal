@@ -25,10 +25,11 @@ import org.apache.spark.rpc.RpcEnvFileServer
 import org.apache.spark.util.Utils
 
 /**
- * StreamManager implementation for serving files from a NettyRpcEnv.
- */
+  * StreamManager implementation for serving files from a NettyRpcEnv.
+  */
 private[netty] class NettyStreamManager(rpcEnv: NettyRpcEnv)
-  extends StreamManager with RpcEnvFileServer {
+    extends StreamManager
+    with RpcEnvFileServer {
 
   private val files = new ConcurrentHashMap[String, File]()
   private val jars = new ConcurrentHashMap[String, File]()
@@ -41,8 +42,8 @@ private[netty] class NettyStreamManager(rpcEnv: NettyRpcEnv)
     val Array(ftype, fname) = streamId.stripPrefix("/").split("/", 2)
     val file = ftype match {
       case "files" => files.get(fname)
-      case "jars" => jars.get(fname)
-      case _ => throw new IllegalArgumentException(s"Invalid file type: $ftype")
+      case "jars"  => jars.get(fname)
+      case _       => throw new IllegalArgumentException(s"Invalid file type: $ftype")
     }
 
     require(file != null && file.isFile(), s"File not found: $streamId")
@@ -50,14 +51,18 @@ private[netty] class NettyStreamManager(rpcEnv: NettyRpcEnv)
   }
 
   override def addFile(file: File): String = {
-    require(files.putIfAbsent(file.getName(), file) == null,
-      s"File ${file.getName()} already registered.")
+    require(
+      files.putIfAbsent(file.getName(), file) == null,
+      s"File ${file.getName()} already registered."
+    )
     s"${rpcEnv.address.toSparkURL}/files/${Utils.encodeFileNameToURIRawPath(file.getName())}"
   }
 
   override def addJar(file: File): String = {
-    require(jars.putIfAbsent(file.getName(), file) == null,
-      s"JAR ${file.getName()} already registered.")
+    require(
+      jars.putIfAbsent(file.getName(), file) == null,
+      s"JAR ${file.getName()} already registered."
+    )
     s"${rpcEnv.address.toSparkURL}/jars/${Utils.encodeFileNameToURIRawPath(file.getName())}"
   }
 

@@ -52,7 +52,8 @@ class SparkConf(loadDefaults: Boolean) extends Cloneable with Logging {
 
   if (loadDefaults) {
     // Load any spark.* system properties
-    for ((key, value) <- Utils.getSystemProperties if key.startsWith("spark.")) {
+    for ((key, value) <- Utils.getSystemProperties
+         if key.startsWith("spark.")) {
       set(key, value)
     }
   }
@@ -85,7 +86,8 @@ class SparkConf(loadDefaults: Boolean) extends Cloneable with Logging {
 
   /** Set JAR files to distribute to the cluster. */
   def setJars(jars: Seq[String]): SparkConf = {
-    for (jar <- jars if (jar == null)) logWarning("null jar passed to SparkContext constructor")
+    for (jar <- jars if (jar == null))
+      logWarning("null jar passed to SparkContext constructor")
     set("spark.jars", jars.filter(_ != null).mkString(","))
   }
 
@@ -247,19 +249,20 @@ class SparkConf(loadDefaults: Boolean) extends Cloneable with Logging {
   /** Get all executor environment variables set on this SparkConf */
   def getExecutorEnv: Seq[(String, String)] = {
     val prefix = "spark.executorEnv."
-    getAll.filter { case (k, v) => k.startsWith(prefix) }
+    getAll
+      .filter { case (k, v) => k.startsWith(prefix) }
       .map { case (k, v) => (k.substring(prefix.length), v) }
   }
 
   /** Get all akka conf variables set on this SparkConf */
   def getAkkaConf: Seq[(String, String)] =
-  /* This is currently undocumented. If we want to make this public we should consider
-   * nesting options under the spark namespace to avoid conflicts with user akka options.
-   * Otherwise users configuring their own akka code via system properties could mess up
-   * spark's akka options.
-   *
-   *   E.g. spark.akka.option.x.y.x = "value"
-   */
+    /* This is currently undocumented. If we want to make this public we should consider
+     * nesting options under the spark namespace to avoid conflicts with user akka options.
+     * Otherwise users configuring their own akka code via system properties could mess up
+     * spark's akka options.
+     *
+     *   E.g. spark.akka.option.x.y.x = "value"
+     */
     getAll.filter { case (k, _) => isAkkaConf(k) }
 
   /**
@@ -330,15 +333,19 @@ class SparkConf(loadDefaults: Boolean) extends Cloneable with Logging {
       "spark.shuffle.memoryFraction",
       "spark.shuffle.safetyFraction",
       "spark.storage.unrollFraction",
-      "spark.storage.safetyFraction")
+      "spark.storage.safetyFraction"
+    )
     val memoryKeys = Seq(
       "spark.memory.fraction",
-      "spark.memory.storageFraction") ++
+      "spark.memory.storageFraction"
+    ) ++
       deprecatedMemoryKeys
     for (key <- memoryKeys) {
       val value = getDouble(key, 0.5)
       if (value > 1 || value < 0) {
-        throw new IllegalArgumentException(s"$key should be between 0 and 1 (was '$value').")
+        throw new IllegalArgumentException(
+          s"$key should be between 0 and 1 (was '$value')."
+        )
       }
     }
 
@@ -349,11 +356,13 @@ class SparkConf(loadDefaults: Boolean) extends Cloneable with Logging {
       val keyset = deprecatedMemoryKeys.toSet
       val detected = settings.keys().asScala.filter(keyset.contains)
       if (detected.nonEmpty) {
-        logWarning("Detected deprecated memory fraction settings: " +
-          detected.mkString("[", ", ", "]") + ". As of Spark 1.6, execution and storage " +
-          "memory management are unified. All memory fractions used in the old model are " +
-          "now deprecated and no longer read. If you wish to use the old memory management, " +
-          s"you may explicitly enable `$legacyMemoryManagementKey` (not recommended).")
+        logWarning(
+          "Detected deprecated memory fraction settings: " +
+            detected.mkString("[", ", ", "]") + ". As of Spark 1.6, execution and storage " +
+            "memory management are unified. All memory fractions used in the old model are " +
+            "now deprecated and no longer read. If you wish to use the old memory management, " +
+            s"you may explicitly enable `$legacyMemoryManagementKey` (not recommended)."
+        )
       }
     }
 
@@ -374,7 +383,9 @@ class SparkConf(loadDefaults: Boolean) extends Cloneable with Logging {
 
       for (key <- Seq(executorOptsKey, driverOptsKey)) {
         if (getOption(key).isDefined) {
-          throw new SparkException(s"Found both $key and SPARK_JAVA_OPTS. Use only the former.")
+          throw new SparkException(
+            s"Found both $key and SPARK_JAVA_OPTS. Use only the former."
+          )
         } else {
           logWarning(s"Setting '$key' to '$value' as a work-around.")
           set(key, value)
@@ -396,7 +407,9 @@ class SparkConf(loadDefaults: Boolean) extends Cloneable with Logging {
 
       for (key <- Seq(executorClasspathKey, driverClassPathKey)) {
         if (getOption(key).isDefined) {
-          throw new SparkException(s"Found both $key and SPARK_CLASSPATH. Use only the former.")
+          throw new SparkException(
+            s"Found both $key and SPARK_CLASSPATH. Use only the former."
+          )
         } else {
           logWarning(s"Setting '$key' to '$value' as a work-around.")
           set(key, value)
@@ -443,18 +456,28 @@ private[spark] object SparkConf extends Logging {
     */
   private val deprecatedConfigs: Map[String, DeprecatedConfig] = {
     val configs = Seq(
-      DeprecatedConfig("spark.cache.class", "0.8",
+      DeprecatedConfig(
+        "spark.cache.class",
+        "0.8",
         "The spark.cache.class property is no longer being used! Specify storage levels using " +
-          "the RDD.persist() method instead."),
-      DeprecatedConfig("spark.yarn.user.classpath.first", "1.3",
-        "Please use spark.{driver,executor}.userClassPathFirst instead."),
-      DeprecatedConfig("spark.kryoserializer.buffer.mb", "1.4",
+          "the RDD.persist() method instead."
+      ),
+      DeprecatedConfig(
+        "spark.yarn.user.classpath.first",
+        "1.3",
+        "Please use spark.{driver,executor}.userClassPathFirst instead."
+      ),
+      DeprecatedConfig(
+        "spark.kryoserializer.buffer.mb",
+        "1.4",
         "Please use spark.kryoserializer.buffer instead. The default value for " +
           "spark.kryoserializer.buffer.mb was previously specified as '0.064'. Fractional values " +
-          "are no longer accepted. To specify the equivalent now, one may use '64k'.")
+          "are no longer accepted. To specify the equivalent now, one may use '64k'."
+      )
     )
 
-    Map(configs.map { cfg => (cfg.key -> cfg) }: _*)
+    Map(configs.map { cfg => (cfg.key -> cfg)
+    }: _*)
   }
 
   /**
@@ -465,48 +488,74 @@ private[spark] object SparkConf extends Logging {
     */
   private val configsWithAlternatives = Map[String, Seq[AlternateConfig]](
     "spark.executor.userClassPathFirst" -> Seq(
-      AlternateConfig("spark.files.userClassPathFirst", "1.3")),
+      AlternateConfig("spark.files.userClassPathFirst", "1.3")
+    ),
     "spark.history.fs.update.interval" -> Seq(
       AlternateConfig("spark.history.fs.update.interval.seconds", "1.4"),
       AlternateConfig("spark.history.fs.updateInterval", "1.3"),
-      AlternateConfig("spark.history.updateInterval", "1.3")),
+      AlternateConfig("spark.history.updateInterval", "1.3")
+    ),
     "spark.history.fs.cleaner.interval" -> Seq(
-      AlternateConfig("spark.history.fs.cleaner.interval.seconds", "1.4")),
+      AlternateConfig("spark.history.fs.cleaner.interval.seconds", "1.4")
+    ),
     "spark.history.fs.cleaner.maxAge" -> Seq(
-      AlternateConfig("spark.history.fs.cleaner.maxAge.seconds", "1.4")),
+      AlternateConfig("spark.history.fs.cleaner.maxAge.seconds", "1.4")
+    ),
     "spark.yarn.am.waitTime" -> Seq(
-      AlternateConfig("spark.yarn.applicationMaster.waitTries", "1.3",
+      AlternateConfig(
+        "spark.yarn.applicationMaster.waitTries",
+        "1.3",
         // Translate old value to a duration, with 10s wait time per try.
-        translation = s => s"${s.toLong * 10}s")),
+        translation = s => s"${s.toLong * 10}s"
+      )
+    ),
     "spark.reducer.maxSizeInFlight" -> Seq(
-      AlternateConfig("spark.reducer.maxMbInFlight", "1.4")),
+      AlternateConfig("spark.reducer.maxMbInFlight", "1.4")
+    ),
     "spark.kryoserializer.buffer" ->
-      Seq(AlternateConfig("spark.kryoserializer.buffer.mb", "1.4",
-        translation = s => s"${(s.toDouble * 1000).toInt}k")),
+      Seq(
+        AlternateConfig(
+          "spark.kryoserializer.buffer.mb",
+          "1.4",
+          translation = s => s"${(s.toDouble * 1000).toInt}k"
+        )
+      ),
     "spark.kryoserializer.buffer.max" -> Seq(
-      AlternateConfig("spark.kryoserializer.buffer.max.mb", "1.4")),
+      AlternateConfig("spark.kryoserializer.buffer.max.mb", "1.4")
+    ),
     "spark.shuffle.file.buffer" -> Seq(
-      AlternateConfig("spark.shuffle.file.buffer.kb", "1.4")),
+      AlternateConfig("spark.shuffle.file.buffer.kb", "1.4")
+    ),
     "spark.executor.logs.rolling.maxSize" -> Seq(
-      AlternateConfig("spark.executor.logs.rolling.size.maxBytes", "1.4")),
+      AlternateConfig("spark.executor.logs.rolling.size.maxBytes", "1.4")
+    ),
     "spark.io.compression.snappy.blockSize" -> Seq(
-      AlternateConfig("spark.io.compression.snappy.block.size", "1.4")),
+      AlternateConfig("spark.io.compression.snappy.block.size", "1.4")
+    ),
     "spark.io.compression.lz4.blockSize" -> Seq(
-      AlternateConfig("spark.io.compression.lz4.block.size", "1.4")),
+      AlternateConfig("spark.io.compression.lz4.block.size", "1.4")
+    ),
     "spark.rpc.numRetries" -> Seq(
-      AlternateConfig("spark.akka.num.retries", "1.4")),
+      AlternateConfig("spark.akka.num.retries", "1.4")
+    ),
     "spark.rpc.retry.wait" -> Seq(
-      AlternateConfig("spark.akka.retry.wait", "1.4")),
+      AlternateConfig("spark.akka.retry.wait", "1.4")
+    ),
     "spark.rpc.askTimeout" -> Seq(
-      AlternateConfig("spark.akka.askTimeout", "1.4")),
+      AlternateConfig("spark.akka.askTimeout", "1.4")
+    ),
     "spark.rpc.lookupTimeout" -> Seq(
-      AlternateConfig("spark.akka.lookupTimeout", "1.4")),
+      AlternateConfig("spark.akka.lookupTimeout", "1.4")
+    ),
     "spark.streaming.fileStream.minRememberDuration" -> Seq(
-      AlternateConfig("spark.streaming.minRememberDuration", "1.5")),
+      AlternateConfig("spark.streaming.minRememberDuration", "1.5")
+    ),
     "spark.yarn.max.executor.failures" -> Seq(
-      AlternateConfig("spark.yarn.max.worker.failures", "1.5")),
+      AlternateConfig("spark.yarn.max.worker.failures", "1.5")
+    ),
     "spark.memory.offHeap.enabled" -> Seq(
-      AlternateConfig("spark.unsafe.offHeap", "1.6"))
+      AlternateConfig("spark.unsafe.offHeap", "1.6")
+    )
   )
 
   /**
@@ -517,7 +566,8 @@ private[spark] object SparkConf extends Logging {
     */
   private val allAlternatives: Map[String, (String, AlternateConfig)] = {
     configsWithAlternatives.keys.flatMap { key =>
-      configsWithAlternatives(key).map { cfg => (cfg.key -> (key -> cfg)) }
+      configsWithAlternatives(key).map { cfg => (cfg.key -> (key -> cfg))
+      }
     }.toMap
   }
 
@@ -535,17 +585,19 @@ private[spark] object SparkConf extends Logging {
     */
   def isExecutorStartupConf(name: String): Boolean = {
     isAkkaConf(name) ||
-      name.startsWith("spark.akka") ||
-      name.startsWith("spark.ssl") ||
-      name.startsWith("spark.rpc") ||
-      isSparkPortConf(name)
+    name.startsWith("spark.akka") ||
+    name.startsWith("spark.ssl") ||
+    name.startsWith("spark.rpc") ||
+    isSparkPortConf(name)
   }
 
   /**
     * Return true if the given config matches either `spark.*.port` or `spark.port.*`.
     */
   def isSparkPortConf(name: String): Boolean = {
-    (name.startsWith("spark.") && name.endsWith(".port")) || name.startsWith("spark.port.")
+    (name.startsWith("spark.") && name.endsWith(".port")) || name.startsWith(
+      "spark.port."
+    )
   }
 
   /**
@@ -554,9 +606,10 @@ private[spark] object SparkConf extends Logging {
     */
   def getDeprecatedConfig(key: String, conf: SparkConf): Option[String] = {
     configsWithAlternatives.get(key).flatMap { alts =>
-      alts.collectFirst { case alt if conf.contains(alt.key) =>
-        val value = conf.get(alt.key)
-        if (alt.translation != null) alt.translation(value) else value
+      alts.collectFirst {
+        case alt if conf.contains(alt.key) =>
+          val value = conf.get(alt.key)
+          if (alt.translation != null) alt.translation(value) else value
       }
     }
   }
@@ -568,13 +621,16 @@ private[spark] object SparkConf extends Logging {
     deprecatedConfigs.get(key).foreach { cfg =>
       logWarning(
         s"The configuration key '$key' has been deprecated as of Spark ${cfg.version} and " +
-          s"may be removed in the future. ${cfg.deprecationMessage}")
+          s"may be removed in the future. ${cfg.deprecationMessage}"
+      )
     }
 
-    allAlternatives.get(key).foreach { case (newKey, cfg) =>
-      logWarning(
-        s"The configuration key '$key' has been deprecated as of Spark ${cfg.version} and " +
-          s"and may be removed in the future. Please use the new key '$newKey' instead.")
+    allAlternatives.get(key).foreach {
+      case (newKey, cfg) =>
+        logWarning(
+          s"The configuration key '$key' has been deprecated as of Spark ${cfg.version} and " +
+            s"and may be removed in the future. Please use the new key '$newKey' instead."
+        )
     }
   }
 
@@ -585,10 +641,9 @@ private[spark] object SparkConf extends Logging {
     * @param version            Version of Spark where key was deprecated.
     * @param deprecationMessage Message to include in the deprecation warning.
     */
-  private case class DeprecatedConfig(
-                                       key: String,
-                                       version: String,
-                                       deprecationMessage: String)
+  private case class DeprecatedConfig(key: String,
+                                      version: String,
+                                      deprecationMessage: String)
 
   /**
     * Information about an alternate configuration key that has been deprecated.
@@ -597,9 +652,8 @@ private[spark] object SparkConf extends Logging {
     * @param version     The Spark version in which the key was deprecated.
     * @param translation A translation function for converting old config values into new ones.
     */
-  private case class AlternateConfig(
-                                      key: String,
-                                      version: String,
-                                      translation: String => String = null)
+  private case class AlternateConfig(key: String,
+                                     version: String,
+                                     translation: String => String = null)
 
 }
