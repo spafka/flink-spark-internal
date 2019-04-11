@@ -4,9 +4,10 @@ import java.util.concurrent.atomic.AtomicLong
 
 import scala.reflect.ClassTag
 
-class ParallelArraySplit[T: ClassTag](
-    val arrayId: Long, val slice: Int, values: Seq[T])
-extends Split {
+class ParallelArraySplit[T: ClassTag](val arrayId: Long,
+                                      val slice: Int,
+                                      values: Seq[T])
+    extends Split {
   def iterator(): Iterator[T] = values.iterator
 
   override def hashCode(): Int = (41 * (41 + arrayId) + slice).toInt
@@ -21,9 +22,10 @@ extends Split {
     "ParallelArraySplit(arrayId %d, slice %d)".format(arrayId, slice)
 }
 
-class ParallelArray[T: ClassTag](
-  sc: SparkContext, @transient data: Seq[T], numSlices: Int)
-extends RDD[T](sc)  {
+class ParallelArray[T: ClassTag](sc: SparkContext,
+                                 @transient data: Seq[T],
+                                 numSlices: Int)
+    extends RDD[T](sc) {
   // TODO: Right now, each split sends along its full data, even if later down
   // the RDD chain it gets cached. It might be worthwhile to write the data to
   // a file in the DFS and read it in the split instead.
@@ -37,8 +39,9 @@ extends RDD[T](sc)  {
 
   override def splits = splits_.asInstanceOf[Array[Split]]
 
-  override def iterator(s: Split) = s.asInstanceOf[ParallelArraySplit[T]].iterator
-  
+  override def iterator(s: Split) =
+    s.asInstanceOf[ParallelArraySplit[T]].iterator
+
   override def preferredLocations(s: Split): Seq[String] = Nil
 }
 
@@ -52,22 +55,25 @@ private object ParallelArray {
     seq match {
       case r: Range.Inclusive => {
         val sign = if (r.step < 0) -1 else 1
-        slice(new Range(r.start, r.end + sign, r.step).asInstanceOf[Seq[T]],
-              numSlices)
+        slice(
+          new Range(r.start, r.end + sign, r.step).asInstanceOf[Seq[T]],
+          numSlices
+        )
       }
       case r: Range => {
-        (0 until numSlices).map(i => {
-          val start = ((i * r.length.toLong) / numSlices).toInt
-          val end = (((i+1) * r.length.toLong) / numSlices).toInt
-          new Range(
-            r.start + start * r.step, r.start + end * r.step, r.step)
-        }).asInstanceOf[Seq[Seq[T]]]
+        (0 until numSlices)
+          .map(i => {
+            val start = ((i * r.length.toLong) / numSlices).toInt
+            val end = (((i + 1) * r.length.toLong) / numSlices).toInt
+            new Range(r.start + start * r.step, r.start + end * r.step, r.step)
+          })
+          .asInstanceOf[Seq[Seq[T]]]
       }
       case _ => {
-        val array = seq.toArray  // To prevent O(n^2) operations for List etc
+        val array = seq.toArray // To prevent O(n^2) operations for List etc
         (0 until numSlices).map(i => {
           val start = ((i * array.length.toLong) / numSlices).toInt
-          val end = (((i+1) * array.length.toLong) / numSlices).toInt
+          val end = (((i + 1) * array.length.toLong) / numSlices).toInt
           array.slice(start, end).toSeq
         })
       }

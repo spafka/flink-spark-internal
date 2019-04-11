@@ -6,13 +6,13 @@ import org.objectweb.asm.{ClassReader, MethodVisitor, Type}
 import org.objectweb.asm.Opcodes._
 import org.objectweb.asm.commons.EmptyVisitor
 
-
 object ClosureCleaner extends Logging {
   private def getClassReader(cls: Class[_]): ClassReader = {
-    new ClassReader(cls.getResourceAsStream(
-      cls.getName.replaceFirst("^.*\\.", "") + ".class"))
+    new ClassReader(
+      cls.getResourceAsStream(cls.getName.replaceFirst("^.*\\.", "") + ".class")
+    )
   }
-  
+
   private def getOuterClasses(obj: AnyRef): List[Class[_]] = {
     for (f <- obj.getClass.getDeclaredFields if f.getName == "$outer") {
       f.setAccessible(true)
@@ -20,7 +20,7 @@ object ClosureCleaner extends Logging {
     }
     return Nil
   }
-  
+
   private def getOuterObjects(obj: AnyRef): List[AnyRef] = {
     for (f <- obj.getClass.getDeclaredFields if f.getName == "$outer") {
       f.setAccessible(true)
@@ -28,7 +28,7 @@ object ClosureCleaner extends Logging {
     }
     return Nil
   }
-  
+
   private def getInnerClasses(obj: AnyRef): List[Class[_]] = {
     val seen = Set[Class[_]](obj.getClass)
     var stack = List[Class[_]](obj.getClass)
@@ -44,26 +44,26 @@ object ClosureCleaner extends Logging {
     }
     return (seen - obj.getClass).toList
   }
-  
+
   private def createNullValue(cls: Class[_]): AnyRef = {
     if (cls.isPrimitive)
       new java.lang.Byte(0: Byte) // Should be convertible to any primitive type
     else
       null
   }
-  
+
   def clean(func: AnyRef): Unit = {
     // TODO: cache outerClasses / innerClasses / accessedFields
     val outerClasses = getOuterClasses(func)
     val innerClasses = getInnerClasses(func)
     val outerObjects = getOuterObjects(func)
-    
+
     val accessedFields = Map[Class[_], Set[String]]()
     for (cls <- outerClasses)
       accessedFields(cls) = Set[String]()
     for (cls <- func.getClass :: innerClasses)
       getClassReader(cls).accept(new FieldAccessFinder(accessedFields), 0)
-    
+
     var outer: AnyRef = null
     for ((cls, obj) <- (outerClasses zip outerObjects).reverse) {
       outer = instantiateClass(cls, outer);
@@ -75,7 +75,7 @@ object ClosureCleaner extends Logging {
         field.set(outer, value)
       }
     }
-    
+
     if (outer != null) {
       //logInfo("2: Setting $outer on " + func.getClass + " to " + outer);
       val field = func.getClass.getDeclaredField("$outer")
@@ -83,9 +83,9 @@ object ClosureCleaner extends Logging {
       field.set(func, outer)
     }
   }
-  
+
   private def instantiateClass(cls: Class[_], outer: AnyRef): AnyRef = {
-     {
+    {
       // Use reflection to instantiate object without calling constructor
       val rf = sun.reflect.ReflectionFactory.getReflectionFactory();
       val parentCtor = classOf[java.lang.Object].getDeclaredConstructor();
@@ -102,21 +102,30 @@ object ClosureCleaner extends Logging {
   }
 }
 
-
-class FieldAccessFinder(output: Map[Class[_], Set[String]]) extends EmptyVisitor {
-  override def visitMethod(access: Int, name: String, desc: String,
-      sig: String, exceptions: Array[String]): MethodVisitor = {
+class FieldAccessFinder(output: Map[Class[_], Set[String]])
+    extends EmptyVisitor {
+  override def visitMethod(access: Int,
+                           name: String,
+                           desc: String,
+                           sig: String,
+                           exceptions: Array[String]): MethodVisitor = {
     return new EmptyVisitor {
-      override def visitFieldInsn(op: Int, owner: String, name: String,
-          desc: String) {
+      override def visitFieldInsn(op: Int,
+                                  owner: String,
+                                  name: String,
+                                  desc: String) {
         if (op == GETFIELD)
           for (cl <- output.keys if cl.getName == owner.replace('/', '.'))
             output(cl) += name
       }
-      
-      override def visitMethodInsn(op: Int, owner: String, name: String,
-          desc: String) {
-        if (op == INVOKEVIRTUAL && owner.endsWith("$iwC") && !name.endsWith("$outer"))
+
+      override def visitMethodInsn(op: Int,
+                                   owner: String,
+                                   name: String,
+                                   desc: String) {
+        if (op == INVOKEVIRTUAL && owner.endsWith("$iwC") && !name.endsWith(
+              "$outer"
+            ))
           for (cl <- output.keys if cl.getName == owner.replace('/', '.'))
             output(cl) += name
       }
@@ -124,26 +133,37 @@ class FieldAccessFinder(output: Map[Class[_], Set[String]]) extends EmptyVisitor
   }
 }
 
-
 class InnerClosureFinder(output: Set[Class[_]]) extends EmptyVisitor {
   var myName: String = null
-  
-  override def visit(version: Int, access: Int, name: String, sig: String,
-      superName: String, interfaces: Array[String]) {
+
+  override def visit(version: Int,
+                     access: Int,
+                     name: String,
+                     sig: String,
+                     superName: String,
+                     interfaces: Array[String]) {
     myName = name
   }
-  
-  override def visitMethod(access: Int, name: String, desc: String,
-      sig: String, exceptions: Array[String]): MethodVisitor = {
+
+  override def visitMethod(access: Int,
+                           name: String,
+                           desc: String,
+                           sig: String,
+                           exceptions: Array[String]): MethodVisitor = {
     return new EmptyVisitor {
-      override def visitMethodInsn(op: Int, owner: String, name: String,
-          desc: String) {
+      override def visitMethodInsn(op: Int,
+                                   owner: String,
+                                   name: String,
+                                   desc: String) {
         val argTypes = Type.getArgumentTypes(desc)
         if (op == INVOKESPECIAL && name == "<init>" && argTypes.length > 0
             && argTypes(0).toString.startsWith("L") // is it an object?
             && argTypes(0).getInternalName == myName)
-          output += Class.forName(owner.replace('/', '.'), false,
-                                  Thread.currentThread.getContextClassLoader)
+          output += Class.forName(
+            owner.replace('/', '.'),
+            false,
+            Thread.currentThread.getContextClassLoader
+          )
       }
     }
   }

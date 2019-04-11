@@ -24,13 +24,13 @@ class SparkContext(master: String, frameworkName: String) extends Logging {
   val LOCAL_REGEX = """local\[([0-9]+)\]""".r
 
   private[spark] var scheduler: Scheduler = master match {
-    case "local" => new LocalScheduler(1)
+    case "local"              => new LocalScheduler(1)
     case LOCAL_REGEX(threads) => new LocalScheduler(threads.toInt)
 //    case _ => { System.loadLibrary("mesos");
 //                new MesosScheduler(master, frameworkName, createExecArg()) }
   }
 
-  private val local = scheduler.isInstanceOf[LocalScheduler]  
+  private val local = scheduler.isInstanceOf[LocalScheduler]
 
   scheduler.start()
 
@@ -51,8 +51,9 @@ class SparkContext(master: String, frameworkName: String) extends Logging {
     runTaskObjects(tasks.map(f => new FunctionTask(f)))
   }
 
-  private[spark] def runTaskObjects[T: ClassTag](tasks: Seq[Task[T]])
-      : Array[T] = {
+  private[spark] def runTaskObjects[T: ClassTag](
+    tasks: Seq[Task[T]]
+  ): Array[T] = {
     logInfo("Running " + tasks.length + " tasks in parallel")
     val start = System.nanoTime
     val result = scheduler.runTasks(tasks.toArray)
@@ -60,15 +61,15 @@ class SparkContext(master: String, frameworkName: String) extends Logging {
     return result
   }
 
-  def stop() { 
-     scheduler.stop()
-     scheduler = null
+  def stop() {
+    scheduler.stop()
+    scheduler = null
   }
-  
+
   def waitForRegister() {
     scheduler.waitForRegister()
   }
-  
+
   // Clean a closure to make it ready to serialized and send to tasks
   // (removes unreferenced variables in $outer's, updates REPL variables)
   private[spark] def clean[F <: AnyRef](f: F): F = {
