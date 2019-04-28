@@ -14,12 +14,7 @@ object SparkSubmitPi {
       "--total-executor-cores=2\n" +
       "mini-cluster/spark-server/target/spark-server-1.0.jar\n")
       .split("\n")
-    var args2: Array[String] = null
-    if (args.length <= 2) {
-      args2 = (Array("localhost", "5555"))
-    } else {
-      args2 = args
-    }
-    SparkSubmit.main(strings ++ args2)
+
+    SparkSubmit.main(strings)
   }
 }

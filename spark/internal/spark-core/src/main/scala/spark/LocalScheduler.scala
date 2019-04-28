@@ -3,20 +3,21 @@ package spark
 import java.util.concurrent._
 
 /**
- * A simple Scheduler implementation that runs tasks locally in a thread pool.
- */
+  * A simple Scheduler implementation that runs tasks locally in a thread pool.
+  */
 private class LocalScheduler(threads: Int) extends Scheduler with Logging {
   var threadPool: ExecutorService =
     Executors.newFixedThreadPool(threads, DaemonThreadFactory)
-  
+
   override def start() {}
-  
+
   override def waitForRegister() {}
-  
-  override def runTasks[T](tasks: Array[Task[T]])(implicit m: ClassManifest[T])
-      : Array[T] = {
+
+  override def runTasks[T](
+    tasks: Array[Task[T]]
+  )(implicit m: ClassManifest[T]): Array[T] = {
     val futures = new Array[Future[TaskResult[T]]](tasks.length)
-    
+
     for (i <- 0 until tasks.length) {
       futures(i) = threadPool.submit(new Callable[TaskResult[T]]() {
         def call(): TaskResult[T] = {
@@ -28,8 +29,8 @@ private class LocalScheduler(threads: Int) extends Scheduler with Logging {
             Accumulators.clear
             val bytes = Utils.serialize(tasks(i))
             logInfo("Size of task " + i + " is " + bytes.size + " bytes")
-            val task = Utils.deserialize[Task[T]](
-              bytes, currentThread.getContextClassLoader)
+            val task = Utils
+              .deserialize[Task[T]](bytes, currentThread.getContextClassLoader)
             val value = task.run
             val accumUpdates = Accumulators.values
             logInfo("Finished task " + i)
@@ -45,13 +46,13 @@ private class LocalScheduler(threads: Int) extends Scheduler with Logging {
         }
       })
     }
-    
+
     val taskResults = futures.map(_.get)
     for (result <- taskResults)
       Accumulators.add(currentThread, result.accumUpdates)
     return taskResults.map(_.value).toArray(m)
   }
-  
+
   override def stop() {}
 
   override def numCores() = threads
@@ -61,10 +62,9 @@ private class LocalScheduler(threads: Int) extends Scheduler with Logging {
   }
 }
 
-
 /**
- * A ThreadFactory that creates daemon threads
- */
+  * A ThreadFactory that creates daemon threads
+  */
 private object DaemonThreadFactory extends ThreadFactory {
   override def newThread(r: Runnable): Thread = {
     val t = new Thread(r);

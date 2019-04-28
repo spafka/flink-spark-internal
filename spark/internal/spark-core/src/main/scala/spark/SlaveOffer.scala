@@ -1,5 +1,3 @@
 package spark
 
-class SlaveOffer {
-
-}
+class SlaveOffer {}

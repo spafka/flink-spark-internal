@@ -1,4 +1,3 @@
-
 import spark.SparkContext._
 import spark.SparkContext
 import scala.math.random

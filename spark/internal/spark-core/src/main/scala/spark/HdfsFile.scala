@@ -1,6 +1,5 @@
 package spark
 
-
 import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.FileInputFormat
@@ -15,8 +14,7 @@ class HdfsSplit(@transient s: InputSplit) extends Split {
   override def toString = inputSplit.toString
 }
 
-class HdfsTextFile(sc: SparkContext, path: String)
-extends RDD[String](sc) {
+class HdfsTextFile(sc: SparkContext, path: String) extends RDD[String](sc) {
   @transient val conf = new JobConf()
   @transient val inputFormat = new TextInputFormat()
 
@@ -24,19 +22,24 @@ extends RDD[String](sc) {
   ConfigureLock.synchronized { inputFormat.configure(conf) }
 
   @transient val splits_ =
-    inputFormat.getSplits(conf, sc.scheduler.numCores).map(new HdfsSplit(_)).toArray
+    inputFormat
+      .getSplits(conf, sc.scheduler.numCores)
+      .map(new HdfsSplit(_))
+      .toArray
 
   override def splits = splits_.asInstanceOf[Array[Split]]
-  
+
   override def iterator(split_in: Split) = new Iterator[String] {
     val split = split_in.asInstanceOf[HdfsSplit]
     var reader: RecordReader[LongWritable, Text] = null
     ConfigureLock.synchronized {
       val conf = new JobConf()
-      conf.set("io.file.buffer.size",
-          System.getProperty("spark.buffer.size", "65536"))
+      conf.set(
+        "io.file.buffer.size",
+        System.getProperty("spark.buffer.size", "65536")
+      )
       val tif = new TextInputFormat()
-      tif.configure(conf) 
+      tif.configure(conf)
       reader = tif.getRecordReader(split.inputSplit.value, conf, Reporter.NULL)
     }
     val lineNum = new LongWritable()
@@ -69,7 +72,12 @@ extends RDD[String](sc) {
 
   override def preferredLocations(split: Split) = {
     // TODO: Filtering out "localhost" in case of file:// URLs
-    split.asInstanceOf[HdfsSplit].inputSplit.value.getLocations().filter(_ != "localhost")
+    split
+      .asInstanceOf[HdfsSplit]
+      .inputSplit
+      .value
+      .getLocations()
+      .filter(_ != "localhost")
   }
 }
 

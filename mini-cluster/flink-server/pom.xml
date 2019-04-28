@@ -13,7 +13,6 @@
 
     <properties>
         <scala.binary.version>2.12</scala.binary.version>
-        <flink.version>1.7.2</flink.version>
     </properties>
 
     <dependencies>

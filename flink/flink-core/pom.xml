@@ -14,7 +14,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <akka.version>2.4.20</akka.version>
-        <mesos.version>1.4.2</mesos.version>
     </properties>
 
     <dependencies>

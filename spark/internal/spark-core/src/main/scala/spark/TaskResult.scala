@@ -8,4 +8,5 @@ import scala.collection.mutable.Map
 // TODO: Use of distributed cache to return result is a hack to get around
 // what seems to be a bug with messages over 60KB in libprocess; fix it
 @SerialVersionUID(1l)
-private class TaskResult[T](val value: T, val accumUpdates: Map[Long, Any]) extends Serializable
+private class TaskResult[T](val value: T, val accumUpdates: Map[Long, Any])
+    extends Serializable
