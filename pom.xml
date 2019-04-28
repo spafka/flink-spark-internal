@@ -43,15 +43,16 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <scala.macros.version>2.1.0</scala.macros.version>
         <!-- Default scala versions, may be overwritten by build profiles -->
-        <netty.version>4.1.24.Final</netty.version>
+        <netty.version>4.1.32.Final</netty.version>
         <guava.version>18.0</guava.version>
         <scala.version>2.12.8</scala.version>
         <scala.binary.version>2.12</scala.binary.version>
         <chill.version>0.7.4</chill.version>
         <junit.version>4.12</junit.version>
-        <spark.version>2.4.0</spark.version>
-        <flink.version>1.7.2</flink.version>
+        <spark.version>2.4.2</spark.version>
+        <flink.version>1.8.0</flink.version>
         <version.servlet>2.5</version.servlet>
+        <mesos.version>1.4.3</mesos.version>
         <skipTests>true</skipTests>
     </properties>
 
