@@ -12,34 +12,29 @@
     <artifactId>spark-core</artifactId>
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server -->
+
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
             <version>7.1.6.v20100715</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/asm/asm -->
         <dependency>
             <groupId>asm</groupId>
             <artifactId>asm-all</artifactId>
             <version>3.2</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.mesos/mesos -->
+
         <dependency>
             <groupId>org.apache.mesos</groupId>
             <artifactId>mesos</artifactId>
             <version>1.4.2</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/jline/jline -->
         <dependency>
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
             <version>0.9.94</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-hdfs -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>

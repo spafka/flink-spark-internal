@@ -1,3 +1,5 @@
+import io.github.spafka.spark.util.Utils
+
 object FuncTest {
 
   def main(args: Array[String]): Unit = {
@@ -23,16 +25,11 @@ object FuncTest {
 
     import scala.runtime.AbstractFunction2
 
-    val arrayOutputStream: ByteArrayOutputStream = new ByteArrayOutputStream()
-    val objectInputStream: ObjectOutputStream = new ObjectOutputStream(
-      arrayOutputStream
-    )
+   val array = Utils.serialize[Function2[Int,Int,Int]](f2)
 
-    objectInputStream.writeObject(f2)
-    val function = new ObjectInputStream(
-      new ByteArrayInputStream(arrayOutputStream.toByteArray)
-    ).readObject().asInstanceOf[Function2[Any, Any, Any]]
+    val str = new String(array)
 
+    str.split("\n").foreach(println)
     f2
   }
 
