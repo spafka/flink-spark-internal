@@ -1,6 +1,4 @@
 *           text=lf
-*.bat text eol=crlf
-*.cmd text eol=crlf
 *.txt		text
 *.jpg		-text
 *.vcproj	text eol=lf
