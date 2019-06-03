@@ -31,6 +31,7 @@
     <modules>
         <module>flink</module>
         <module>mini-cluster</module>
+        <module>stream</module>
     </modules>
     <properties>
         <disruptor.version>3.3.6</disruptor.version>
@@ -50,7 +51,7 @@
         <chill.version>0.7.4</chill.version>
         <junit.version>4.12</junit.version>
         <spark.version>2.4.2</spark.version>
-        <flink.version>1.8.0</flink.version>
+        <flink.version>blink-3.2.0</flink.version>
         <version.servlet>2.5</version.servlet>
         <mesos.version>1.4.3</mesos.version>
         <skipTests>true</skipTests>
