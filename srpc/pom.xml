@@ -71,17 +71,6 @@
             <artifactId>fenzo-core</artifactId>
             <version>0.10.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-mesos_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-core</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
-
 
         <dependency>
             <groupId>junit</groupId>
