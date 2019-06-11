@@ -46,8 +46,8 @@ echo "1" > /etc/mesos-master/quorum
 echo "192.168.190.3" > /etc/mesos-master/ip
 echo "master" > /etc/mesos-master/hostname
 
-echo "docker,mesos" >> /etc/mesos-slave/containerizers
-echo "5mins" >> /etc/mesos-slave/executor_registration_timeout
+echo "docker,mesos" > /etc/mesos-slave/containerizers
+echo "5mins" > /etc/mesos-slave/executor_registration_timeout
 ```
 
 [mesos master]
