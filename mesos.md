@@ -1,3 +1,14 @@
+[auto login]
+```bash
+#vi /etc/gdm/custom.conf
+[daemon]
+TimedLoginEnable=true
+TimedLogin=jack
+TimedLoginDelay=3
+```
+
+
+
 [hostname]
 ```bash
 hostnamectl set-hostname  master
@@ -48,10 +59,19 @@ echo "master" > /etc/mesos-master/hostname
 
 echo "docker,mesos" > /etc/mesos-slave/containerizers
 echo "5mins" > /etc/mesos-slave/executor_registration_timeout
+
+
+echo "export MESOS_NATIVE_JAVA_LIBRARY=/usr/local/lib/libmesos.so" >> /etc/profile
+
 ```
 
 [mesos master]
 ```bash
+
+echo "192.168.190.3" > /etc/mesos-master/ip
+echo "master" > /etc/mesos-master/hostname
+echo 'paas' > /etc/mesos-master/cluster
+
 systemctl stop mesos-slave.service
 systemctl disable mesos-slave.service
 systemctl start mesos-master.service
@@ -60,6 +80,10 @@ systemctl enable mesos-master.service
 ```
 [mesos slave]
 ```bash
+
+echo "192.168.190.3" > /etc/mesos-slave/ip
+echo "master" > /etc/mesos-slave/hostname
+
 systemctl start mesos-slave.service
 systemctl enable mesos-slave.service
 ```
