@@ -106,7 +106,7 @@ object DistributedShell {
     val scheduler = new ScalaScheduler
     //submit shell commands
     scheduler.submitTasks(args:_*)
-    val mesosURL = "localhost:5050"
+    val mesosURL = "master:5050"
     val driver = new MesosSchedulerDriver(scheduler,framework,mesosURL)
     //run the driver
     driver.run()
