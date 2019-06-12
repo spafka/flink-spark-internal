@@ -63,3 +63,24 @@ systemctl enable mesos-master.service
 systemctl start mesos-slave.service
 systemctl enable mesos-slave.service
 ```
+
+[mac]
+
+```brew install mesos
+
+
+/usr/tass/flink-1.5.1/bin/mesos-appmaster.sh  \
+            -Dmesos.master=zk://${HOST_IP}:2181/mesos  \
+            -Djobmanager.heap.mb=512 \
+            -Djobmanager.rpc.port=6126 \
+            -Drest.port=8084 \
+            -Dmesos.initial-tasks=2 \
+            -Dmesos.resourcemanager.tasks.mem=2048 \
+            -Dtaskmanager.heap.mb=1800 \
+            -Dtaskmanager.numberOfTaskSlots=10  \
+            -Dparallelism.default=3 \
+            -Dmesos.resourcemanager.tasks.container.type=mesos \
+            -Dmesos.resourcemanager.framework.name=fv \
+            -Dmesos.resourcemanager.tasks.cpus=1 \
+            -Dhigh-availability.cluster-id=/fv
+```
