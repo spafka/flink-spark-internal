@@ -310,4 +310,6 @@ helm del --purge istio
 kubectl delete -f install/kubernetes/helm/istio/templates/crds.yaml -n istio-system
 ```
 
+kubctl get ns 
 
+kubectl get pods -n kube-system  -o wide
