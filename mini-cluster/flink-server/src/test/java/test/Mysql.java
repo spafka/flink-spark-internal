@@ -2,16 +2,12 @@ package test;
 
 
 import com.alibaba.druid.pool.DruidDataSource;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Request;
-import org.junit.runner.Result;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Date;
 
 public class Mysql {
@@ -31,18 +27,18 @@ public class Mysql {
 
     }
 
-    @Test(threadPoolSize = 5, invocationCount = 5)
+    @Test(threadPoolSize = 1, invocationCount = 5)
     public void TestQps() {
 
 
         for (int i = 1; i <= 100; i++) {
 
 
-            String sql="insert into t_gb32960SingleMotor ( uid, unixtimestamp, motorNumber, motorId, motorStatus, motorControlTemp, engineSpeed, engineTorque, motorTemp, controlInV, controlDcI, datetime ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) ON DUPLICATE KEY UPDATE uid= ?, unixtimestamp = ?, motorNumber = ?, motorId= ?, motorStatus= ?, motorControlTemp= ?, engineSpeed= ?, engineTorque= ?, motorTemp= ?, controlInV= ?, controlDcI= ?, datetime= ? ";
+            String sql="insert into t_gb32960SingleMotor ( uid, unixtimestamp, motorNumber, motorId, motorStatus, motorControlTemp, engineSpeed, engineTorque, motorTemp, controlInV, controlDcI, datetime ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) ON DUPLICATE KEY UPDATE unixtimestamp = ?, motorNumber = ?, motorId= ?, motorStatus= ?, motorControlTemp= ?, engineSpeed= ?, engineTorque= ?, motorTemp= ?, controlInV= ?, controlDcI= ?, datetime= ? ";
 
             try (Connection connection = dataSource.getConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
 
-                stmt.setString(1, "LK5A1C1K2GA000194");
+                stmt.setString(1, "LK5A1C1K2GA00019");
                 stmt.setInt(2,1560498913);
                 stmt.setInt(3,1);
                 stmt.setInt(4,1);
@@ -54,18 +50,17 @@ public class Mysql {
                 stmt.setFloat(10,215.6f);
                 stmt.setFloat(11,12.5f);
                 stmt.setDate(12,new java.sql.Date(System.currentTimeMillis()));
-                stmt.setString(13, "LK5A1C1K2GA000194");
-                stmt.setInt(14,1560498914);
+                stmt.setInt(13,(int)System.currentTimeMillis()/1000);
+                stmt.setInt(14,1);
                 stmt.setInt(15,1);
-                stmt.setInt(16,1);
-                stmt.setInt(17,46);
-                stmt.setInt(18,-9094);
-                stmt.setFloat(19,-501.8f);
+                stmt.setInt(16,46);
+                stmt.setInt(17,-9094);
+                stmt.setFloat(18,-501.8f);
+                stmt.setInt(19,29);
                 stmt.setInt(20,29);
-                stmt.setInt(21,29);
-                stmt.setFloat(22,215.6f);
-                stmt.setFloat(23,12.5f);
-                stmt.setDate(24,new java.sql.Date(System.currentTimeMillis()));
+                stmt.setFloat(21,215.6f);
+                stmt.setFloat(22,12.5f);
+                stmt.setDate(23,new java.sql.Date(System.currentTimeMillis()));
 
 
                 int i1 = stmt.executeUpdate();
