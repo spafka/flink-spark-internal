@@ -1,13 +1,10 @@
-import org.apache.spark.sql.{Row, SaveMode, SparkSession}
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.SparkSession
 
 object CsvApp {
 
   def main(args: Array[String]): Unit = {
 
     val spark = SparkSession.builder().appName("Csv").master("local[*]").getOrCreate()
-
-    import java.util.Objects
 
     import org.apache.commons.lang3.StringUtils
     import spark.implicits._
