@@ -10,18 +10,18 @@ import java.sql.SQLException;
 
 public class MysqlSigstonRichSinkFunction extends RichSinkFunction<String> {
 
-    Connection connection;
+   transient Connection connection;
 
-    DruidDataSource dataSource;
+   transient DruidDataSource dataSource;
 
     @Override
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
 
         dataSource = new DruidDataSource();
-        dataSource.setUrl("jdbc:mysql://192.168.30.102:3306/gb32960data?useSSL=false");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/gb32960data?useSSL=false");
         dataSource.setUsername("root");
-        dataSource.setPassword("kevin115");
+        dataSource.setPassword("root");
 
         connection = dataSource.getConnection();
     }
@@ -60,6 +60,9 @@ public class MysqlSigstonRichSinkFunction extends RichSinkFunction<String> {
             stmt.setFloat(21, 215.6f);
             stmt.setFloat(22, 12.5f);
             stmt.setTimestamp(23, new java.sql.Timestamp(System.currentTimeMillis()));
+
+
+            stmt.execute();
         } catch (SQLException e) {
 
         }

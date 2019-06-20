@@ -1,21 +1,12 @@
 package com.github.spafka.mysql;
 
-import com.alibaba.druid.pool.DruidDataSource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
-import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class Replace {
@@ -39,9 +30,7 @@ public class Replace {
             @Override
             public void run(SourceContext<String> sourceContext) throws Exception {
                 while (isRunning) {
-
-                    TimeUnit.MILLISECONDS.sleep(1000);
-                    sourceContext.collect(String.valueOf(RandomUtils.nextInt(1, 10)));
+                    sourceContext.collect(String.valueOf(RandomUtils.nextInt(1, 10000000)));
                 }
             }
 
