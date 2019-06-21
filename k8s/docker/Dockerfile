@@ -47,7 +47,7 @@ RUN \
 
 # Install build dependencies and flink
 ADD $flink_dist $hadoop_jar $FLINK_INSTALL_PATH/
-ADD $job_artifacts/* $FLINK_JOB_ARTIFACTS_DIR/
+#ADD $job_artifacts/* $FLINK_JOB_ARTIFACTS_DIR/
 
 RUN set -x && \
   ln -s $FLINK_INSTALL_PATH/flink-[0-9]* $FLINK_HOME && \
@@ -56,7 +56,7 @@ RUN set -x && \
   if [ -f ${FLINK_INSTALL_PATH}/flink-shaded-hadoop* ]; then ln -s ${FLINK_INSTALL_PATH}/flink-shaded-hadoop* $FLINK_LIB_DIR; fi && \
   addgroup -S flink && adduser -D -S -H -G flink -h $FLINK_HOME flink && \
   chown -R flink:flink ${FLINK_INSTALL_PATH}/flink-* && \
-  chown -R flink:flink ${FLINK_JOB_ARTIFACTS_DIR}/ && \
+  #chown -R flink:flink ${FLINK_JOB_ARTIFACTS_DIR}/ && \
   chown -h flink:flink $FLINK_HOME
 
 COPY docker-entrypoint.sh /
