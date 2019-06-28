@@ -43,8 +43,11 @@ object StatefulNetworkWordCount {
 
     StreamingExamples.setStreamingLogLevels()
 
-    val sparkConf = new SparkConf().setAppName("StatefulNetworkWordCount")
-    // Create the context with a 1 second batch size
+    val sparkConf = new SparkConf().setAppName(this.getClass.getName).setMaster("yarn-client")
+      .set("yarn.resourcemanager.hostname", "192.168.190.3")
+      .set("spark.executor.instances","2")
+      .setJars(List("/Users/meitu/Desktop/sparkjar1/bigdata.jar"))
+
     val ssc = new StreamingContext(sparkConf, Seconds(1))
     ssc.checkpoint(".")
 

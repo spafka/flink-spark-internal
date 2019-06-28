@@ -8,6 +8,8 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
+import java.util.concurrent.TimeUnit;
+
 @Slf4j
 public class Replace {
 
@@ -30,6 +32,7 @@ public class Replace {
             @Override
             public void run(SourceContext<String> sourceContext) throws Exception {
                 while (isRunning) {
+                    // TimeUnit.MICROSECONDS.sleep(100);
                     sourceContext.collect(String.valueOf(RandomUtils.nextInt(1, 10000000)));
                 }
             }
