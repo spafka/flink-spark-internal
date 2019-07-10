@@ -4,6 +4,7 @@ import java.util.concurrent.{Callable, CompletableFuture}
 
 import scala.concurrent.Promise
 
+// Rpc 基本抽象，可以获取本地地址，端口,启动一个bean Server,并拥有与远程RpcService 交互的能力
 trait RpcService {
 
   // actual address

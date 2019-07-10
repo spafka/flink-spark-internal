@@ -11,11 +11,13 @@ import akka.util.Timeout
 import com.github.spafka.rpc._
 import com.github.spafka.util.{AkkaUtils, Logging, RpcUtils}
 import javax.annotation.concurrent.GuardedBy
+import org.apache.flink.annotation.Internal
 import org.apache.flink.api.common.time.Time
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.{Failure, Success}
 
+// 基于Akka能力的RpcService
 class AkkaRpcService(val actorSystem: ActorSystem,
                      val timeout: Time = Time.seconds(1L))
   extends RpcService
@@ -28,6 +30,7 @@ class AkkaRpcService(val actorSystem: ActorSystem,
   @GuardedBy("lock") private val actors =
     new util.HashMap[ActorRef, RpcEndpoint](4)
 
+  @Internal
   override def startServer[C <: RpcEndpoint with RpcGateway](
                                                               rpcEndpoint: C
                                                             ): RpcServer = {
@@ -86,23 +89,18 @@ class AkkaRpcService(val actorSystem: ActorSystem,
 
   override def getPort: Int = AkkaUtils.getAddress(actorSystem).port.get
 
-  override def connect[T <: RpcGateway](x: String,
-                                        clazz: Class[T]): CompletableFuture[T] =
+  override def connect[T <: RpcGateway](x: String, clazz: Class[T]): CompletableFuture[T] =
     connectInternal(x, clazz, (actorRef: ActorRef) => {
 
       new AkkaInvocationHandler(x, x, actorRef, false, Time.seconds(5))
     })
 
-  private def connectInternal[C <: RpcGateway](
-                                                address: String,
-                                                clazz: Class[C],
-                                                invocationHandlerFactory: Function[ActorRef, InvocationHandler]
+  private def connectInternal[C <: RpcGateway](address: String, clazz: Class[C],
+                                               invocationHandlerFactory: Function[ActorRef, InvocationHandler]
                                               ) = {
     import java.util.concurrent.TimeUnit
 
-    logInfo(
-      s"Try to connect to remote RPC endpoint with address ${address}. Returning a ${clazz.getName} gateway.",
-    )
+    logInfo(s"Try to connect to remote RPC endpoint with address ${address}. Returning a ${clazz.getName} gateway.")
 
     val actorSel = actorSystem.actorSelection(address)
 

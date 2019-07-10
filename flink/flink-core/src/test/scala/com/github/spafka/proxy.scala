@@ -7,10 +7,7 @@ object ProxyTesting {
   class ProxyInvocationHandler extends InvocationHandler {
     def invoke(proxy: scala.AnyRef,
                method: Method,
-               args: Array[AnyRef]): AnyRef = {
-      println(
-        "Hello Stackoverflow when invoking method with name \"%s\""
-          .format(method.getName)
+               args: Array[AnyRef]): AnyRef = {println("Hello Stackoverflow when invoking method with name \"%s\"".format(method.getName)
       )
       proxy
     }

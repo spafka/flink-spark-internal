@@ -14,7 +14,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <akka.version>2.4.20</akka.version>
-        <flink.version>1.8.0</flink.version>
     </properties>
 
     <dependencies>
@@ -60,6 +59,12 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-remote_${scala.binary.version}</artifactId>
             <version>${akka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>netty</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -95,7 +100,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-runtime_2.12</artifactId>
+            <artifactId>flink-runtime_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
             <scope>compile</scope>
         </dependency>
