@@ -12,7 +12,7 @@
     <artifactId>sql</artifactId>
 
     <properties>
-        <antlr4.version>4.7.1</antlr4.version>
+        <antlr4.version>4.7.2</antlr4.version>
     </properties>
 
 
@@ -29,6 +29,7 @@
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
+                <version>${antlr4.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -38,7 +39,7 @@
                 </executions>
                 <configuration>
                     <visitor>true</visitor>
-                    <sourceDirectory>../sql/antlr4</sourceDirectory>
+                    <sourceDirectory>../sql/src/main/antlr4</sourceDirectory>
                 </configuration>
             </plugin>
         </plugins>

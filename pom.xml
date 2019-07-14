@@ -32,6 +32,7 @@
         <module>mini-cluster</module>
     </modules>
     <properties>
+        <akka.version>2.5.21</akka.version>
         <disruptor.version>3.3.6</disruptor.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -366,33 +367,6 @@
                 <scala.version>2.12.8</scala.version>
                 <scala.binary.version>2.12</scala.binary.version>
             </properties>
-            <!--<build>-->
-            <!--<plugins>-->
-            <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-enforcer-plugin</artifactId>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<id>enforce-versions</id>-->
-            <!--<goals>-->
-            <!--<goal>enforce</goal>-->
-            <!--</goals>-->
-            <!--<configuration>-->
-            <!--<rules>-->
-            <!--<bannedDependencies>-->
-            <!--<excludes combine.children="append">-->
-            <!--<exclude>*:*_2.11</exclude>-->
-            <!--<exclude>*:*_2.10</exclude>-->
-            <!--</excludes>-->
-            <!--<message>must use scala 2.12</message>-->
-            <!--</bannedDependencies>-->
-            <!--</rules>-->
-            <!--</configuration>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
-            <!--</plugins>-->
-            <!--</build>-->
         </profile>
         <profile>
             <id>spark</id>
