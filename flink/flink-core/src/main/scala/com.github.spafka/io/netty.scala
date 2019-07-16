@@ -98,17 +98,6 @@ class NettyConfig(val serverAddress: InetAddress, val serverPort: Int, val memor
     }
   }
 
-  @Nullable
-  @throws[Exception]
-  def createClientSSLEngineFactory: SSLHandlerFactory = if (getSSLEnabled) SSLUtils.createInternalClientSSLEngineFactory(config)
-  else null
-
-  @Nullable
-  @throws[Exception]
-  def createServerSSLEngineFactory: SSLHandlerFactory = if (getSSLEnabled) SSLUtils.createInternalServerSSLEngineFactory(config)
-  else null
-
-  def getSSLEnabled: Boolean = config.getBoolean(TaskManagerOptions.DATA_SSL_ENABLED) && SSLUtils.isInternalSSLEnabled(config)
 
   def isCreditBasedEnabled: Boolean = config.getBoolean(TaskManagerOptions.NETWORK_CREDIT_MODEL)
 
