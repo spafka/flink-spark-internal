@@ -27,7 +27,7 @@ public class KafkaMessageStreaming {
         Configuration configuration = new Configuration();
         configuration.setInteger(RestOptions.PORT,8082);
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.enableCheckpointing(5000); // 非常关键，一定要设置启动检查点！！
+        env.enableCheckpointing(10000); // 非常关键，一定要设置启动检查点！！
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         Properties props = new Properties();
