@@ -6,6 +6,7 @@
     <modules>
         <module>internal</module>
         <module>core</module>
+        <module>spark-sql</module>
     </modules>
     <parent>
         <artifactId>flink-spark-internal</artifactId>

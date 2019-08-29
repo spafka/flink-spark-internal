@@ -32,7 +32,7 @@
         <module>mini-cluster</module>
     </modules>
     <properties>
-        <akka.version>2.5.21</akka.version>
+        <akka.version>2.4.20</akka.version>
         <disruptor.version>3.3.6</disruptor.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
