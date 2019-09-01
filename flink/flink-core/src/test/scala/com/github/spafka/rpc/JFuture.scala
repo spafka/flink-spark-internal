@@ -1,6 +1,6 @@
-package com.github.spafka
+package com.github.spafka.rpc
 
-import java.util.function.{Function ⇒ JFunction}
+import java.util.function.{Function => JFunction}
 
 import com.github.spafka.util.Logging
 import org.junit.Test

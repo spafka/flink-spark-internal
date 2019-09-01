@@ -1,9 +1,7 @@
-package com.github.spafka
+package com.github.spafka.rpc
 
 import java.util.concurrent.TimeUnit
 
-import akka.actor.{Actor, ActorIdentity, ActorSelection, Identify, Props}
-import akka.util.Timeout
 import com.github.spafka.util.AkkaUtils
 import org.junit.Test
 import org.slf4j.LoggerFactory
@@ -45,10 +43,6 @@ class akkaTest {
 
     val helloSel: ActorSelection =
       slaveActor.actorSelection("akka.tcp://flink@127.0.0.1:6332/user/hello")
-
-    import akka.actor.{ActorIdentity, Identify}
-    import akka.pattern.ask
-    import akka.util.Timeout
 
     import scala.concurrent.duration._
     implicit val timeout: Timeout = (5 seconds)

@@ -1,4 +1,4 @@
-package com.github.spafka
+package com.github.spafka.rpc
 
 import java.lang.reflect.{InvocationHandler, Method, Proxy}
 

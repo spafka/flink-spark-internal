@@ -1,9 +1,8 @@
-package com.github.spafka
+package com.github.spafka.rpc
 
 import java.util.concurrent.TimeUnit
 
 import com.github.spafka.rpc.akka.AkkaRpcService
-import com.github.spafka.rpc.{RpcEndpoint, RpcGateway, RpcService}
 
 trait FooGateWay extends RpcGateway {
 
@@ -61,7 +60,6 @@ class BarEndPoint(rpcService: RpcService, endpointId: String)
 
 object FooEndPoint extends App {
 
-  import akka.actor.ActorSystem
   import com.github.spafka.util.AkkaUtils
 
   private val actorSystem: ActorSystem = AkkaUtils.startMasterActorSystem()
@@ -74,7 +72,6 @@ object BarEndPoint extends App {
 
   import java.util.concurrent.CompletableFuture
 
-  import akka.actor.ActorSystem
   import com.github.spafka.rpc.akka.AkkaRpcService
   import com.github.spafka.util.AkkaUtils
 
