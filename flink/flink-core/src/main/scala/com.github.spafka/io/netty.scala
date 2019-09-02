@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadFactory
 import java.util.function.Function
 
 import javax.annotation.Nullable
-import org.apache.flink.configuration.{ConfigOption, ConfigOptions, Configuration, TaskManagerOptions}
+import org.apache.flink.configuration.{ConfigOption, ConfigOptions, Configuration, NettyShuffleEnvironmentOptions, TaskManagerOptions}
 import org.apache.flink.runtime.io.network.netty.{NettyBufferPool, NettyProtocol, SSLHandlerFactory}
 import org.apache.flink.runtime.net.SSLUtils
 import org.apache.flink.runtime.util.FatalExitExceptionHandler
@@ -99,7 +99,7 @@ class NettyConfig(val serverAddress: InetAddress, val serverPort: Int, val memor
   }
 
 
-  def isCreditBasedEnabled: Boolean = config.getBoolean(TaskManagerOptions.NETWORK_CREDIT_MODEL)
+  def isCreditBasedEnabled: Boolean = config.getBoolean(NettyShuffleEnvironmentOptions.NETWORK_CREDIT_MODEL)
 
   def getConfig: Configuration = config
 

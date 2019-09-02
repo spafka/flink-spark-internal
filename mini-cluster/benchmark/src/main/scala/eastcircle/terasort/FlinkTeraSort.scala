@@ -44,7 +44,7 @@ object FlinkTeraSort {
       configuration.setString(NettyShuffleEnvironmentOptions.NETWORK_BUFFERS_MEMORY_MIN, "1m");
       configuration.setInteger(NettyShuffleEnvironmentOptions.NETWORK_NUM_BUFFERS, 4096)
       configuration.setFloat(NettyShuffleEnvironmentOptions.NETWORK_BUFFERS_MEMORY_FRACTION, 0.5f)
-      configuration.setString(CoreOptions.TMP_DIRS, "d://flink-tmp")
+      configuration.setString(CoreOptions.TMP_DIRS, "f://flink-tmp")
 
       val env = ExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration)
       env.getConfig.enableObjectReuse()
