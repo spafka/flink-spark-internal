@@ -282,6 +282,9 @@ public class TeraGen extends Configured implements Tool {
    */
   public int run(String[] args) 
       throws IOException, InterruptedException, ClassNotFoundException {
+
+
+
     Job job = Job.getInstance(getConf());
     if (args.length != 2) {
       usage();
@@ -302,6 +305,8 @@ public class TeraGen extends Configured implements Tool {
   }
 
   public static void main(String[] args) throws Exception {
+
+
     int res = ToolRunner.run(new Configuration(), new TeraGen(), args);
     System.exit(res);
   }

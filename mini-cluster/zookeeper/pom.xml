@@ -11,5 +11,12 @@
 
     <artifactId>zookeeper</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>${zk.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>
