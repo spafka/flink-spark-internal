@@ -51,7 +51,7 @@ public class DataSetSuite {
         }).groupBy(0)
                 .sum(1)
 
-                 .writeAsCsv("van.csv");
+                 .writeAsCsv("van.csv").setParallelism(1);
 
         env.execute("van");
 
