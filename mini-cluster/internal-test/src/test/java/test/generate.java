@@ -24,7 +24,7 @@ public class generate {
 
         BufferedOutputStream bufferedOutputStream=new BufferedOutputStream(new FileOutputStream(file));
 
-        for (int i=0;i<Integer.MAX_VALUE>>1;i++){
+        for (int i=0;i<Integer.MAX_VALUE>>3;i++){
             bufferedOutputStream.write("deep dark\n ".getBytes());
 //            bufferedOutputStream.flush();
         }

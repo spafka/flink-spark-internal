@@ -2,10 +2,9 @@ package test;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.ExecutionEnvironment;
-import org.apache.flink.api.java.operators.AggregateOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.configuration.*;
 import org.apache.flink.util.Collector;
-import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,7 +16,16 @@ public class DataSetSuite {
     @Before
     public void init() {
 
-        env = ExecutionEnvironment.getExecutionEnvironment();
+        Configuration configuration = new Configuration();
+        configuration.setInteger(RestOptions.PORT, 8080);
+        configuration.setInteger(TaskManagerOptions.NUM_TASK_SLOTS, 100);
+
+        configuration.setString(NettyShuffleEnvironmentOptions.NETWORK_BUFFERS_MEMORY_MIN, "1m");
+        configuration.setInteger(NettyShuffleEnvironmentOptions.NETWORK_NUM_BUFFERS, 4096);
+        configuration.setFloat(NettyShuffleEnvironmentOptions.NETWORK_BUFFERS_MEMORY_FRACTION, 0.5f);
+        configuration.setString(CoreOptions.TMP_DIRS, "e://flink-tmp");
+
+        env = ExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
     }
 
 
@@ -25,7 +33,7 @@ public class DataSetSuite {
     public void map() throws Exception {
 
        env.readTextFile("random.txt").map(x -> {
-            System.out.println(Thread.currentThread().getName() + " -> " + x);
+//            System.out.println(Thread.currentThread().getName() + " -> " + x);
             return x;
         }).flatMap(new FlatMapFunction<String, Tuple2<String, Integer>>() {
             @Override
@@ -41,7 +49,9 @@ public class DataSetSuite {
                 }
             }
         }).groupBy(0)
-                .sum(1).writeAsCsv("van");
+                .sum(1)
+
+                 .writeAsCsv("van.csv");
 
         env.execute("van");
 
