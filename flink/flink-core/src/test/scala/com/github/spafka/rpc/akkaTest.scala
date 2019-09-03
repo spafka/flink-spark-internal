@@ -2,6 +2,9 @@ package com.github.spafka.rpc
 
 import java.util.concurrent.TimeUnit
 
+import _root_.akka.actor.{Actor, ActorIdentity, ActorSelection, Identify, Props}
+import _root_.akka.util.{Timeout}
+import _root_.akka.pattern.ask
 import com.github.spafka.util.AkkaUtils
 import org.junit.Test
 import org.slf4j.LoggerFactory

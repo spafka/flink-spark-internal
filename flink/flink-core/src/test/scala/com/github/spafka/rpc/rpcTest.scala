@@ -4,7 +4,7 @@ import com.github.spafka.rpc.akka.AkkaRpcService
 import com.github.spafka.util.{AkkaUtils, Logging}
 import org.apache.flink.api.common.time.Time
 import org.junit.{Before, Test}
-
+import _root_.akka.actor.{Actor, ActorIdentity, ActorSelection, Identify, Props,ActorSystem}
 class rpcTest {
 
   var actorSystem: ActorSystem = _

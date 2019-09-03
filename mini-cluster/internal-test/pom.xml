@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>benchmark</artifactId>
+    <artifactId>internal-test</artifactId>
     <properties>
         <hadoop.version>2.7.5</hadoop.version>
     </properties>

@@ -2,6 +2,7 @@ package com.github.spafka.rpc
 
 import java.util.concurrent.TimeUnit
 
+import  _root_.akka.actor.{Actor, ActorIdentity, ActorSelection, Identify, Props,ActorSystem}
 import com.github.spafka.rpc.akka.AkkaRpcService
 
 trait FooGateWay extends RpcGateway {
