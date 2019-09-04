@@ -16,15 +16,14 @@ public class generate {
 
         File file = new File("random.txt");
 
-        if (file.exists()){
+        if (file.exists()) {
             file.delete();
         }
 
 
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
 
-        BufferedOutputStream bufferedOutputStream=new BufferedOutputStream(new FileOutputStream(file));
-
-        for (int i=0;i<Integer.MAX_VALUE>>5;i++){
+        for (int i = 0; i < Integer.MAX_VALUE >> 5; i++) {
             bufferedOutputStream.write("deep dark\n ".getBytes());
 //            bufferedOutputStream.flush();
         }

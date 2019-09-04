@@ -5,8 +5,12 @@ import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.*;
 import org.apache.flink.util.Collector;
+import org.apache.spark.util.Utils;
 import org.junit.Before;
 import org.junit.Test;
+import scala.runtime.AbstractFunction0;
+
+import static org.apache.flink.configuration.ConfigConstants.LOCAL_NUMBER_TASK_MANAGER;
 
 public class DataSetSuite {
 
@@ -19,6 +23,7 @@ public class DataSetSuite {
         Configuration configuration = new Configuration();
         configuration.setInteger(RestOptions.PORT, 8080);
         configuration.setInteger(TaskManagerOptions.NUM_TASK_SLOTS, 100);
+        configuration.setInteger(LOCAL_NUMBER_TASK_MANAGER,3);
 
         configuration.setString(NettyShuffleEnvironmentOptions.NETWORK_BUFFERS_MEMORY_MIN, "1m");
         configuration.setInteger(NettyShuffleEnvironmentOptions.NETWORK_NUM_BUFFERS, 4096);
@@ -30,9 +35,37 @@ public class DataSetSuite {
 
 
     @Test
+    public void count() throws Exception {
+
+        scala.Tuple2<Long, Object> timeTakenMs = Utils.timeTakenMs(new AbstractFunction0<Long>() {
+            @Override
+            public Long apply() {
+
+                try {
+                    long count = env
+                            .readTextFile("random.txt") // DataSource
+                            .count(); // DataSink
+
+                    return count;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                return 0L;
+
+            }
+        });
+
+        System.err.println(timeTakenMs);
+
+    }
+
+
+    @Test
     public void map() throws Exception {
 
-       env.readTextFile("random.txt").map(x -> {
+        env.readTextFile("random.txt").map(x -> {
 //            System.out.println(Thread.currentThread().getName() + " -> " + x);
             return x;
         }).flatMap(new FlatMapFunction<String, Tuple2<String, Integer>>() {
@@ -50,8 +83,7 @@ public class DataSetSuite {
             }
         }).groupBy(0)
                 .sum(1)
-
-                 .writeAsCsv("van.csv").setParallelism(1);
+                .writeAsCsv("van.csv").setParallelism(1);
 
         env.execute("van");
 

@@ -1,0 +1,18 @@
+jobmanager.rpc.port: 6123
+jobmanager.rpc.address: localhost
+jobmanager.heap.mb: 2048
+taskmanager.heap.mb: 4096
+taskmanager.numberOfTaskSlots: 100
+taskmanager.memory.preallocate: false
+parallelism.default: 3
+
+akka.framesize: 104857600b
+#==============================================================================
+# Web Frontend
+#==============================================================================
+jobmanager.web.port: 8080
+rest.port: 8080
+#==============================================================================
+# Streaming state checkpointing
+#==============================================================================
+
