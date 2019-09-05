@@ -22,8 +22,8 @@ public class DataSetSuite {
 
         Configuration configuration = new Configuration();
         configuration.setInteger(RestOptions.PORT, 8080);
-        configuration.setInteger(TaskManagerOptions.NUM_TASK_SLOTS, 100);
-        configuration.setInteger(LOCAL_NUMBER_TASK_MANAGER,3);
+        configuration.setInteger(TaskManagerOptions.NUM_TASK_SLOTS, 10);
+        configuration.setInteger(LOCAL_NUMBER_TASK_MANAGER,2);
 
         configuration.setString(NettyShuffleEnvironmentOptions.NETWORK_BUFFERS_MEMORY_MIN, "1m");
         configuration.setInteger(NettyShuffleEnvironmentOptions.NETWORK_NUM_BUFFERS, 4096);
