@@ -1,14 +1,12 @@
-package io.github.spafka.io
+package io.github.spafka.netty
 
 import java.io.IOException
 import java.net.{InetAddress, InetSocketAddress}
 import java.util.concurrent.ThreadFactory
 import java.util.function.Function
 
-import javax.annotation.Nullable
-import org.apache.flink.configuration.{ConfigOption, ConfigOptions, Configuration, NettyShuffleEnvironmentOptions, TaskManagerOptions}
+import org.apache.flink.configuration.{ConfigOption, ConfigOptions, Configuration, NettyShuffleEnvironmentOptions}
 import org.apache.flink.runtime.io.network.netty.{NettyBufferPool, NettyProtocol, SSLHandlerFactory}
-import org.apache.flink.runtime.net.SSLUtils
 import org.apache.flink.runtime.util.FatalExitExceptionHandler
 import org.apache.flink.shaded.guava18.com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.flink.shaded.netty4.io.netty.bootstrap.ServerBootstrap

@@ -8,8 +8,6 @@ import java.util.function.Function
 import akka.actor.{ActorIdentity, ActorRef, ActorSystem, Address, Identify, Props}
 import akka.pattern.ask
 import akka.util.Timeout
-import com.github.spafka.rpc._
-import com.github.spafka.util.{AkkaUtils, Logging, RpcUtils}
 import io.github.spafka.rpc.{RpcEndpoint, RpcGateway, RpcServer, RpcService}
 import io.github.spafka.util.{AkkaUtils, Logging, RpcUtils}
 import javax.annotation.concurrent.GuardedBy

@@ -2,7 +2,6 @@ package io.github.spafka.rpc
 
 import java.util.function.{Function => JFunction}
 
-import com.github.spafka.util.Logging
 import io.github.spafka.util.Logging
 import org.junit.Test
 

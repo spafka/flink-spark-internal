@@ -2,7 +2,7 @@ package io.github.spafka.rpc
 
 import java.util.concurrent.TimeUnit
 
-import _root_.akka.actor.{Actor, ActorIdentity, ActorSelection, ActorSystem, Identify, Props}
+import _root_.akka.actor.ActorSystem
 import io.github.spafka.rpc.akka.AkkaRpcService
 
 trait FooGateWay extends RpcGateway {
@@ -73,7 +73,7 @@ object BarEndPoint extends App {
 
   import java.util.concurrent.CompletableFuture
 
-  import com.github.spafka.rpc.akka.AkkaRpcService
+  import io.github.spafka.rpc.akka.AkkaRpcService
   import io.github.spafka.util.AkkaUtils
 
   private val actorSystem2: ActorSystem = AkkaUtils.startSlaveActorSystem()

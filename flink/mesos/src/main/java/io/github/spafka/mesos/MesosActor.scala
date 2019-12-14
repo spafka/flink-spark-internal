@@ -1,21 +1,18 @@
 package io.github.spafka.mesos
 
-import java.util
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.github.spafka.util.AkkaUtils
 import com.netflix.fenzo.functions.Action1
 import com.netflix.fenzo.{TaskScheduler, VirtualMachineLease}
 import grizzled.slf4j.Logger
 import io.github.spafka
 import io.github.spafka.util.AkkaUtils
-import org.apache.flink.mesos
-import org.apache.flink.mesos.scheduler.{TaskMonitor, TaskSchedulerBuilder, Tasks}
+import org.apache.flink.mesos.scheduler.TaskSchedulerBuilder
 import org.apache.flink.mesos.scheduler.messages.{Disconnected, ReRegistered, Registered}
-import org.apache.mesos.{MesosSchedulerDriver, Protos, Scheduler, SchedulerDriver}
+import org.apache.mesos.{MesosSchedulerDriver, Protos}
 
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 
 
 class MesosActor extends Actor {

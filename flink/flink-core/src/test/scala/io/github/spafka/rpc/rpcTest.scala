@@ -1,12 +1,10 @@
 package io.github.spafka.rpc
 
-import com.github.spafka.rpc.akka.AkkaRpcService
-import com.github.spafka.util.{AkkaUtils, Logging}
-import org.apache.flink.api.common.time.Time
-import org.junit.{Before, Test}
-import _root_.akka.actor.{Actor, ActorIdentity, ActorSelection, ActorSystem, Identify, Props}
+import _root_.akka.actor.ActorSystem
 import io.github.spafka.rpc.akka.AkkaRpcService
 import io.github.spafka.util.{AkkaUtils, Logging}
+import org.apache.flink.api.common.time.Time
+import org.junit.{Before, Test}
 class rpcTest {
 
   var actorSystem: ActorSystem = _

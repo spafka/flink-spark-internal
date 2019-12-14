@@ -1,9 +1,6 @@
 package io.github.spafka.rpc.akka
 
 import akka.actor.Actor
-import com.github.spafka.rpc.message.RpcInvocation
-import com.github.spafka.rpc.{RpcEndpoint, RpcGateway}
-import com.github.spafka.util.Logging
 import io.github.spafka.rpc.message.RpcInvocation
 import io.github.spafka.rpc.{RpcEndpoint, RpcGateway}
 import io.github.spafka.util.Logging

@@ -3,8 +3,6 @@ package io.github.spafka.jobmanager
 import java.net.InetAddress
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.github.spafka.rpc.message.{AskMessage, RigistMessage, Task}
-import com.github.spafka.rpc.message.{AskMessage, ReplyMessage, Task}
 import grizzled.slf4j.Logger
 import io.github.spafka.rpc.message.{AskMessage, ReplyMessage, RigistMessage, Task}
 import io.github.spafka.util.AkkaUtils

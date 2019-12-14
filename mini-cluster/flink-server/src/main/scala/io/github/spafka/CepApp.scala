@@ -3,7 +3,6 @@ package io.github.spafka
 import java.lang
 import java.util.concurrent.TimeUnit
 
-import com.github.spafka.cep.{BASEDTO, CallDTO, GPSDTO}
 import io.github.spafka.cep.{BASEDTO, CallDTO, GPSDTO}
 import org.apache.flink.cep.pattern.conditions.IterativeCondition
 import org.apache.flink.cep.pattern.conditions.IterativeCondition.Context

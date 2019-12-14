@@ -1,17 +1,13 @@
 package io.github.spafka.taskmanager
 
+import _root_.io.github.spafka.jobmanager.JobManager
+import _root_.io.github.spafka.rpc.message._
+import _root_.io.github.spafka.util.AkkaUtils
 import akka.actor.SupervisorStrategy.Escalate
 import akka.actor.{Actor, OneForOneStrategy}
 import akka.pattern.ask
 import akka.util.Timeout
-import com.github.spafka._
-import com.github.spafka.jobmanager.JobManager
-import com.github.spafka.rpc.message._
-import com.github.spafka.util.AkkaUtils
 import grizzled.slf4j.Logger
-import _root_.io.github.spafka.jobmanager.JobManager
-import _root_.io.github.spafka.util.AkkaUtils
-import _root_.io.github.spafka.rpc.message.{AskMessage, BreakMessage, RigistMessage, Task, TaskDesc}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{Duration, _}
