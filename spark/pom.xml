@@ -19,8 +19,8 @@
 
     <properties>
 
-        <hadoop.version>2.6.5</hadoop.version>
-        <hbase.version>1.1.2</hbase.version>
+        <hadoop.version>2.7.7</hadoop.version>
+        <hbase.version>1.3.2</hbase.version>
     </properties>
 
     <dependencies>
@@ -62,28 +62,28 @@
             <artifactId>scala-reflect</artifactId>
             <version>${scala.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-client</artifactId>
-            <version>${hbase.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-common</artifactId>
-            <version>${hbase.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.hbase</groupId>-->
+<!--            <artifactId>hbase-client</artifactId>-->
+<!--            <version>${hbase.version}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.hbase</groupId>-->
+<!--            <artifactId>hbase-common</artifactId>-->
+<!--            <version>${hbase.version}</version>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-server</artifactId>
-            <version>${hbase.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase</artifactId>
-            <version>${hbase.version}</version>
-            <type>pom</type>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.hbase</groupId>-->
+<!--            <artifactId>hbase-server</artifactId>-->
+<!--            <version>${hbase.version}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.hbase</groupId>-->
+<!--            <artifactId>hbase</artifactId>-->
+<!--            <version>${hbase.version}</version>-->
+<!--            <type>pom</type>-->
+<!--        </dependency>-->
     </dependencies>
 
 </project>
