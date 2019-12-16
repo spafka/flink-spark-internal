@@ -3,7 +3,7 @@
 #vi /etc/gdm/custom.conf
 [daemon]
 TimedLoginEnable=true
-TimedLogin=jack
+TimedLogin=root
 TimedLoginDelay=3
 ```
 
@@ -52,10 +52,10 @@ docker run --restart always --privileged=true -d --name zookeeper --publish 2181
 ```bash
 rpm -Uvh http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm
 yum -y install mesos
-echo "zk://master:2181/mesos" > /etc/mesos/zk
+echo "zk://localhost:2181/mesos" > /etc/mesos/zk
 echo "1" > /etc/mesos-master/quorum
-echo "192.168.190.3" > /etc/mesos-master/ip
-echo "master" > /etc/mesos-master/hostname
+echo "localhost" > /etc/mesos-master/ip
+echo "localhost" > /etc/mesos-master/hostname
 
 echo "docker,mesos" > /etc/mesos-slave/containerizers
 echo "5mins" > /etc/mesos-slave/executor_registration_timeout
@@ -68,7 +68,7 @@ echo "export MESOS_NATIVE_JAVA_LIBRARY=/usr/local/lib/libmesos.so" >> /etc/profi
 [mesos master]
 ```bash
 
-echo "192.168.190.3" > /etc/mesos-master/ip
+echo "localhost" > /etc/mesos-master/ip
 echo "master" > /etc/mesos-master/hostname
 echo 'paas' > /etc/mesos-master/cluster
 
@@ -81,8 +81,9 @@ systemctl enable mesos-master.service
 [mesos slave]
 ```bash
 
-echo "192.168.190.3" > /etc/mesos-slave/ip
-echo "master" > /etc/mesos-slave/hostname
+echo "127.0.1" > /etc/mesos-slave/ip
+echo "localhost" > /etc/mesos-slave/hostname
+
 
 systemctl start mesos-slave.service
 systemctl enable mesos-slave.service
