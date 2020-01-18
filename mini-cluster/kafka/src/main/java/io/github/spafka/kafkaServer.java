@@ -13,7 +13,7 @@ public class kafkaServer {
 
     public static void main(String[] args) throws IOException {
 
-        FileUtils.deleteDirectory(new File("/data"));
+        FileUtils.deleteDirectory(new File("/tmp/kafka/data"));
 
 
         InputStream is = kafkaServer.class.getResourceAsStream("/server.properties");

@@ -15,7 +15,7 @@ public class ZkServer {
     public static void main(String[] args) throws IOException, QuorumPeerConfig.ConfigException {
 
 
-        FileUtils.deleteDirectory(new File("/tmp"));
+        FileUtils.deleteDirectory(new File("/tmp/zookeeper"));
 
         QuorumPeerConfig config = new QuorumPeerConfig();
         InputStream is = ZkServer.class.getResourceAsStream("/zookeeper.properties");
