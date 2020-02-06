@@ -4,14 +4,16 @@ package io.github.spafka;
 import kafka.server.KafkaServerStartable;
 import org.I0Itec.zkclient.ZkServer;
 import org.apache.commons.io.FileUtils;
-import org.apache.kafka.clients.admin.*;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsResult;
+import org.apache.kafka.clients.admin.ListTopicsResult;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.protocol.types.Field;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.zookeeper.server.ServerConfig;
@@ -27,13 +29,14 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 public class KafkaStandaloneServer {
 
     static final String TOPIC = "test";
-    static final String CG="spafka";
+    static final String CG = "spafka";
 
-    public static void main(String[] args) throws IOException, QuorumPeerConfig.ConfigException, InterruptedException {
+    public static void main(String[] args) throws InterruptedException {
 
 
         new Thread(() -> {
@@ -55,43 +58,29 @@ public class KafkaStandaloneServer {
             }
         }).start();
 
-        new Thread(() -> {
+        TimeUnit.SECONDS.sleep(5);
 
-            try {
-                FileUtils.deleteDirectory(new File("/tmp/kafka/data"));
-
-
-                InputStream is = KafkaStandaloneServer.class.getResourceAsStream("/server.properties");
-                Properties p = new Properties();
-                p.load(is);
-                is.close();
-                KafkaServerStartable kafkaServerStartable = KafkaServerStartable.fromProps(p);
-                kafkaServerStartable.startup();
-                kafkaServerStartable.awaitShutdown();
-            } catch (IOException e) {
-
-            }
+        IntStream.rangeClosed(1, 3).forEach(x -> {
+            new Thread(() -> {
+                try {
+                    FileUtils.deleteDirectory(new File("/tmp/kafka/data" + x));
 
 
-        }).start();
+                    InputStream is = KafkaStandaloneServer.class.getResourceAsStream("/server" + x + ".properties");
+                    Properties p = new Properties();
+                    p.load(is);
+                    is.close();
+                    KafkaServerStartable kafkaServerStartable = KafkaServerStartable.fromProps(p);
+                    kafkaServerStartable.startup();
+                    kafkaServerStartable.awaitShutdown();
+                } catch (IOException e) {
 
-        Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost" + ":" + 9092);
-        props.put(ProducerConfig.CLIENT_ID_CONFIG, "test");
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+                }
 
-        KafkaProducer kafkaProducer = new KafkaProducer(props);
 
-        TimeUnit.SECONDS.sleep(10);
-        while (true) {
+            }).start();
+        });
 
-            Scanner scanner = new Scanner(System.in);
-            String line = scanner.nextLine();
-
-            kafkaProducer.send(new ProducerRecord("flink", null, line));
-
-        }
 
     }
 
@@ -107,7 +96,7 @@ public class KafkaStandaloneServer {
 
         System.out.println(listTopicsResult.listings().get());
 
-        NewTopic test = new NewTopic(TOPIC, 3, (short) 1);
+        NewTopic test = new NewTopic(TOPIC, 3, (short) 2);
         adminClient.createTopics(Arrays.asList(test));
 
         ListTopicsResult nowtopics = adminClient.listTopics();
@@ -159,7 +148,7 @@ public class KafkaStandaloneServer {
 
             Iterator<ConsumerRecord<String, String>> iterator = polled.iterator();
 
-            iterator.forEachRemaining(x->{
+            iterator.forEachRemaining(x -> {
 
                 System.out.println(x);
             });
@@ -184,8 +173,8 @@ public class KafkaStandaloneServer {
         Map<TopicPartition, OffsetAndMetadata> tos = listConsumerGroupOffsetsResult.partitionsToOffsetAndMetadata().get();
 
 
-        tos.forEach((k,v)->{
-            System.out.println(new Tuple2<>(k,v));
+        tos.forEach((k, v) -> {
+            System.out.println(new Tuple2<>(k, v));
         });
 
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost" + ":" + 9092);
@@ -202,22 +191,21 @@ public class KafkaStandaloneServer {
 
         Set<TopicPartition> topicPartitions = tos.keySet();
 
-        topicPartitions.forEach(x->{
+        topicPartitions.forEach(x -> {
 
             // 没有提交过偏移量的会之间报错
-            consumer.seek(x,0L);
+            consumer.seek(x, 0L);
         });
 
 
-        while (true){
+        while (true) {
             ConsumerRecords<String, String> consumerRecords = consumer.poll(100L);
-            consumerRecords.iterator().forEachRemaining(x->{
+            consumerRecords.iterator().forEachRemaining(x -> {
                 System.out.println(x);
             });
         }
 
     }
-
 
 
     @Test
