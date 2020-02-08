@@ -3,9 +3,6 @@ package io.github.spafka.state.RocksDb;
 import io.github.spafka.checkpoint.checkpoint;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.configuration.CheckpointingOptions;
-import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -16,6 +13,8 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
 
 import java.io.File;
+
+import static io.github.spafka.Utils.getStreamEnv;
 
 public class RocksDbBackend {
 
@@ -41,19 +40,11 @@ public class RocksDbBackend {
         new File(CHECKPOINTS_DIRECTORY).deleteOnExit();
         new File(SAVEPOINT_DIRECTORY).deleteOnExit();
 
-        Configuration configuration = new Configuration();
 
-        configuration.setString(CheckpointingOptions.CHECKPOINTS_DIRECTORY, CHECKPOINTS_DIRECTORY);
-
-        configuration.setString(CheckpointingOptions.SAVEPOINT_DIRECTORY, SAVEPOINT_DIRECTORY);
-        configuration.setBoolean(CheckpointingOptions.ASYNC_SNAPSHOTS, true);
-        configuration.setInteger(CheckpointingOptions.MAX_RETAINED_CHECKPOINTS, 10);
-        configuration.setString(CheckpointingOptions.STATE_BACKEND, "filesystem");
-        configuration.setInteger(RestOptions.PORT, 8081);
 
 
         //获取flink的运行环境
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
+        StreamExecutionEnvironment env = getStreamEnv();
 
         // 每隔10000 ms进行启动一个检查点【设置checkpoint的周期】
         env.enableCheckpointing(10000);

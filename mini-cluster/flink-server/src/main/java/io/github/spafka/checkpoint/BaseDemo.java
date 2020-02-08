@@ -3,9 +3,7 @@ package io.github.spafka.checkpoint;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
@@ -25,7 +23,7 @@ public class BaseDemo {
 //        configuration.setString(CheckpointingOptions.CHECKPOINTS_DIRECTORY,"file:///D:/checkpoint");
 
 
-        configuration.setInteger(RestOptions.PORT,8081);
+
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
 
         // 每隔10000 ms进行启动一个检查点【设置checkpoint的周期】

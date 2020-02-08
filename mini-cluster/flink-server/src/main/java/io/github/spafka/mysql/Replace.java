@@ -2,27 +2,19 @@ package io.github.spafka.mysql;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
-import java.util.concurrent.TimeUnit;
+import static io.github.spafka.Utils.getStreamEnv;
 
 @Slf4j
 public class Replace {
 
 
     public static void main(String[] args) throws Exception {
-        StreamExecutionEnvironment env;
-        if (args.length > 0 && args[0].equals("dev")) {
-            Configuration configuration = new Configuration();
-            configuration.setInteger(RestOptions.PORT, 8081);
-            env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
-        } else {
-            env = StreamExecutionEnvironment.getExecutionEnvironment();
-        }
+        StreamExecutionEnvironment env=getStreamEnv();
+
 
 
         DataStreamSource<String> source = env.addSource(new SourceFunction<String>() {

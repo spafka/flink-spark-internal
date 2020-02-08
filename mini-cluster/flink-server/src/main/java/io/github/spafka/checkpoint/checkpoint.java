@@ -2,9 +2,7 @@ package io.github.spafka.checkpoint;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -12,6 +10,9 @@ import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
+
+import static org.apache.flink.configuration.CoreOptions.*;
+import static org.apache.flink.configuration.WebOptions.PORT;
 
 public class checkpoint {
 
@@ -29,12 +30,11 @@ public class checkpoint {
             port = 9999;
         }
         Configuration configuration = new Configuration();
-        configuration.setString(CheckpointingOptions.CHECKPOINTS_DIRECTORY, "file:///D://state/checkpoint");
-        configuration.setString(CheckpointingOptions.SAVEPOINT_DIRECTORY, "file:///D://state/savepoint");
-        configuration.setBoolean(CheckpointingOptions.ASYNC_SNAPSHOTS, true);
-        configuration.setInteger(CheckpointingOptions.MAX_RETAINED_CHECKPOINTS, 10);
-        configuration.setString(CheckpointingOptions.STATE_BACKEND, "filesystem");
-        configuration.setInteger(RestOptions.PORT,8082);
+        configuration.setString(CHECKPOINTS_DIRECTORY, "file:///D://state/checkpoint");
+        configuration.setString(SAVEPOINT_DIRECTORY, "file:///D://state/savepoint");
+        configuration.setInteger(MAX_RETAINED_CHECKPOINTS, 10);
+        configuration.setString(STATE_BACKEND, "filesystem");
+        configuration.setInteger(PORT,8082);
 
 
         //获取flink的运行环境

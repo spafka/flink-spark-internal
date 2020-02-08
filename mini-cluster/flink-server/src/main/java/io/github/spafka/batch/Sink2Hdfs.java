@@ -25,8 +25,8 @@ public class Sink2Hdfs {
         BucketingSink<String> bucketingSink = new BucketingSink<>("/var"); //hdfs上的路径
 
         bucketingSink.setWriter(new StringWriter<>())
-                .setBatchSize(1024 * 1024 )
-                .setBatchRolloverInterval(2000);
+                .setBatchSize(1024 * 1024 );
+               // .setBatchRolloverInterval(2000);
 
         socketStream.addSink(bucketingSink);
 
