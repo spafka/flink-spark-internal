@@ -3,7 +3,6 @@ package io.github.spafka;
 
 import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.FileUtils;
 
@@ -33,24 +32,22 @@ public class Utils {
 		configuration.setString("state.savepoints.dir", SAVEPOINT_DIRECTORY);
 		configuration.setBoolean("state.backend.async", true);
 		configuration.setInteger("state.checkpoints.num-retained", 10);
-		configuration.setString("state.backend", "rocksdb");
+		configuration.setString("state.backend", "rocksdb"); //filesystem rocksdb memory
+
 		configuration.setInteger("web.port", 8081);
 		configuration.setBoolean("state.backend.incremental",true);
 		configuration.setInteger(ConfigConstants.LOCAL_NUMBER_TASK_MANAGER,4); // 4 tm
 		configuration.setLong("metrics.latency.interval",-1L);
+		configuration.setString("state.backend.fs.checkpointdir",CHECKPOINTS_DIRECTORY);
 
 
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
 
-		env.getCheckpointConfig().setCheckpointInterval(Long.MAX_VALUE);
-		//env.getCheckpointConfig().setCheckpointInterval(10000L);
+		//env.getCheckpointConfig().setCheckpointInterval(Long.MAX_VALUE);
+		env.getCheckpointConfig().setCheckpointInterval(10000L);
 		env.setBufferTimeout(0L);
 
-		try {
-			env.setStateBackend(new RocksDBStateBackend(CHECKPOINTS_DIRECTORY));
-		} catch (IOException e) {
 
-		}
 
 		return env;
 	}

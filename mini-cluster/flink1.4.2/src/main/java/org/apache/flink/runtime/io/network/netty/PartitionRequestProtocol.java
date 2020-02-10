@@ -80,8 +80,9 @@ class PartitionRequestProtocol implements NettyProtocol {
                 partitionProvider, taskEventDispatcher, queueOfPartitionQueues);
 
         return new ChannelHandler[] {
-                loggingHandler,
+               // loggingHandler,
                 messageEncoder,
+
                 createFrameLengthDecoder(),
                 messageDecoder,
                 serverHandler,
@@ -124,9 +125,9 @@ class PartitionRequestProtocol implements NettyProtocol {
 
 
         return new ChannelHandler[] {
-                loggingHandler,
                 messageEncoder,
                 createFrameLengthDecoder(),
+                //loggingHandler,
                 messageDecoder,
                 new PartitionRequestClientHandler()};
     }

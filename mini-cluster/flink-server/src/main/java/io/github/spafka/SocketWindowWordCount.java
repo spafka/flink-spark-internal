@@ -41,12 +41,15 @@ public class SocketWindowWordCount {
 
 		// get the execution environment
 		final StreamExecutionEnvironment env = getStreamEnv();
+		env.disableOperatorChaining();
 
 		// get input data by connecting to the socket
 		DataStream<String> text = env.socketTextStream(hostname, port, "\n");
 		text.map(x->{
 			return x;
-		}).print().setParallelism(1);
+		})
+				.setParallelism(1)
+				.print().setParallelism(1);
 
 		env.execute("Socket Window WordCount");
 	}

@@ -24,7 +24,7 @@
     </appender>
 
     <!-- This affects logging for both user code and Flink -->
-    <root level="INFO">
+    <root level="ERROR">
         <appender-ref ref="console"/>
     </root>
 
@@ -45,16 +45,13 @@
     <logger name="org.apache.hadoop" level="INFO" additivity="false">
         <appender-ref ref="console"/>
     </logger>
-    <logger name="org.apache.flink.runtime" level="INFO" additivity="false">
-        <appender-ref ref="console"/>
-    </logger>
+<!--    <logger name="org.apache.flink.runtime" level="INFO" additivity="false">-->
+<!--        <appender-ref ref="console"/>-->
+<!--    </logger>-->
 
     <!-- Suppress the irrelevant (wrong) warnings from the Netty channel handler -->
     <logger name="org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline" level="ERROR" additivity="false">
         <appender-ref ref="console"/>
     </logger>
 
-    <logger name="com.tass.vehiclenet.mybatis.mapper" level="debug" additivity="false">
-        <appender-ref ref="console"/>
-    </logger>
 </configuration>
