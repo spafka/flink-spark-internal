@@ -11,7 +11,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
 
-import static org.apache.flink.configuration.CoreOptions.*;
+import static org.apache.flink.configuration.CheckpointingOptions.*;
 import static org.apache.flink.configuration.WebOptions.PORT;
 
 public class checkpoint {
@@ -77,6 +77,7 @@ public class checkpoint {
         // a 1
         // c 1
         DataStream<WordWithCount> windowCounts = text.flatMap(new FlatMapFunction<String, WordWithCount>() {
+            @Override
             public void flatMap(String value, Collector<WordWithCount> out) throws Exception {
                 String[] splits = value.split("\\s");
                 for (String word : splits) {

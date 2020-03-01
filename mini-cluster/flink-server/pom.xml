@@ -26,7 +26,7 @@
         <fastJson.version>1.2.54</fastJson.version>
         <spafka.version>1.0.6</spafka.version>
         <okhttp.version>3.14.1</okhttp.version>
-        <flink.version>1.9.1</flink.version>
+        <flink.version>1.10.0</flink.version>
     </properties>
 
     <profiles>
@@ -46,7 +46,7 @@
                 </dependency>
             </dependencies>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
 
         </profile>
@@ -136,7 +136,7 @@
 
         <dependency>
             <groupId>com.github.spafka</groupId>
-            <artifactId>flink1.4.2</artifactId>
+            <artifactId>flink-lastst</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -270,6 +270,10 @@
                     <artifactId>commons-cli</artifactId>
                     <groupId>commons-cli</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>jdk.tools</artifactId>
+                    <groupId>jdk.tools</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -311,5 +315,32 @@
         </dependency>
     </dependencies>
 
+
+    <build>
+        <finalName>van</finalName>
+        <plugins>
+            <plugin>
+                <groupId>com.github.guru107</groupId>
+                <artifactId>flinkjobupload-maven-plugin</artifactId>
+                <version>1.0</version>
+                <configuration>
+                    <jobmanagerip>localhost:8081</jobmanagerip>
+                    <jarPath>${project.build.directory}/van.jar</jarPath>
+                    <allowNonRestoredState>false</allowNonRestoredState>
+                    <entryClass>io.github.spafka.SocketWindowWordCount</entryClass>
+                    <parallelism>1</parallelism>
+                    <programArgs></programArgs>
+                    <savePointPath></savePointPath>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>runjob</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

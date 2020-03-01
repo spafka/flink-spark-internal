@@ -103,6 +103,10 @@ class MesosActor extends Actor {
       }
 
       override def build: TaskScheduler = builder.build
+
+      override def withRejectAllExpiredOffers(): TaskSchedulerBuilder = ???
+
+      override def withLeaseOfferExpirySecs(l: Long): TaskSchedulerBuilder = ???
     }
   }
 }

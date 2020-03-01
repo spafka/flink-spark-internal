@@ -2,8 +2,13 @@ jobmanager.rpc.port: 6123
 jobmanager.rpc.address: localhost
 jobmanager.heap.mb: 2048
 taskmanager.heap.mb: 4096
-taskmanager.numberOfTaskSlots: 15
+taskmanager.cpu.cores: 2
+taskmanager.numberOfTaskSlots: 50
 taskmanager.memory.preallocate: false
+taskmanager.memory.task.heap.size: 500mb
+taskmanager.memory.managed.size: 500mb
+taskmanager.memory.network.max: 64mb
+taskmanager.memory.network.min: 64mb
 parallelism.default: 3
 
 akka.framesize: 104857600b

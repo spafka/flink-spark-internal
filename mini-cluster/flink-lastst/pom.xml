@@ -14,7 +14,6 @@
     <properties>
 
         <hadoop.version>2.7.5</hadoop.version>
-        <flink.version>LATEST</flink.version>
         <scala.binary.version>2.12</scala.binary.version>
         <scala.version>2.12.8</scala.version>
     </properties>

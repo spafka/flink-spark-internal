@@ -9,20 +9,7 @@
         <version>20</version>
     </parent>
 
-    <repositories>
-        <repository>
-            <id>maven-ali</id>
-            <url>http://maven.aliyun.com/nexus/content/groups/public//</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>fail</checksumPolicy>
-            </snapshots>
-        </repository>
-    </repositories>
+
 
     <groupId>com.github.spafka</groupId>
     <artifactId>flink-spark-internal</artifactId>
@@ -30,6 +17,7 @@
     <version>1.0</version>
     <modules>
         <module>mini-cluster</module>
+        <module>sql</module>
     </modules>
     <properties>
         <akka.version>2.4.20</akka.version>
@@ -50,19 +38,17 @@
         <chill.version>0.7.4</chill.version>
         <junit.version>4.12</junit.version>
         <spark.version>2.4.3</spark.version>
-        <flink.version>1.9.0</flink.version>
+        <flink.version>1.10.0</flink.version>
         <version.servlet>2.5</version.servlet>
         <mesos.version>1.4.3</mesos.version>
         <skipTests>true</skipTests>
-        <!--HaiFeng-->
-        <!--apacheSpafka9%-->
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>io.github.spafka</groupId>
             <artifactId>utils</artifactId>
-            <version>1.0.6</version>
+            <version>1.0.7</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang.modules</groupId>
