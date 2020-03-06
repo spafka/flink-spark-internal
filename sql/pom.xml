@@ -17,6 +17,7 @@
         <module>flink-training-exercises</module>
         <module>sql-training/build-image/java/sql-training-data-producer</module>
         <module>sql-training/build-image/java/sql-training-udfs</module>
+        <module>calcite</module>
     </modules>
 
 

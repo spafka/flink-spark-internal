@@ -45,7 +45,7 @@ public class GroupedProcessingTimeWindowExample {
         DataStream<Tuple3<Long, Long,Long>> stream = env.addSource(new DataSource());
 
         stream
-                .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor<Tuple3<Long, Long,Long>>(Time.of(10, SECONDS)) {
+                .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor<Tuple3<Long, Long,Long>>(Time.of(5, SECONDS)) {
                     @Override
                     public long extractTimestamp(Tuple3<Long, Long,Long> element) {
                         return element.f2;

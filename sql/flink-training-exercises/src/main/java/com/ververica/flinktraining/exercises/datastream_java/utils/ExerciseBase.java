@@ -22,8 +22,8 @@ import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 public class ExerciseBase {
-	public final static String pathToRideData = "/Users/david/stuff/flink-training/trainingData/nycTaxiRides.gz";
-	public final static String pathToFareData = "/Users/david/stuff/flink-training/trainingData/nycTaxiFares.gz";
+	public final static String pathToRideData = "/Users/spafka/Desktop/flink-spark-internal/sql/flink-training-exercises/nycTaxiRides.gz";
+	public final static String pathToFareData = "/Users/spafka/Desktop/flink-spark-internal/sql/flink-training-exercises/nycTaxiFares.gz";
 	public static SourceFunction<TaxiRide> rides = null;
 	public static SourceFunction<TaxiFare> fares = null;
 	public static SourceFunction<String> strings = null;
